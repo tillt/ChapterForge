@@ -88,8 +88,20 @@ target_include_directories(chapterforge PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/chapterforge_version.hpp.in
-               ${CMAKE_CURRENT_BINARY_DIR}/generated/chapterforge_version.hpp @ONLY)
+file(GENERATE
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/chapterforge_version.hpp
+    CONTENT "//
+//  chapterforge_version.hpp
+//
+
+#pragma once
+
+#define CHAPTERFORGE_VERSION \"${CHAPTERFORGE_VERSION_STRING}\"
+#define CHAPTERFORGE_VERSION_DISPLAY \"${CHAPTERFORGE_VERSION_DISPLAY}\"
+#define CHAPTERFORGE_VERSION_IS_DEV ${CHAPTERFORGE_VERSION_DEV}
+#define CHAPTERFORGE_GIT_HASH \"${CHAPTERFORGE_GIT_HASH}\"
+"
+)
 
 #CLI target links against the library
 add_executable(chapterforge_cli src/main.cpp)

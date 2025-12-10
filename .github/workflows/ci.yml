@@ -6,18 +6,115 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up CMake
+        uses: lukka/get-cmake@v3
+
       - name: Configure
+        shell: bash
         run: cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
+        shell: bash
         run: cmake --build build --config Release
 
       - name: Test
+        shell: bash
         run: |
           cd build
           ctest --output-on-failure
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: lukka/get-cmake@v3
+
+      - name: Configure
+        shell: bash
+        run: cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: bash
+        run: cmake --build build --config Release
+
+      - name: Codesign (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          MAC_CERT_PASS: ${{ secrets.MAC_CERT_PASS }}
+          MAC_KEYCHAIN_PASS: ${{ secrets.MAC_KEYCHAIN_PASS }}
+          MAC_CODESIGN_ID: ${{ secrets.MAC_CODESIGN_ID }} # e.g., "Developer ID Application: Your Name (TEAMID)"
+        shell: bash
+        run: |
+          if [[ -z "$MAC_CERT_P12_BASE64" ]]; then
+            echo "No signing cert provided; skipping signing."
+            exit 0
+          fi
+          echo "$MAC_CERT_P12_BASE64" | base64 --decode > cert.p12
+          security create-keychain -p "$MAC_KEYCHAIN_PASS" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$MAC_KEYCHAIN_PASS" build.keychain
+          security import cert.p12 -k build.keychain -P "$MAC_CERT_PASS" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$MAC_KEYCHAIN_PASS" build.keychain
+          codesign --options runtime --timestamp --force --sign "$MAC_CODESIGN_ID" build/chapterforge_cli
+
+      - name: Notarize (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PWD: ${{ secrets.APPLE_APP_SPECIFIC_PWD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          if [[ -z "$APPLE_ID" ]]; then
+            echo "No notarization credentials; skipping notarization."
+            exit 0
+          fi
+          xcrun notarytool submit build/chapterforge_cli \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_SPECIFIC_PWD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple build/chapterforge_cli
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            cp build/Release/chapterforge_cli.exe dist/
+          else
+            cp build/chapterforge_cli dist/
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapterforge-${{ matrix.os }}
+          path: dist/*
+
+      - name: Create GitHub Release
+        if: matrix.os == 'ubuntu-latest'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
