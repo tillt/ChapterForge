@@ -7,6 +7,7 @@
 
 #include "aac_extractor.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <optional>
