@@ -1,5 +1,9 @@
 # ChapterForge
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Build](https://img.shields.io/badge/build-CMake-blue.svg)](#building)
+[![Tests](https://img.shields.io/badge/tests-ctest-orange.svg)](#tests)
+
 ChapterForge is a library and CLI to mux chapters (text and optional images) into AAC/M4A files while preserving metadata and handling Apple-compatible chapter tracks.
 
 ## Motivation and Backstory
@@ -45,6 +49,19 @@ Targets:
 - `chapterforge` — static library
 - `chapterforge_cli` — command-line tool
 
+## Tests
+
+```bash
+cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON
+cmake --build build
+cd build
+ctest --output-on-failure
+```
+
+Optional toggles (pass during configure):
+- `-DENABLE_BIG_IMAGE_TESTS=ON` — run heavy image/long-duration fixtures (requires `input_big.m4a` and large JPEGs).
+- `-DENABLE_STRICT_VALIDATION=ON` — run additional tool-based checks if mp4info/mp4dump/AtomicParsley/ffprobe/MP4Box are present.
+- `-DENABLE_AVFOUNDATION_SMOKE=ON` — macOS-only Swift smoke test (requires `swift`).
 
 ## CLI Usage
 
@@ -182,6 +199,13 @@ Output (ChapterForge)
 
 Fast-start repacks `moov` ahead of `mdat` when requested.
 
+## Contributing
+
+Issues and PRs are welcome. Please:
+- Keep changes ASCII unless the file already uses Unicode.
+- Run tests before submitting: `cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON && cmake --build build && (cd build && ctest --output-on-failure)`.
+- Add or update tests when you change muxing behavior, metadata handling, or JSON parsing.
+- Keep comments concise and only where the code isn’t self-explanatory.
 
 
 ## Advanced Usage
