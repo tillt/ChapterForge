@@ -151,6 +151,18 @@ add_custom_target(generate_test_assets
     COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
 )
 
+# Generate-once variant for tests (skip regeneration if stamp exists).
+set(TEST_ASSET_STAMP ${CMAKE_BINARY_DIR}/generated_test_assets.stamp)
+add_custom_command(
+    OUTPUT ${TEST_ASSET_STAMP}
+    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_audio.sh
+    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_images.sh
+    COMMAND ${CMAKE_COMMAND} -E touch ${TEST_ASSET_STAMP}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating synthetic test assets (stamp guarded)"
+)
+add_custom_target(generate_test_assets_once DEPENDS ${TEST_ASSET_STAMP})
+
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 set(TESTDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 set(OUTPUT_M4A_PATH "${TESTDATA_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")
@@ -179,8 +191,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
         NAME audio_reuse_check
         COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
     )
-    set_tests_properties(audio_reuse_check PROPERTIES DEPENDS output_tool_checks)
-    add_dependencies(audio_reuse_check generate_test_assets)
+    set_property(TEST audio_reuse_check PROPERTY DEPENDS generate_test_assets_once)
 
     add_test(
         NAME output_tool_checks
@@ -196,7 +207,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    add_dependencies(output_tool_checks generate_test_assets)
+    set_property(TEST output_tool_checks PROPERTY DEPENDS generate_test_assets_once)
 #Metadata preservation on small input(JSON has no metadata)
     add_test(
         NAME metadata_preserve_small
@@ -212,7 +223,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    add_dependencies(metadata_preserve_small generate_test_assets)
+    set_property(TEST metadata_preserve_small PROPERTY DEPENDS generate_test_assets_once)
 #AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
     set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
@@ -231,7 +242,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
-        add_dependencies(output_tool_checks_aac generate_test_assets)
+        set_property(TEST output_tool_checks_aac PROPERTY DEPENDS generate_test_assets_once)
     else()
         message(STATUS "Skipping AAC ingest tests (INPUT_AAC_PATH missing: ${INPUT_AAC_PATH})")
     endif()
@@ -244,7 +255,15 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DMP4INFO_PATH=${MP4INFO_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_jpeg_track.cmake
     )
-    add_dependencies(jpeg_track_compare generate_test_assets)
+    set_property(TEST jpeg_track_compare PROPERTY DEPENDS generate_test_assets_once)
+
+    # Convenience target: generate assets, then run all tests.
+    add_custom_target(check_with_assets
+        DEPENDS generate_test_assets chapterforge chapterforge_cli
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Generate test assets then run ctest"
+    )
 endif()
 
 if(ENABLE_STRICT_VALIDATION)
