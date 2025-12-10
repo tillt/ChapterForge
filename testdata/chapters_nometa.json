@@ -1,0 +1,6 @@
+{
+  "chapters": [
+    { "start_ms": 0,    "title": "Silent Metadata Ninja", "image": "chapter1.jpg" },
+    { "start_ms": 5000, "title": "Steals Nothing, Leaves All", "image": "chapter2.jpg" }
+  ]
+}

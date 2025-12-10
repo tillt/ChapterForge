@@ -144,6 +144,13 @@ endif()
 
 enable_testing()
 
+add_custom_target(generate_test_assets
+    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_audio.sh
+    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_images.sh
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
+)
+
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 set(TESTDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 set(OUTPUT_M4A_PATH "${TESTDATA_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")
@@ -173,6 +180,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
         COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
     )
     set_tests_properties(audio_reuse_check PROPERTIES DEPENDS output_tool_checks)
+    add_dependencies(audio_reuse_check generate_test_assets)
 
     add_test(
         NAME output_tool_checks
@@ -188,6 +196,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
+    add_dependencies(output_tool_checks generate_test_assets)
 #Metadata preservation on small input(JSON has no metadata)
     add_test(
         NAME metadata_preserve_small
@@ -203,6 +212,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
+    add_dependencies(metadata_preserve_small generate_test_assets)
 #AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
     set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
@@ -221,6 +231,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
+        add_dependencies(output_tool_checks_aac generate_test_assets)
     else()
         message(STATUS "Skipping AAC ingest tests (INPUT_AAC_PATH missing: ${INPUT_AAC_PATH})")
     endif()
@@ -233,6 +244,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DMP4INFO_PATH=${MP4INFO_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_jpeg_track.cmake
     )
+    add_dependencies(jpeg_track_compare generate_test_assets)
 endif()
 
 if(ENABLE_STRICT_VALIDATION)
