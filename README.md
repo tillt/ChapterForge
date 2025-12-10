@@ -6,6 +6,7 @@
 
 ChapterForge is a library and CLI to mux chapters (text and optional images) into AAC/M4A files while preserving metadata and handling Apple-compatible chapter tracks.
 
+
 ## Motivation and Backstory
 
 The MPEG4 standard does not explicitly describe chapter marks.
@@ -49,6 +50,7 @@ Targets:
 - `chapterforge` — static library
 - `chapterforge_cli` — command-line tool
 
+
 ## Tests
 
 ```bash
@@ -62,6 +64,7 @@ Optional toggles (pass during configure):
 - `-DENABLE_BIG_IMAGE_TESTS=ON` — run heavy image/long-duration fixtures (requires `input_big.m4a` and large JPEGs).
 - `-DENABLE_STRICT_VALIDATION=ON` — run additional tool-based checks if mp4info/mp4dump/AtomicParsley/ffprobe/MP4Box are present.
 - `-DENABLE_AVFOUNDATION_SMOKE=ON` — macOS-only Swift smoke test (requires `swift`).
+
 
 ## CLI Usage
 
@@ -258,3 +261,13 @@ void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
 ```
 
 If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse. Leaving `meta` empty will reuse the source `ilst` when available.
+
+
+## Notes
+
+Project is written in C++ for harnessing its templating - well, that is what I assumed I would need - turns out I did not. There is a single template used - totally avoidable if needed. If your compiler errors and tells you that `std::optional` was not existing, you need to make sure you are using a compiler (ie clang or gcc) from 2016 or later with a std::lib support enabled to 2017 or later.
+
+
+## Disclaimer
+
+This is anything but a reference implementation. Many shortcuts were taken to reach the goal. There are plenty of hardcoded, magic bytes in this project and the parsers may explode with the next file you provide to them. If you need enterprise grade, this is not the library for you. If you need something similar but not exactly what this does, you better are a developer ready to contribute when contacting me as I have no interest in working for you.
