@@ -7,9 +7,15 @@
 #include <string>
 
 #include "chapterforge.hpp"
+#include "chapterforge_version.hpp"
 #include "logging.hpp"
 
 int main(int argc, char **argv) {
+    if (argc == 2 && (std::string(argv[1]) == "--version" || std::string(argv[1]) == "-v")) {
+        std::cout << "ChapterForge " << CHAPTERFORGE_VERSION_DISPLAY << "\n";
+        return 0;
+    }
+
     if (argc < 4 || argc > 5) {
         CH_LOG(
             "usage",

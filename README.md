@@ -70,6 +70,7 @@ Optional toggles (pass during configure):
 
 ```bash
 ./chapterforge_cli <input.m4a|.mp4|.aac> <chapters.json> <output.m4a>
+./chapterforge_cli --version
 ```
 
 - If the input already has metadata (`ilst`), it is reused by default.

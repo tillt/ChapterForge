@@ -1,6 +1,46 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ChapterForge LANGUAGES CXX)
+# Base version is "dev"; Git tags override when present.
+project(ChapterForge VERSION 0.0.0 LANGUAGES CXX)
+
+set(CHAPTERFORGE_VERSION_STRING "dev")
+set(CHAPTERFORGE_VERSION_DEV TRUE)
+set(CHAPTERFORGE_GIT_HASH "unknown")
+find_program(GIT_EXE git)
+if(GIT_EXE)
+    execute_process(
+        COMMAND ${GIT_EXE} describe --tags --dirty --abbrev=7
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE GIT_DESC_RES
+        OUTPUT_VARIABLE GIT_DESC_OUT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(GIT_DESC_RES EQUAL 0 AND NOT GIT_DESC_OUT STREQUAL "")
+        set(CHAPTERFORGE_VERSION_STRING "${GIT_DESC_OUT}")
+        if(GIT_DESC_OUT MATCHES "-")
+            set(CHAPTERFORGE_VERSION_DEV TRUE)
+        else()
+            set(CHAPTERFORGE_VERSION_DEV FALSE)
+        endif()
+    endif()
+    execute_process(
+        COMMAND ${GIT_EXE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        RESULT_VARIABLE GIT_HASH_RES
+        OUTPUT_VARIABLE GIT_HASH_OUT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(GIT_HASH_RES EQUAL 0 AND NOT GIT_HASH_OUT STREQUAL "")
+        set(CHAPTERFORGE_GIT_HASH "${GIT_HASH_OUT}")
+    endif()
+endif()
+if(CHAPTERFORGE_VERSION_DEV)
+    set(CHAPTERFORGE_VERSION_DISPLAY "${CHAPTERFORGE_VERSION_STRING}+${CHAPTERFORGE_GIT_HASH}")
+else()
+    set(CHAPTERFORGE_VERSION_DISPLAY "${CHAPTERFORGE_VERSION_STRING}")
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -46,7 +86,10 @@ add_library(chapterforge STATIC ${CHAPTERFORGE_CORE_SOURCES})
 target_include_directories(chapterforge PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann
+    ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/chapterforge_version.hpp.in
+               ${CMAKE_CURRENT_BINARY_DIR}/generated/chapterforge_version.hpp @ONLY)
 
 #CLI target links against the library
 add_executable(chapterforge_cli src/main.cpp)
