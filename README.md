@@ -142,6 +142,38 @@ int main(int argc, char** argv) {
 
 Use the higher-level overload if you already have chapters/material in memory and don’t want to read JSON on disk.
 
+## Atom flow (input → output)
+
+ChapterForge preserves the source audio track and metadata (`ilst`) and adds two new tracks for chapters:
+
+```
+Input (AAC in M4A/MP4)
+├─ ftyp
+├─ free (optional)
+├─ moov
+│  ├─ mvhd
+│  ├─ trak (audio)
+│  │  ├─ tkhd
+│  │  └─ mdia → minf → stbl (reused, including stsd/stts/stsc/stsz/stco)
+│  └─ udta/meta/ilst (reused if present)
+└─ mdat
+
+Output (ChapterForge)
+├─ ftyp
+├─ free (optional or moved for faststart)
+├─ moov
+│  ├─ mvhd
+│  ├─ trak (audio, reused stbl when input is MP4/M4A)
+│  ├─ trak (chapter text, tx3g)
+│  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco
+│  ├─ trak (chapter images, jpeg)
+│  │  └─ stbl with stsd(jpeg) + stts/stsc/stsz/stco/stss
+│  └─ udta/meta/ilst (reused if present, otherwise from JSON)
+└─ mdat (audio + chapter samples)
+```
+
+Fast-start repacks `moov` ahead of `mdat` when requested.
+
 ## Objective-C++ Example
 
 Invoking `write_mp4` from Objective-C++ using an `NSArray<NSDictionary*>` of chapters (`@"title"`: `NSString*`, `@"time"`: `NSNumber` in milliseconds):
