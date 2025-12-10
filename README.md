@@ -4,11 +4,17 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 
 ## Motivation and Backstory
 
-The MPEG4 standard does not explicitly describe chapter marks - they do however exist. Back in the days, under the umbrella of the QuickTime.framework, Apple had released authoring tools for audiobooks. With those tools you could add jump-marks to an M4A file. Those jump-marks could have a description text, an image and possibly more. That way a user could conveniently jump to specific sections of the audio -- useful for example as a mark for chapters. There are many players that understand those, but not all do. Specifically Apple who has pushed for this "extension" of the standard, has traditionally been understanding it in their players. That is true for Music.app, iTunes.app, QuickTime.app and even Books.app. All of them today support chapter marks. Windows has existing support there as well. That said it becomes clear, this is not a totally accepted standard but at least a functional solution for the challenge of encoding such thing into the audio file.
-As already hinted, Apple did support authoring tools - but that was way back in PowerPC times. The QTKit is long gone. There appears to be not a single open source tool in the market that would support a recent OS. There certainly are tools like ffmpeg - it does even support chapter marks for MP4 - but - no images for those. The only tool in the market supporting images in chapter marks in 2025 appears to be Auphonic - commercial. All the existing libraries, even the commercial ones like Bento4 do not support chapter marks with images.
-This gets even more arcane, from my perspective. AVFoundation, the framework Apple offers these days for media playback and authoring does support reading of MP4 chapter marks. Thus creating a player supporting that feature is trivial. The kicker here is, Apple does not support any way of writing such files - none at all.
+The MPEG4 standard does not explicitly describe chapter marks.
 
-The situation is rather bizarre and no one has a strong enough interest to change this, until today. The player I am tinkering with needs support for storing a track-list / set-list in the file itself. That way I can attribute those beautiful DJ sets and have neat track-mark thumbnails and descriptions on the player, persisted in the M4A file.
+Back in the days, under the umbrella of the QuickTime.framework, Apple had released authoring tools for audiobooks. With those tools you could add jump-marks to an M4A file. Those jump-marks could have a description text, an image and possibly more. That way a user could conveniently jump to specific sections of the audio -- useful for example as a mark for chapters. There are many players that understand those, but not all do. Specifically Apple who has pushed for this "extension" of the standard, has traditionally been understanding it in their players. That is true for Music.app, iTunes.app, QuickTime.app and even Books.app. All of them today support chapter marks. Windows has existing support there as well. That said it becomes clear, this is not standard but at least a functional solution for the challenge of encoding such thing into the audio file.
+
+Apple did support authoring tools - but that was way back in PowerPC times. The QTKit is long gone. There appears to be not a single open source tool in the market that would support a recent OS. There are tools like ffmpeg - it does even support chapter marks for MP4 - but - no images for those. The only tool in the market supporting images in chapter marks in 2025 appears to be Auphonic - commercial.
+
+All the existing libraries offered to application developers, even the commercial ones like Bento4 do not support chapter marks with images. AVFoundation, the framework Apple offers these days for media playback and authoring does fully support reading of MP4 chapter marks including images. Thus creating a player supporting that feature is trivial. The kicker here is, Apple does not support any way of authoring / writing / creating such files - none at all.
+
+No one had a strong enough interest to change this, until today.
+
+The player I am tinkering with needs support for storing a track-list / set-list in the file itself. That way I can attribute those beautiful DJ sets and have neat track-mark thumbnails and descriptions on the player, persisted in the M4A file. A few thousand lines of code later, we have a new library based on no other works available which does the job for me - maybe also for you.
 
 
 ## Features
@@ -114,6 +120,7 @@ bool mux_file_to_m4a(const std::string& input_audio_path,
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.
 
+
 ## Minimal C++ usage (CLI equivalent)
 
 The CLI front-end is effectively:
@@ -141,6 +148,7 @@ int main(int argc, char** argv) {
 ```
 
 Use the higher-level overload if you already have chapters/material in memory and don’t want to read JSON on disk.
+
 
 ## Atom flow (input → output)
 
@@ -174,7 +182,11 @@ Output (ChapterForge)
 
 Fast-start repacks `moov` ahead of `mdat` when requested.
 
-## Objective-C++ Example
+
+
+## Advanced Usage
+
+### Objective-C++ Example
 
 Invoking `write_mp4` from Objective-C++ using an `NSArray<NSDictionary*>` of chapters (`@"title"`: `NSString*`, `@"time"`: `NSNumber` in milliseconds):
 
@@ -221,4 +233,4 @@ void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
 }
 ```
 
-If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse; otherwise, leaving `meta` empty will reuse the source ilst when available.
+If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse. Leaving `meta` empty will reuse the source `ilst` when available.
