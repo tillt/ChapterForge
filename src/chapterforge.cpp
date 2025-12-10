@@ -48,6 +48,12 @@ static std::optional<AacExtractResult> load_audio(const std::string &path) {
   return res;
 }
 
+struct PendingChapter {
+  std::string title;
+  uint32_t start_ms = 0;
+  std::string image_path;
+};
+
 static bool load_chapters_json(const std::string &json_path,
                                std::vector<ChapterTextSample> &texts,
                                std::vector<ChapterImageSample> &images,
@@ -61,19 +67,36 @@ static bool load_chapters_json(const std::string &json_path,
     auto base = std::filesystem::path(json_path).parent_path();
     return (p.empty() ? std::filesystem::path() : base / p).string();
   };
+  std::vector<PendingChapter> pending;
   if (j.contains("chapters") && j["chapters"].is_array()) {
+    pending.reserve(j["chapters"].size());
     for (auto &c : j["chapters"]) {
-      ChapterTextSample t{};
-      t.text = c.value("title", "");
-      t.duration_ms = c.value("duration_ms", 0);
-      texts.push_back(t);
-      std::string image_path = c.value("image", "");
-      if (!image_path.empty()) {
-        ChapterImageSample im{};
-        im.data = load_jpeg(resolve_path(image_path));
-        im.duration_ms = t.duration_ms;
-        images.push_back(std::move(im));
-      }
+      PendingChapter p{};
+      p.title = c.value("title", "");
+      p.start_ms = c.value("start_ms", 0);
+      p.image_path = c.value("image", "");
+      pending.push_back(std::move(p));
+    }
+  }
+
+  for (size_t i = 0; i < pending.size(); ++i) {
+    const auto &p = pending[i];
+    ChapterTextSample t{};
+    t.text = p.title;
+    if (i + 1 < pending.size()) {
+      // derive duration from consecutive start times
+      uint32_t next_start = pending[i + 1].start_ms;
+      t.duration_ms = (next_start > p.start_ms) ? (next_start - p.start_ms) : 0;
+    } else {
+      t.duration_ms = 0;
+    }
+    texts.push_back(t);
+
+    if (!p.image_path.empty()) {
+      ChapterImageSample im{};
+      im.data = load_jpeg(resolve_path(p.image_path));
+      im.duration_ms = t.duration_ms;
+      images.push_back(std::move(im));
     }
   }
   meta.title = j.value("title", "");

@@ -22,6 +22,41 @@ Targets:
 - If the input already has metadata (`ilst`), it is reused by default.
 - Fast-start is on by default.
 
+## Chapters JSON format
+
+ChapterForge consumes a simple JSON document:
+
+```jsonc
+{
+  "title": "Sample Podcast Episode",     // optional top-level metadata
+  "artist": "John Doe",
+  "album": "My Podcast",
+  "genre": "Podcast",
+  "year": "2024",
+  "comment": "Created with ChapterForge",
+  "cover": "cover.jpg",                  // optional; path is relative to the JSON file
+
+  "chapters": [
+    {
+      "title": "Introduction",           // required
+      "start_ms": 0,                     // required: chapter start time in milliseconds
+      "image": "chapter1.jpg"            // optional; path relative to the JSON file
+    },
+    {
+      "title": "Main Discussion",
+      "start_ms": 10000,
+      "image": "chapter2.jpg"
+    }
+  ]
+}
+```
+
+Notes:
+- Chapters are positioned by absolute start times (`start_ms`); the muxer converts these to durations internally.
+- Chapter images are optional; omit `image` to create a text-only chapter.
+- If top-level metadata fields are omitted and the input file already contains an `ilst`, the existing metadata is preserved automatically.
+- Paths for `cover` and per-chapter `image` are resolved relative to the JSON file location.
+
 ## Embedding API (C++)
 
 Public header: `chapterforge.hpp`
@@ -39,6 +74,34 @@ bool mux_file_to_m4a(const std::string& input_audio_path,
 ```
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.
+
+## Minimal C++ usage (CLI equivalent)
+
+The CLI front-end is effectively:
+
+```c++
+#include "chapterforge.hpp"
+#include <iostream>
+
+int main(int argc, char** argv) {
+  if (argc != 4) {
+    std::cerr << "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a>\n";
+    return 2;
+  }
+  std::string input   = argv[1];
+  std::string chapters= argv[2];
+  std::string output  = argv[3];
+
+  if (!mp4chapters::mux_file_to_m4a(input, chapters, output)) {
+    std::cerr << "chapterforge: failed to write output\n";
+    return 1;
+  }
+  std::cout << "Wrote: " << output << "\n";
+  return 0;
+}
+```
+
+Use the higher-level overload if you already have chapters/material in memory and don’t want to read JSON on disk.
 
 ## Objective-C++ Example
 
