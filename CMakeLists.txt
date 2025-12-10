@@ -8,47 +8,48 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Core sources (no CLI) so we can build a reusable library
 set(MP4CHAPTERS_CORE_SOURCES
-    aac_extractor.cpp
-    dinf_builder.cpp
-    hdlr_builder.cpp
-    jpeg_entry_builder.cpp
-    mdat_writer.cpp
-    mdhd_builder.cpp
-    mdia_builder.cpp
-    meta_builder.cpp
-    minf_builder.cpp
-    moov_builder.cpp
-    mp4_atoms.cpp
-    mp4_muxer.cpp
-    mp4a_builder.cpp
-    mvhd_builder.cpp
-    nmhd_builder.cpp
-    parser.cpp
-    smhd_builder.cpp
-    stbl_audio_builder.cpp
-    stbl_builder.cpp
-    stbl_image_builder.cpp
-    stbl_text_builder.cpp
-    stco_builder.cpp
-    stsc_builder.cpp
-    stsd_builder.cpp
-    stsz_builder.cpp
-    stts_builder.cpp
-    tkhd_builder.cpp
-    trak_builder.cpp
-    tx3g_stsd_builder.cpp
-    udta_builder.cpp
-    vmhd_builder.cpp
+    src/aac_extractor.cpp
+    src/dinf_builder.cpp
+    src/hdlr_builder.cpp
+    src/jpeg_entry_builder.cpp
+    src/mdat_writer.cpp
+    src/mdhd_builder.cpp
+    src/mdia_builder.cpp
+    src/meta_builder.cpp
+    src/minf_builder.cpp
+    src/moov_builder.cpp
+    src/mp4_atoms.cpp
+    src/mp4_muxer.cpp
+    src/mp4a_builder.cpp
+    src/mvhd_builder.cpp
+    src/nmhd_builder.cpp
+    src/parser.cpp
+    src/smhd_builder.cpp
+    src/stbl_audio_builder.cpp
+    src/stbl_builder.cpp
+    src/stbl_image_builder.cpp
+    src/stbl_text_builder.cpp
+    src/stco_builder.cpp
+    src/stsc_builder.cpp
+    src/stsd_builder.cpp
+    src/stsz_builder.cpp
+    src/stts_builder.cpp
+    src/tkhd_builder.cpp
+    src/trak_builder.cpp
+    src/tx3g_stsd_builder.cpp
+    src/udta_builder.cpp
+    src/vmhd_builder.cpp
+    src/chapterforge.cpp
 )
 
-add_library(chapterforge STATIC ${MP4CHAPTERS_CORE_SOURCES} chapterforge.cpp)
+add_library(chapterforge STATIC ${MP4CHAPTERS_CORE_SOURCES})
 target_include_directories(chapterforge PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/nlohmann
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann
 )
 
 # CLI target links against the library
-add_executable(chapterforge_cli main.cpp)
+add_executable(chapterforge_cli src/main.cpp)
 target_link_libraries(chapterforge_cli PRIVATE chapterforge)
 
 enable_testing()
@@ -74,10 +75,9 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
 
     add_executable(audio_reuse_check
         tests/audio_reuse_check.cpp
-        parser.cpp
-        mp4_atoms.cpp
     )
-    target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(audio_reuse_check PRIVATE chapterforge)
+    target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_test(
         NAME audio_reuse_check
         COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
