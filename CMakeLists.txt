@@ -151,18 +151,6 @@ add_custom_target(generate_test_assets
     COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
 )
 
-# Generate-once variant for tests (skip regeneration if stamp exists).
-set(TEST_ASSET_STAMP ${CMAKE_BINARY_DIR}/generated_test_assets.stamp)
-add_custom_command(
-    OUTPUT ${TEST_ASSET_STAMP}
-    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_audio.sh
-    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_images.sh
-    COMMAND ${CMAKE_COMMAND} -E touch ${TEST_ASSET_STAMP}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generating synthetic test assets (stamp guarded)"
-)
-add_custom_target(generate_test_assets_once DEPENDS ${TEST_ASSET_STAMP})
-
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 set(TESTDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 set(OUTPUT_M4A_PATH "${TESTDATA_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")
@@ -182,6 +170,12 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(MP4DUMP_PATH mp4dump)
     find_program(ATOMIC_PARSLEY_PATH AtomicParsley)
 
+    add_test(
+        NAME generate_assets
+        COMMAND bash -c "cd \"${CMAKE_CURRENT_SOURCE_DIR}\" && bash scripts/generate_test_audio.sh && bash scripts/generate_test_images.sh"
+    )
+    set_tests_properties(generate_assets PROPERTIES FIXTURES_SETUP assets)
+
     add_executable(audio_reuse_check
         tests/audio_reuse_check.cpp
     )
@@ -191,7 +185,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
         NAME audio_reuse_check
         COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
     )
-    set_property(TEST audio_reuse_check PROPERTY DEPENDS generate_test_assets_once)
+    set_tests_properties(audio_reuse_check PROPERTIES FIXTURES_REQUIRED assets DEPENDS output_tool_checks)
 
     add_test(
         NAME output_tool_checks
@@ -207,7 +201,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    set_property(TEST output_tool_checks PROPERTY DEPENDS generate_test_assets_once)
+    set_tests_properties(output_tool_checks PROPERTIES FIXTURES_REQUIRED assets)
 #Metadata preservation on small input(JSON has no metadata)
     add_test(
         NAME metadata_preserve_small
@@ -223,7 +217,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    set_property(TEST metadata_preserve_small PROPERTY DEPENDS generate_test_assets_once)
+    set_tests_properties(metadata_preserve_small PROPERTIES FIXTURES_REQUIRED assets)
 #AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
     set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
@@ -242,20 +236,24 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
-        set_property(TEST output_tool_checks_aac PROPERTY DEPENDS generate_test_assets_once)
+        set_tests_properties(output_tool_checks_aac PROPERTIES FIXTURES_REQUIRED assets)
     else()
         message(STATUS "Skipping AAC ingest tests (INPUT_AAC_PATH missing: ${INPUT_AAC_PATH})")
     endif()
 
-    add_test(
-        NAME jpeg_track_compare
-        COMMAND ${CMAKE_COMMAND}
-            -DOUTPUT_M4A=${OUTPUT_M4A_PATH}
-            -DGOLDEN_M4A=${GOLDEN_M4A_PATH}
-            -DMP4INFO_PATH=${MP4INFO_PATH}
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_jpeg_track.cmake
-    )
-    set_property(TEST jpeg_track_compare PROPERTY DEPENDS generate_test_assets_once)
+    if(EXISTS "${GOLDEN_M4A_PATH}")
+        add_test(
+            NAME jpeg_track_compare
+            COMMAND ${CMAKE_COMMAND}
+                -DOUTPUT_M4A=${OUTPUT_M4A_PATH}
+                -DGOLDEN_M4A=${GOLDEN_M4A_PATH}
+                -DMP4INFO_PATH=${MP4INFO_PATH}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_jpeg_track.cmake
+        )
+        set_tests_properties(jpeg_track_compare PROPERTIES FIXTURES_REQUIRED assets)
+    else()
+        message(STATUS "Skipping jpeg_track_compare (missing golden M4A at ${GOLDEN_M4A_PATH})")
+    endif()
 
     # Convenience target: generate assets, then run all tests.
     add_custom_target(check_with_assets
