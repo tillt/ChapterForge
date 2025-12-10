@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Core sources (no CLI) so we can build a reusable library
-set(MP4CHAPTERS_CORE_SOURCES
+#Core sources(no CLI) so we can build a reusable library
+set(CHAPTERFORGE_CORE_SOURCES
     src/aac_extractor.cpp
     src/dinf_builder.cpp
     src/hdlr_builder.cpp
@@ -42,15 +42,50 @@ set(MP4CHAPTERS_CORE_SOURCES
     src/chapterforge.cpp
 )
 
-add_library(chapterforge STATIC ${MP4CHAPTERS_CORE_SOURCES})
+add_library(chapterforge STATIC ${CHAPTERFORGE_CORE_SOURCES})
 target_include_directories(chapterforge PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann
 )
 
-# CLI target links against the library
+#CLI target links against the library
 add_executable(chapterforge_cli src/main.cpp)
 target_link_libraries(chapterforge_cli PRIVATE chapterforge)
+
+#clang - format helper
+find_program(CLANG_FORMAT_EXE clang-format)
+if(CLANG_FORMAT_EXE)
+    file(GLOB_RECURSE FORMAT_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
+    )
+    list(FILTER FORMAT_FILES EXCLUDE REGEX ".*/include/nlohmann/.*")
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${FORMAT_FILES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Running clang-format on sources"
+    )
+endif()
+
+#clang - tidy helper(braces around statements, etc.)
+find_program(CLANG_TIDY_EXE clang-tidy)
+if(CLANG_TIDY_EXE)
+    file(GLOB_RECURSE TIDY_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
+    )
+    list(FILTER TIDY_FILES EXCLUDE REGEX ".*/include/nlohmann/.*")
+    add_custom_target(lint
+        COMMAND ${CLANG_TIDY_EXE}
+            -checks=-*,readability-braces-around-statements
+            -p ${CMAKE_BINARY_DIR}
+            ${TIDY_FILES}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Running clang-tidy (braces-around-statements check)"
+    )
+endif()
 
 enable_testing()
 
@@ -90,7 +125,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DINPUT_M4A=${INPUT_M4A_PATH}
             -DOUTPUT_M4A=${OUTPUT_M4A_PATH}
             -DCHAPTER_JSON=${CHAPTER_JSON_PATH}
-            -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DFASTSTART_FLAG=ON
             -DXXD_PATH=${XXD_PATH}
             -DMP4INFO_PATH=${MP4INFO_PATH}
@@ -98,14 +133,14 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    # Metadata preservation on small input (JSON has no metadata)
+#Metadata preservation on small input(JSON has no metadata)
     add_test(
         NAME metadata_preserve_small
         COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}
             -DOUTPUT_M4A=${CMAKE_BINARY_DIR}/output_meta_preserve.m4a
             -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_nometa.json
-            -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DFASTSTART_FLAG=ON
             -DXXD_PATH=${XXD_PATH}
             -DMP4INFO_PATH=${MP4INFO_PATH}
@@ -113,7 +148,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    # AAC input ingest -> MP4, validated against the original input M4A for metadata/audio consistency.
+#AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
     set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
         add_test(
@@ -123,7 +158,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DINPUT_M4A=${INPUT_M4A_PATH}
             -DOUTPUT_M4A=${OUTPUT_AAC_M4A_PATH}
             -DCHAPTER_JSON=${CHAPTER_JSON_PATH}
-            -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DFASTSTART_FLAG=ON
             -DXXD_PATH=${XXD_PATH}
             -DMP4INFO_PATH=${MP4INFO_PATH}
@@ -168,7 +203,7 @@ if(ENABLE_STRICT_VALIDATION)
 endif()
 
 if(ENABLE_BIG_IMAGE_TESTS)
-    # Paths to chapter JSONs with large images; guarded by file existence
+#Paths to chapter JSONs with large images; guarded by file existence
     set(BIG5_JSON "${TESTDATA_DIR}/chapters_big5.json")
     set(BIG35_JSON "${TESTDATA_DIR}/chapters_big35.json")
     set(BIG_NOMETA_JSON "${TESTDATA_DIR}/chapters_big_nometa.json")
@@ -181,53 +216,53 @@ if(ENABLE_BIG_IMAGE_TESTS)
         add_test(
             NAME big_image_5
             COMMAND ${CMAKE_COMMAND}
-                -DINPUT_M4A=${INPUT_M4A_PATH}
-                -DCHAPTER_JSON=${BIG5_JSON}
-                -DOUTPUT_M4A=${OUTPUT_BIG5}
-                -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
+            -DINPUT_M4A=${INPUT_M4A_PATH}
+            -DCHAPTER_JSON=${BIG5_JSON}
+            -DOUTPUT_M4A=${OUTPUT_BIG5}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
     else()
         message(STATUS "Skipping big_image_5 (missing INPUT_M4A_PATH or chapters_big5.json)")
     endif()
 
-    # Metadata preservation on large input: leave JSON metadata empty so ilst is
-    # copied through verbatim from the source M4A.
+#Metadata preservation on large input : leave JSON metadata empty so ilst is
+#copied through verbatim from the source M4A.
     if(EXISTS "${INPUT_BIG_M4A_PATH}" AND EXISTS "${BIG_NOMETA_JSON}")
         set(OUTPUT_BIG_NOMETA "${CMAKE_BINARY_DIR}/output_big_nometa.m4a")
         add_test(
             NAME big_image_metadata_preserve
             COMMAND ${CMAKE_COMMAND}
-                -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-                -DCHAPTER_JSON=${BIG_NOMETA_JSON}
-                -DOUTPUT_M4A=${OUTPUT_BIG_NOMETA}
-                -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
-                -DXXD_PATH=${XXD_PATH}
-                -DMP4INFO_PATH=${MP4INFO_PATH}
-                -DMP4DUMP_PATH=${MP4DUMP_PATH}
-                -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
+            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
+            -DCHAPTER_JSON=${BIG_NOMETA_JSON}
+            -DOUTPUT_M4A=${OUTPUT_BIG_NOMETA}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DXXD_PATH=${XXD_PATH}
+            -DMP4INFO_PATH=${MP4INFO_PATH}
+            -DMP4DUMP_PATH=${MP4DUMP_PATH}
+            -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
         )
     else()
         message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_BIG_M4A_PATH or chapters_big_nometa.json)")
     endif()
 
-    # AAC ingest variant using the large AAC source and the smaller big5 chapter
-    # set to keep run time reasonable.
+#AAC ingest variant using the large AAC source and the smaller big5 chapter
+#set to keep run time reasonable.
     if(EXISTS "${INPUT_BIG_AAC_PATH}" AND EXISTS "${INPUT_BIG_M4A_PATH}" AND EXISTS "${BIG5_JSON}")
         add_test(
             NAME big_image_aac
             COMMAND ${CMAKE_COMMAND}
-                -DINPUT_AAC=${INPUT_BIG_AAC_PATH}
-                -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-                -DOUTPUT_M4A=${OUTPUT_BIG_AAC}
-                -DCHAPTER_JSON=${BIG5_JSON}
-                -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
-                -DFASTSTART_FLAG=ON
-                -DXXD_PATH=${XXD_PATH}
-                -DMP4INFO_PATH=${MP4INFO_PATH}
-                -DMP4DUMP_PATH=${MP4DUMP_PATH}
-                -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
+            -DINPUT_AAC=${INPUT_BIG_AAC_PATH}
+            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
+            -DOUTPUT_M4A=${OUTPUT_BIG_AAC}
+            -DCHAPTER_JSON=${BIG5_JSON}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DFASTSTART_FLAG=ON
+            -DXXD_PATH=${XXD_PATH}
+            -DMP4INFO_PATH=${MP4INFO_PATH}
+            -DMP4DUMP_PATH=${MP4DUMP_PATH}
+            -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
     else()
@@ -238,11 +273,11 @@ if(ENABLE_BIG_IMAGE_TESTS)
         add_test(
             NAME big_image_35
             COMMAND ${CMAKE_COMMAND}
-                -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-                -DCHAPTER_JSON=${BIG35_JSON}
-                -DOUTPUT_M4A=${OUTPUT_BIG35}
-                -DMP4CHAPTERS_BIN=$<TARGET_FILE:chapterforge_cli>
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
+            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
+            -DCHAPTER_JSON=${BIG35_JSON}
+            -DOUTPUT_M4A=${OUTPUT_BIG35}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
     else()
         message(STATUS "Skipping big_image_35 (missing INPUT_BIG_M4A_PATH or chapters_big35.json)")

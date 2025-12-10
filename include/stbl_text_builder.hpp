@@ -1,22 +1,22 @@
 //
-//  stbl_text_builder.hpp
-//  ChapterForge
+//  stbl_text_builder.hpp.
+//  ChapterForge.
 //
 //  Created by Till Toenshoff on 12/9/25.
 //
 
 #pragma once
-#include "mp4_atoms.hpp"
 #include <memory>
 #include <string>
 #include <vector>
 
-// Represents a chapter title sample
+#include "mp4_atoms.hpp"
+
+// Represents a chapter title sample.
 struct ChapterTextSample {
-  std::string text;       // UTF-8 text
-  uint32_t start_ms = 0;  // absolute start time in ms
+    std::string text;       // UTF-8 text
+    uint32_t start_ms = 0;  // absolute start time in ms
 };
 
-std::unique_ptr<Atom>
-build_text_stbl(const std::vector<ChapterTextSample> &samples,
-                uint32_t track_timescale);
+std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samples,
+                                      uint32_t track_timescale);

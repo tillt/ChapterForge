@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
   std::string chapters= argv[2];
   std::string output  = argv[3];
 
-  if (!mp4chapters::mux_file_to_m4a(input, chapters, output)) {
+  if (!chapterforge::mux_file_to_m4a(input, chapters, output)) {
     std::cerr << "chapterforge: failed to write output\n";
     return 1;
   }

@@ -1,12 +1,13 @@
 //
-//  stsc_builder.hpp
-//  ChapterForge
+//  stsc_builder.hpp.
+//  ChapterForge.
 //
 //  Created by Till Toenshoff on 12/9/25.
 //
 
 #pragma once
-#include "mp4_atoms.hpp"
 #include <memory>
+
+#include "mp4_atoms.hpp"
 
 std::unique_ptr<Atom> build_stsc(uint32_t sample_count);
