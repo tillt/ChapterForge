@@ -6,6 +6,7 @@
 //
 
 #include "udta_builder.hpp"
+#include "chapter_timing.hpp"
 
 static std::unique_ptr<Atom>
 build_chpl(const std::vector<ChapterTextSample> &chapters) {
@@ -18,6 +19,7 @@ build_chpl(const std::vector<ChapterTextSample> &chapters) {
   uint8_t count = static_cast<uint8_t>(std::min<size_t>(chapters.size(), 255));
   write_u8(p, count);
 
+  auto durations = derive_durations_ms_from_starts(chapters);
   uint64_t start = 0;
   for (size_t i = 0; i < count; ++i) {
     // timestamp in milliseconds (64-bit)
@@ -29,7 +31,7 @@ build_chpl(const std::vector<ChapterTextSample> &chapters) {
     write_u8(p, len);
     p.insert(p.end(), title.begin(), title.begin() + len);
 
-    start += chapters[i].duration_ms;
+    start += durations[i];
   }
 
   return chpl;

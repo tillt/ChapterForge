@@ -18,6 +18,7 @@
 #include "meta_builder.hpp" // your udta/ilst metadata builder
 #include "moov_builder.hpp"
 #include "mp4_atoms.hpp"
+#include "chapter_timing.hpp"
 #include "stbl_audio_builder.hpp"
 #include "stbl_image_builder.hpp"
 #include "stbl_text_builder.hpp"
@@ -216,13 +217,15 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
 
   // For text + image tracks we use 1000 Hz timescale (ms resolution)
   const uint32_t chapter_timescale = 1000;
+  auto text_durations = derive_durations_ms_from_starts(text_chapters);
+  auto image_durations = derive_durations_ms_from_starts(image_chapters);
   uint64_t text_duration_ts = 0;
   uint64_t image_duration_ts = 0;
-  for (auto &s : text_chapters) {
-    text_duration_ts += (uint64_t)s.duration_ms * chapter_timescale / 1000;
+  for (auto dur_ms : text_durations) {
+    text_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
   }
-  for (auto &s : image_chapters) {
-    image_duration_ts += (uint64_t)s.duration_ms * chapter_timescale / 1000;
+  for (auto dur_ms : image_durations) {
+    image_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
   }
 
   std::cerr << "[durations] text_ts=" << text_duration_ts

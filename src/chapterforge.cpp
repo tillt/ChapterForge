@@ -79,23 +79,16 @@ static bool load_chapters_json(const std::string &json_path,
     }
   }
 
-  for (size_t i = 0; i < pending.size(); ++i) {
-    const auto &p = pending[i];
+  for (const auto &p : pending) {
     ChapterTextSample t{};
     t.text = p.title;
-    if (i + 1 < pending.size()) {
-      // derive duration from consecutive start times
-      uint32_t next_start = pending[i + 1].start_ms;
-      t.duration_ms = (next_start > p.start_ms) ? (next_start - p.start_ms) : 0;
-    } else {
-      t.duration_ms = 0;
-    }
+    t.start_ms = p.start_ms;
     texts.push_back(t);
 
     if (!p.image_path.empty()) {
       ChapterImageSample im{};
       im.data = load_jpeg(resolve_path(p.image_path));
-      im.duration_ms = t.duration_ms;
+      im.start_ms = t.start_ms;
       images.push_back(std::move(im));
     }
   }
@@ -123,7 +116,8 @@ namespace mp4chapters {
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::string &chapter_json_path,
-                     const std::string &output_path) {
+                     const std::string &output_path,
+                     bool fast_start) {
   auto aac = load_audio(input_audio_path);
   if (!aac) {
     std::cerr << "Failed to load audio from " << input_audio_path << "\n";
@@ -151,14 +145,15 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     std::cerr << "[meta] Using metadata provided by JSON overrides\n";
   }
   return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta,
-                   /*fast_start=*/true, ilst_ptr);
+                   fast_start, ilst_ptr);
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const MetadataSet &metadata,
-                     const std::string &output_path) {
+                     const std::string &output_path,
+                     bool fast_start) {
   auto aac = load_audio(input_audio_path);
   if (!aac) {
     std::cerr << "Failed to load audio from " << input_audio_path << "\n";
@@ -176,7 +171,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     std::cerr << "[meta] Using metadata provided by caller\n";
   }
   return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg,
-                   metadata, /*fast_start=*/true, ilst_ptr);
+                   metadata, fast_start, ilst_ptr);
 }
 
 } // namespace mp4chapters

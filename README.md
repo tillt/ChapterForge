@@ -62,6 +62,16 @@ Notes:
 Public header: `chapterforge.hpp`
 
 ```c++
+struct ChapterTextSample {
+  std::string text;       // UTF-8 chapter title
+  uint32_t start_ms = 0;  // absolute start time in milliseconds
+};
+
+struct ChapterImageSample {
+  std::vector<uint8_t> data; // JPEG bytes for this chapter frame
+  uint32_t start_ms = 0;     // absolute start time in milliseconds
+};
+
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::string& chapter_json_path,
                      const std::string& output_path);
@@ -117,11 +127,11 @@ static void BuildChaptersFromDict(NSArray<NSDictionary *> *chapterArray,
     textChapters.reserve([chapterArray count]);
     for (NSDictionary *entry in chapterArray) {
         NSString *title = entry[@"title"];
-        NSNumber *timeMs = entry[@"time"];
-        if (!title || !timeMs) continue;
+        NSNumber *startMs = entry[@"time"];
+        if (!title || !startMs) continue;
         ChapterTextSample s{};
         s.text = [title UTF8String];
-        s.duration_ms = [timeMs unsignedIntValue]; // using duration_ms as start in ms
+        s.start_ms = [startMs unsignedIntValue];
         textChapters.push_back(std::move(s));
     }
 }
@@ -150,4 +160,4 @@ void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
 }
 ```
 
-Adjust `duration_ms` usage if you represent start/duration differently. If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse; otherwise, leaving `meta` empty will reuse the source ilst when available.
+If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse; otherwise, leaving `meta` empty will reuse the source ilst when available.

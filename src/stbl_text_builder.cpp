@@ -7,6 +7,7 @@
 
 #include "stbl_text_builder.hpp"
 #include "mp4_atoms.hpp"
+#include "chapter_timing.hpp"
 #include "tx3g_stsd_builder.hpp"
 
 // -----------------------------------------------------------------------------
@@ -21,10 +22,11 @@ build_stts_text(const std::vector<ChapterTextSample> &samples,
   write_u8(p, 0);
   write_u24(p, 0);
 
-  write_u32(p, samples.size());
+  auto durations = derive_durations_ms_from_starts(samples);
+  write_u32(p, durations.size());
 
-  for (auto &s : samples) {
-    uint32_t dur = (uint64_t)s.duration_ms * timescale / 1000;
+  for (auto dur_ms : durations) {
+    uint32_t dur = (uint64_t)dur_ms * timescale / 1000;
     write_u32(p, 1);   // sample count
     write_u32(p, dur); // sample duration
   }

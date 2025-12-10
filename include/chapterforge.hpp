@@ -25,13 +25,15 @@ namespace mp4chapters {
 // Returns true on success, false on failure.
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::string &chapter_json_path,
-                     const std::string &output_path);
+                     const std::string &output_path,
+                     bool fast_start = true);
 
 // Mux AAC input + in-memory chapter data (no JSON parsing).
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const MetadataSet &metadata,
-                     const std::string &output_path);
+                     const std::string &output_path,
+                     bool fast_start = true);
 
 } // namespace mp4chapters

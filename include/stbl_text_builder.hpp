@@ -13,8 +13,8 @@
 
 // Represents a chapter title sample
 struct ChapterTextSample {
-  std::string text;     // UTF-8 text
-  uint32_t duration_ms; // duration in ms
+  std::string text;       // UTF-8 text
+  uint32_t start_ms = 0;  // absolute start time in ms
 };
 
 std::unique_ptr<Atom>

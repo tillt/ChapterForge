@@ -13,7 +13,7 @@
 
 struct ChapterImageSample {
   std::vector<uint8_t> data; // JPEG binary data
-  uint32_t duration_ms;
+  uint32_t start_ms = 0;     // absolute start time in ms
 };
 
 std::unique_ptr<Atom>

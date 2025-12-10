@@ -6,6 +6,7 @@
 //
 
 #include "stbl_image_builder.hpp"
+#include "chapter_timing.hpp"
 #include "jpeg_entry_builder.hpp"
 
 // -----------------------------------------------------------------------------
@@ -25,8 +26,9 @@ build_stts_img(const std::vector<ChapterImageSample> &samples,
     uint32_t dur;
   };
   std::vector<Entry> entries;
-  for (const auto &s : samples) {
-    uint32_t dur = (uint64_t)s.duration_ms * timescale / 1000;
+  auto durations = derive_durations_ms_from_starts(samples);
+  for (auto dur_ms : durations) {
+    uint32_t dur = (uint64_t)dur_ms * timescale / 1000;
     if (!entries.empty() && entries.back().dur == dur) {
       entries.back().count += 1;
     } else {
