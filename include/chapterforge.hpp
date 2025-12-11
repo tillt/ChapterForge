@@ -2,8 +2,8 @@
 // Provides a convenience end-to-end mux helper that takes file paths.
 
 #pragma once
-
 #include <cstdint>
+#include <stdint.h>
 #include <string>
 #include <vector>
 

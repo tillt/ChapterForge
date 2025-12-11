@@ -61,7 +61,11 @@ static std::vector<uint8_t> scan_ilst_payload(const std::string &path) {
         return {};
     }
     f.seekg(0, std::ios::end);
-    size_t sz = static_cast<size_t>(f.tellg());
+    std::streamoff len = f.tellg();
+    if (len <= 0) {
+        return {};
+    }
+    size_t sz = static_cast<size_t>(len);
     f.seekg(0, std::ios::beg);
     std::vector<uint8_t> data(sz);
     f.read(reinterpret_cast<char *>(data.data()), sz);
@@ -239,27 +243,43 @@ static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &st
 
     uint64_t end = start + size;
     in.seekg(end);
+    CH_LOG("parser", "stbl parsed sizes stsd=" << stsd.size() << " stts=" << stts.size()
+                                               << " stsc=" << stsc.size() << " stsz=" << stsz.size()
+                                               << " stco=" << stco.size());
 }
 
 //
 // Main MP4 parsing.
 //
-ParsedMp4 parse_mp4(const std::string &path) {
-    ParsedMp4 out;
-    uint32_t best_audio_samples = 0;
+std::optional<ParsedMp4> parse_mp4(const std::string &path) {
+ParsedMp4 out;
+uint32_t best_audio_samples = 0;
 
+    CH_LOG("parser", "parse_mp4 enter path=" << path);
     std::ifstream in(path, std::ios::binary);
     if (!in) {
-        throw std::runtime_error("Cannot open MP4: " + path);
+        CH_LOG("error", "parse_mp4: cannot open " << path << " errno=" << errno);
+        return std::nullopt;
     }
+
+    in.seekg(0, std::ios::end);
+    const uint64_t file_size = static_cast<uint64_t>(in.tellg());
+    in.seekg(0, std::ios::beg);
+    CH_LOG("parser", "parse_mp4: size=" << file_size << " path=" << path);
 
     while (in.peek() != EOF) {
         Mp4AtomInfo atom = read_atom_header(in);
+        if (atom.size < 8 || atom.offset + atom.size > file_size) {
+            CH_LOG("error", "parse_mp4: bad atom header size=" << atom.size
+                                                               << " offset=" << atom.offset
+                                                               << " file=" << file_size);
+            break;
+        }
         uint64_t payload_size = atom.size - 8;
 
-        switch (atom.type) {
-            case ('m' << 24 | 'd' << 16 | 'a' << 8 | 't'): {  // mdat
-                auto data = read_bytes(in, payload_size);
+    switch (atom.type) {
+        case ('m' << 24 | 'd' << 16 | 'a' << 8 | 't'): {  // mdat
+            auto data = read_bytes(in, payload_size);
                 if (data.size() > out.mdat_data.size()) {
                     out.mdat_data = std::move(data);
                     out.mdat_size = payload_size;
@@ -269,15 +289,39 @@ ParsedMp4 parse_mp4(const std::string &path) {
 
             case ('m' << 24 | 'o' << 16 | 'o' << 8 | 'v'): {  // moov
                 uint64_t end = atom.offset + atom.size;
+                if (end > file_size) {
+                    CH_LOG("error", "parse_mp4: moov exceeds file size end=" << end
+                                                                            << " file=" << file_size);
+                    in.seekg(atom.offset + atom.size, std::ios::beg);
+                    break;
+                }
 
+                CH_LOG("parser", "enter moov @0x" << std::hex << atom.offset << std::dec
+                                                << " end=" << end);
                 while (((uint64_t)in.tellg()) + 8 <= end) {
                     auto child = read_atom_header(in);
                     if (!in || child.size < 8) {
                         break;
                     }
+
+                    // Clamp malformed child atoms that spill past moov. Some files report sizes
+                    // that overrun the parent atom; we log and clamp instead of bailing out early.
+                    if (child.offset + child.size > end) {
+                        CH_LOG("error", "parse_mp4: child overflow type=" << std::hex << child.type
+                                                                          << std::dec
+                                                                          << " size=" << child.size
+                                                                          << " end=" << end);
+                        child.size = end - child.offset;
+                        if (child.size < 8) {
+                            break;
+                        }
+                    }
+
                     uint64_t c_payload = child.size - 8;
                     CH_LOG("parser", "moov child=" << std::hex << child.type << std::dec
-                                                   << " size=" << child.size);
+                                                   << " size=" << child.size
+                                                   << " offset=0x" << std::hex << child.offset
+                                                   << std::dec);
 
                     switch (child.type) {
                         case ('u' << 24 | 'd' << 16 | 't' << 8 | 'a'):
@@ -316,6 +360,7 @@ ParsedMp4 parse_mp4(const std::string &path) {
                             uint32_t mdhd_timescale = 0;
                             uint64_t mdhd_duration = 0;
                             std::vector<uint8_t> stsd, stts, stsc, stsz, stco;
+                    CH_LOG("parser", "trak start end=" << trak_end);
 
                             while (trak_remain >= 8) {
                                 auto tchild = read_atom_header(in);
@@ -323,6 +368,8 @@ ParsedMp4 parse_mp4(const std::string &path) {
                                     break;
                                 }
                                 uint64_t tpay = tchild.size - 8;
+                                CH_LOG("parser", " trak child=" << std::hex << tchild.type
+                                                                << std::dec << " size=" << tchild.size);
 
                                 if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
                                     CH_LOG("parser", "trak: entering mdia");
@@ -333,29 +380,45 @@ ParsedMp4 parse_mp4(const std::string &path) {
                                     while (mdia_remain >= 8) {
                                         auto m = read_atom_header(in);
                                         if (!in || m.size < 8) {
+                                            CH_LOG("parser", "mdia break: stream bad or size<8");
                                             break;
                                         }
                                         uint64_t mpay = m.size - 8;
+                                        CH_LOG("parser", " mdia child=" << std::hex << m.type
+                                                                        << std::dec
+                                                                        << " size=" << m.size);
 
                                         if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
                                             parse_mdhd(in, mpay, mdhd_timescale, mdhd_duration);
+                                            CH_LOG("parser", "  mdhd timescale=" << mdhd_timescale
+                                                                                << " duration="
+                                                                                << mdhd_duration);
                                         } else if (m.type ==
                                                    ('h' << 24 | 'd' << 16 | 'l' << 8 | 'r')) {
                                             handler_type = parse_hdlr(in, mpay);
                                             CH_LOG("parser",
-                                                   "hdlr=" << std::hex << handler_type << std::dec);
+                                                   "  hdlr=" << std::hex << handler_type
+                                                             << std::dec);
                                         } else if (m.type ==
                                                    ('m' << 24 | 'i' << 16 | 'n' << 8 | 'f')) {
                                             // find stbl.
                                             uint64_t minf_end = (uint64_t)in.tellg() + mpay;
                                             uint64_t minf_rem = mpay;
+                                            CH_LOG("parser", "  enter minf end=" << minf_end);
 
                                             while (minf_rem >= 8) {
                                                 auto mi = read_atom_header(in);
                                                 if (!in || mi.size < 8) {
+                                                    CH_LOG("parser",
+                                                           "  minf break: stream bad or size<8");
                                                     break;
                                                 }
                                                 uint64_t mi_pay = mi.size - 8;
+                                                CH_LOG("parser", "  minf child=" << std::hex
+                                                                                 << mi.type
+                                                                                 << std::dec
+                                                                                 << " size="
+                                                                                 << mi.size);
 
                                                 if (mi.type ==
                                                     ('s' << 24 | 't' << 16 | 'b' << 8 | 'l')) {
@@ -382,9 +445,10 @@ ParsedMp4 parse_mp4(const std::string &path) {
                             if (handler_type == fourcc("soun")) {
                                 // prefer the audio track with the largest sample_count.
                                 uint32_t sample_count = 0;
-                                if (stsz.size() >= 12) {
-                                    sample_count = (stsz[8] << 24) | (stsz[9] << 16) |
-                                                   (stsz[10] << 8) | stsz[11];
+                                if (stsz.size() >= 8) {
+                                    // stsz payload: sample_size(4), sample_count(4), then table.
+                                    sample_count = (stsz[4] << 24) | (stsz[5] << 16) |
+                                                   (stsz[6] << 8) | stsz[7];
                                 }
                                 if (sample_count > best_audio_samples) {
                                     best_audio_samples = sample_count;
@@ -421,13 +485,16 @@ ParsedMp4 parse_mp4(const std::string &path) {
     // Fallback: flat scan for sample-table atoms if they were not captured.
     if (out.stsz.empty() || out.stco.empty() || out.stsc.empty() || out.stsd.empty()) {
         CH_LOG("parser", "fallback flat scan for stbl atoms");
+        out.used_fallback_stbl = true;
         // load whole file into memory and search for atoms by signature.
-        std::vector<uint8_t> buf;
         in.clear();
         in.seekg(0, std::ios::end);
         std::streamoff len = in.tellg();
+        if (len <= 0) {
+            return out;
+        }
         in.seekg(0, std::ios::beg);
-        buf.resize(static_cast<size_t>(len));
+        std::vector<uint8_t> buf(static_cast<size_t>(len));
         in.read(reinterpret_cast<char *>(buf.data()), len);
 
         auto grab_atom = [&](const char *fourcc, std::vector<uint8_t> &dst) {
@@ -441,8 +508,9 @@ ParsedMp4 parse_mp4(const std::string &path) {
                     buf[i + 7] == static_cast<uint8_t>(fourcc[3])) {
                     uint32_t sz =
                         (buf[i] << 24) | (buf[i + 1] << 16) | (buf[i + 2] << 8) | buf[i + 3];
-                    if (sz >= 8 && i + sz <= buf.size()) {
-                        dst.assign(buf.begin() + i + 8, buf.begin() + i + sz);
+                    uint64_t end = static_cast<uint64_t>(i) + static_cast<uint64_t>(sz);
+                    if (sz >= 8 && end <= buf.size() && end >= i + 8) {
+                        dst.assign(buf.begin() + i + 8, buf.begin() + end);
                         CH_LOG("parser",
                                "grabbed " << fourcc << " via raw scan, bytes=" << dst.size());
                         break;
@@ -469,5 +537,15 @@ ParsedMp4 parse_mp4(const std::string &path) {
             CH_LOG("parser", "ilst found via naive scan, bytes=" << out.ilst_payload.size());
         }
     }
+    if (out.stco.empty() || out.stsc.empty() || out.stsz.empty() || out.stsd.empty()) {
+        CH_LOG("error", "parse_mp4: missing stbl atoms stco/stsc/stsz/stsd");
+    }
+    CH_LOG("parser", "parse_mp4 done stco=" << out.stco.size() << " stsc=" << out.stsc.size()
+                                            << " stsz=" << out.stsz.size()
+                                            << " stsd=" << out.stsd.size()
+                                            << " ilst=" << out.ilst_payload.size()
+                                            << " timescale=" << out.audio_timescale
+                                            << " duration=" << out.audio_duration
+                                            << " fallback_stbl=" << out.used_fallback_stbl);
     return out;
 }

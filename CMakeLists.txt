@@ -158,6 +158,11 @@ add_custom_target(generate_test_assets
     COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
 )
 
+add_executable(parser_fallback_check tests/parser_fallback.cpp)
+target_link_libraries(parser_fallback_check PRIVATE chapterforge)
+target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
+
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 set(TESTDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 set(OUTPUT_M4A_PATH "${TESTDATA_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")

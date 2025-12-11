@@ -76,7 +76,12 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
 }
 
 static std::optional<std::vector<uint8_t>> extract_audio_bytes(const std::string &path) {
-    ParsedMp4 parsed = parse_mp4(path);
+    auto parsed_opt = parse_mp4(path);
+    if (!parsed_opt) {
+        std::cerr << "[reuse] parse failed for " << path << "\n";
+        return std::nullopt;
+    }
+    const ParsedMp4 &parsed = *parsed_opt;
     auto sizes_opt = parse_stsz_sizes(parsed.stsz);
     if (!sizes_opt || parsed.stco.empty() || parsed.stsc.empty()) {
         return std::nullopt;

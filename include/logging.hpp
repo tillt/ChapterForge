@@ -15,8 +15,13 @@
 
 inline void ch_log_impl(const char* level, const std::string& msg, const char* file, int line,
                         const char* func) {
-    std::cerr << "[ChapterForge][" << level << "][" << file << ":" << line << " " << func << "] "
-              << msg << std::endl;
+    std::string lvl(level ? level : "");
+    if (lvl == "error") {
+        std::cerr << "[ChapterForge][" << level << "][" << file << ":" << line << " " << func
+                  << "] " << msg << std::endl;
+    } else {
+        std::cerr << "[ChapterForge][" << level << "] " << msg << std::endl;
+    }
 }
 
 #define CH_LOG(level, message)                                              \

@@ -71,7 +71,12 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
             next_first = (stsc_payload[pos + 12] << 24) | (stsc_payload[pos + 13] << 16) |
                          (stsc_payload[pos + 14] << 8) | (stsc_payload[pos + 15]);
         }
-        uint32_t chunk_count = (next_first > 0) ? (next_first - first_chunk) : 0;
+        if (samples_per_chunk == 0) {
+            break;
+        }
+        uint32_t chunk_count = (next_first > 0 && next_first > first_chunk)
+                                   ? (next_first - first_chunk)
+                                   : 0;
         if (chunk_count == 0) {
             while (consumed < sample_count) {
                 plan.push_back(samples_per_chunk);
@@ -84,6 +89,13 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
             }
         }
         pos += 12;
+    }
+    // Clamp plan length to sample_count to avoid runaway.
+    if (consumed > sample_count) {
+        while (!plan.empty() && consumed > sample_count) {
+            consumed -= plan.back();
+            plan.pop_back();
+        }
     }
     return plan;
 }

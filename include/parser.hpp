@@ -27,6 +27,8 @@ struct ParsedMp4 {
     std::vector<uint8_t> mdat_data;
     uint64_t mdat_size = 0;
 
+    bool used_fallback_stbl = false;  // true if stbl atoms were recovered via flat scan.
+
     // ilst metadata atom payload (optional)
     std::vector<uint8_t> ilst_payload;
 
@@ -49,4 +51,4 @@ uint32_t read_u32(std::istream &in);
 uint64_t read_u64(std::istream &in);
 
 // Main parsing entry point.
-ParsedMp4 parse_mp4(const std::string &path);
+std::optional<ParsedMp4> parse_mp4(const std::string &path);

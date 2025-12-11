@@ -1,4 +1,5 @@
 #include "chapterforge.hpp"
+#include "chapterforge_version.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -123,6 +124,7 @@ namespace chapterforge {
 
 bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &chapter_json_path,
                      const std::string &output_path, bool fast_start) {
+    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     auto aac = load_audio(input_audio_path);
     if (!aac) {
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
@@ -157,6 +159,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const MetadataSet &metadata, const std::string &output_path, bool fast_start) {
+    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     auto aac = load_audio(input_audio_path);
     if (!aac) {
         CH_LOG("error", "Failed to load audio from " << input_audio_path);

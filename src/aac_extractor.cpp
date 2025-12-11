@@ -9,9 +9,10 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <optional>
+#include <cstring>
 
+#include "logging.hpp"
 #include "mp4_atoms.hpp"
 #include "mp4a_builder.hpp"
 #include "parser.hpp"
@@ -181,21 +182,55 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
 }
 
 std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
-    ParsedMp4 parsed = parse_mp4(path);
+    CH_LOG("parser", "mp4 reuse start: " << path);
+    std::ifstream f(path, std::ios::binary);
+    if (!f.is_open()) {
+        CH_LOG("io", "Failed to open MP4: " << path << " (errno=" << errno
+                                            << " msg=" << std::strerror(errno) << ")");
+        return std::nullopt;
+    }
+
+    // Measure file size for safety bounds.
+    f.seekg(0, std::ios::end);
+    const auto file_size = static_cast<uint64_t>(f.tellg());
+    f.seekg(0, std::ios::beg);
+    if (file_size == 0) {
+        CH_LOG("error", "Empty or unreadable MP4: " << path);
+        return std::nullopt;
+    }
+
+    CH_LOG("parser", "calling parse_mp4 size=" << file_size << " path=" << path);
+    auto parsed_opt = parse_mp4(path);
+    if (!parsed_opt) {
+        CH_LOG("error", "Failed to parse MP4 (required moov/stbl atoms not found): " << path);
+        return std::nullopt;
+    }
+    CH_LOG("parser", "mp4 parsed optional has value for " << path);
+    ParsedMp4 &parsed = *parsed_opt;
+    CH_LOG("parser", "mp4 parsed: stco=" << parsed.stco.size() << " stsc=" << parsed.stsc.size()
+                                         << " stsz=" << parsed.stsz.size()
+                                         << " stsd=" << parsed.stsd.size());
+    if (parsed.stco.empty() || parsed.stsc.empty() || parsed.stsz.empty() || parsed.stsd.empty()) {
+        CH_LOG("error", "Missing required stbl atoms (stco/stsc/stsz/stsd) in " << path);
+        return std::nullopt;
+    }
+
     auto sizes_opt = parse_stsz_sizes(parsed.stsz);
     if (!sizes_opt || parsed.stco.empty() || parsed.stsc.empty()) {
         return std::nullopt;
     }
     const auto &sizes = *sizes_opt;
+    if (sizes.empty()) {
+        return std::nullopt;
+    }
+
+    CH_LOG("parser", "mp4 reuse: sizes=" << sizes.size() << " stco_bytes=" << parsed.stco.size()
+                                         << " stsc_bytes=" << parsed.stsc.size()
+                                         << " file_size=" << file_size);
 
     std::vector<uint32_t> chunk_plan =
         derive_chunk_plan(parsed.stsc, static_cast<uint32_t>(sizes.size()));
     if (chunk_plan.empty()) {
-        return std::nullopt;
-    }
-
-    std::ifstream f(path, std::ios::binary);
-    if (!f.is_open()) {
         return std::nullopt;
     }
 
@@ -204,8 +239,32 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     size_t sample_idx = 0;
     const uint8_t *pco = parsed.stco.data();
     uint32_t stco_count = (pco[4] << 24) | (pco[5] << 16) | (pco[6] << 8) | pco[7];
+    // Validate stco table size matches count and fits in file.
+    uint64_t stco_expected = 8ull + 4ull * stco_count;
+    if (parsed.stco.size() < stco_expected || stco_expected > file_size) {
+        CH_LOG("error", "stco table truncated: size=" << parsed.stco.size()
+                                                      << " expected>=" << stco_expected);
+        return std::nullopt;
+    }
+
+    // Validate stsc table size matches entry count (12 bytes each after header).
+    if (parsed.stsc.size() < 8) {
+        return std::nullopt;
+    }
+    uint32_t stsc_entries =
+        (parsed.stsc[4] << 24) | (parsed.stsc[5] << 16) | (parsed.stsc[6] << 8) | parsed.stsc[7];
+    uint64_t stsc_expected = 8ull + 12ull * stsc_entries;
+    if (parsed.stsc.size() < stsc_expected || stsc_expected > file_size) {
+        CH_LOG("error", "stsc table truncated: size=" << parsed.stsc.size()
+                                                      << " expected>=" << stsc_expected);
+        return std::nullopt;
+    }
+    CH_LOG("parser", "mp4 reuse: stco_count=" << stco_count << " stsc_entries=" << stsc_entries
+                                              << " chunk_plan=" << chunk_plan.size());
+
     size_t stco_pos = 8;
-    for (uint32_t chunk_idx = 0; chunk_idx < stco_count && chunk_idx < chunk_plan.size();
+    for (uint32_t chunk_idx = 0; chunk_idx < stco_count && chunk_idx < chunk_plan.size() &&
+                                 sample_idx < sizes.size();
          ++chunk_idx) {
         if (stco_pos + 4 > parsed.stco.size()) {
             break;
@@ -221,6 +280,15 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
         if (chunk_size == 0) {
             break;
         }
+
+        // Bounds guard: chunk must fit in file.
+        if (static_cast<uint64_t>(chunk_offset) + chunk_size > file_size) {
+            CH_LOG("error", "Chunk exceeds file size: offset=" << chunk_offset
+                                                               << " size=" << chunk_size
+                                                               << " file_size=" << file_size);
+            break;
+        }
+
         std::vector<uint8_t> chunk(chunk_size);
         f.seekg(static_cast<std::streamoff>(chunk_offset), std::ios::beg);
         f.read(reinterpret_cast<char *>(chunk.data()), static_cast<std::streamsize>(chunk_size));
@@ -230,6 +298,12 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
         size_t offset = 0;
         for (uint32_t i = 0; i < samples_in_chunk && sample_idx < sizes.size(); ++i, ++sample_idx) {
             uint32_t s = sizes[sample_idx];
+            if (offset + s > chunk.size()) {
+                CH_LOG("error", "sample range exceeds chunk: offset=" << offset
+                                                                      << " size=" << s
+                                                                      << " chunk=" << chunk.size());
+                break;
+            }
             frames.emplace_back(chunk.begin() + offset, chunk.begin() + offset + s);
             offset += s;
         }
