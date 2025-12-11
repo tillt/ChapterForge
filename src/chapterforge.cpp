@@ -6,6 +6,7 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <optional>
+#include <utility>
 
 #include "logging.hpp"
 #include "parser.hpp"
@@ -59,10 +60,13 @@ struct PendingChapter {
     std::string title;
     uint32_t start_ms = 0;
     std::string image_path;
+    std::string artist;
 };
 
-static bool load_chapters_json(const std::string &json_path, std::vector<ChapterTextSample> &texts,
-                               std::vector<ChapterImageSample> &images, MetadataSet &meta) {
+static bool load_chapters_json(
+    const std::string &json_path, std::vector<ChapterTextSample> &texts,
+    std::vector<ChapterImageSample> &images, MetadataSet &meta,
+    std::vector<ChapterMetadataSample> &metadata_track) {
     std::ifstream f(json_path);
     if (!f.is_open()) {
         CH_LOG("io", "open failed for " << json_path << " errno=" << errno << " ("
@@ -83,6 +87,7 @@ static bool load_chapters_json(const std::string &json_path, std::vector<Chapter
             p.title = c.value("title", "");
             p.start_ms = c.value("start_ms", 0);
             p.image_path = c.value("image", "");
+            p.artist = c.value("artist", "");
             pending.push_back(std::move(p));
         }
     }
@@ -98,6 +103,12 @@ static bool load_chapters_json(const std::string &json_path, std::vector<Chapter
             im.data = load_jpeg(resolve_path(p.image_path));
             im.start_ms = t.start_ms;
             images.push_back(std::move(im));
+        }
+        if (!p.artist.empty()) {
+            ChapterMetadataSample m{};
+            m.start_ms = p.start_ms;
+            m.payload = "title=" + p.title + ";artist=" + p.artist;
+            metadata_track.push_back(std::move(m));
         }
     }
     meta.title = j.value("title", "");
@@ -133,8 +144,10 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
 
     std::vector<ChapterTextSample> text_chapters;
     std::vector<ChapterImageSample> image_chapters;
+    std::vector<ChapterMetadataSample> metadata_track;
     MetadataSet meta;
-    if (!load_chapters_json(chapter_json_path, text_chapters, image_chapters, meta)) {
+    if (!load_chapters_json(chapter_json_path, text_chapters, image_chapters, meta,
+                            metadata_track)) {
         CH_LOG("error", "Failed to load chapters JSON: " << chapter_json_path);
         return false;
     }
@@ -152,7 +165,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
         CH_LOG("meta", "Using metadata provided by JSON overrides");
     }
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta, fast_start,
-                     ilst_ptr);
+                     {}, metadata_track, ilst_ptr);
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
@@ -177,8 +190,9 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     } else {
         CH_LOG("meta", "Using metadata provided by caller");
     }
+    std::vector<ChapterMetadataSample> metadata_track;
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                     ilst_ptr);
+                     {}, metadata_track, ilst_ptr);
 }
 
 }  // namespace chapterforge

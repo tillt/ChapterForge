@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "dinf_builder.hpp"
 #include "hdlr_builder.hpp"
@@ -79,7 +80,8 @@ std::unique_ptr<Atom> build_trak_audio(uint32_t track_id, uint32_t timescale, ui
 // -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                       std::unique_ptr<Atom> stbl_text,
-                                      uint64_t tkhd_duration_mvhd) {
+                                      uint64_t tkhd_duration_mvhd,
+                                      const std::string &handler_name) {
     auto trak = Atom::create("trak");
 
     // tkhd: text track (disabled from normal playback, volume=0)
@@ -88,13 +90,41 @@ std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uin
     // mdia.
     auto mdia = Atom::create("mdia");
     mdia->add(build_mdhd(timescale, duration_ts, 0x15C7));  // mdhd, "eng"
-    mdia->add(build_hdlr_text());                           // hdlr: "Chapter Titles"
+    mdia->add(build_hdlr_text(handler_name));               // hdlr: custom
 
     // minf.
     auto minf = Atom::create("minf");
     minf->add(build_nmhd());          // nmhd for text
     minf->add(build_dinf());          // dinf
     minf->add(std::move(stbl_text));  // stbl for tx3g
+
+    mdia->add(std::move(minf));
+    trak->add(std::move(mdia));
+
+    return trak;
+}
+
+// -----------------------------------------------------------------------------
+// Timed metadata track (metadata samples aligned to chapters).
+// -----------------------------------------------------------------------------
+std::unique_ptr<Atom> build_trak_metadata(uint32_t track_id, uint32_t timescale,
+                                          uint64_t duration_ts,
+                                          std::unique_ptr<Atom> stbl_metadata,
+                                          uint64_t tkhd_duration_mvhd,
+                                          const std::string &handler_name) {
+    auto trak = Atom::create("trak");
+
+    // tkhd: metadata track (disabled from playback, no dimensions)
+    trak->add(build_tkhd_text(track_id, tkhd_duration_mvhd));
+
+    auto mdia = Atom::create("mdia");
+    mdia->add(build_mdhd(timescale, duration_ts, 0x15C7));      // mdhd, "eng"
+    mdia->add(build_hdlr_metadata(handler_name));               // hdlr: meta
+
+    auto minf = Atom::create("minf");
+    minf->add(build_nmhd());                                    // nmhd
+    minf->add(build_dinf());                                    // dinf
+    minf->add(std::move(stbl_metadata));                        // stbl
 
     mdia->add(std::move(minf));
     trak->add(std::move(mdia));

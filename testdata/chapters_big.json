@@ -7,17 +7,17 @@
   "comment": "Twelve 5-second chapters with matching big artwork.",
   "cover": "big1.jpg",
   "chapters": [
-    { "start_ms": 0,     "title": "Gate Opens",        "image": "big1.jpg" },
-    { "start_ms": 5000,  "title": "Left at Albuquerque", "image": "big2.jpg" },
-    { "start_ms": 10000, "title": "Snack Interlude",   "image": "big3.jpg" },
-    { "start_ms": 15000, "title": "Quantum Detour",    "image": "big4.jpg" },
-    { "start_ms": 20000, "title": "Coffee Break",      "image": "big5.jpg" },
-    { "start_ms": 25000, "title": "Unexpected Dance",  "image": "big6.jpg" },
-    { "start_ms": 30000, "title": "Plot Twist",        "image": "big7.jpg" },
-    { "start_ms": 35000, "title": "Debugging Dreams",  "image": "big8.jpg" },
-    { "start_ms": 40000, "title": "Late for Standup",  "image": "big9.jpg" },
-    { "start_ms": 45000, "title": "Cache Miss",        "image": "big10.jpg" },
-    { "start_ms": 50000, "title": "Mild Cliffhanger",  "image": "big11.jpg" },
-    { "start_ms": 55000, "title": "Roll Credits",      "image": "big12.jpg" }
+    { "start_ms": 0,     "title": "Gate Opens",        "artist": "Prelude Bot",       "image": "big1.jpg" },
+    { "start_ms": 5000,  "title": "Left at Albuquerque", "artist": "Wanderer Bot",    "image": "big2.jpg" },
+    { "start_ms": 10000, "title": "Snack Interlude",   "artist": "Snacky Bot",        "image": "big3.jpg" },
+    { "start_ms": 15000, "title": "Quantum Detour",    "artist": "Quark Bot",         "image": "big4.jpg" },
+    { "start_ms": 20000, "title": "Coffee Break",      "artist": "Barista Bot",       "image": "big5.jpg" },
+    { "start_ms": 25000, "title": "Unexpected Dance",  "artist": "Groove Bot",        "image": "big6.jpg" },
+    { "start_ms": 30000, "title": "Plot Twist",        "artist": "Twister Bot",       "image": "big7.jpg" },
+    { "start_ms": 35000, "title": "Debugging Dreams",  "artist": "Debugger Bot",      "image": "big8.jpg" },
+    { "start_ms": 40000, "title": "Late for Standup",  "artist": "Sprint Bot",        "image": "big9.jpg" },
+    { "start_ms": 45000, "title": "Cache Miss",        "artist": "Cache Bot",         "image": "big10.jpg" },
+    { "start_ms": 50000, "title": "Mild Cliffhanger",  "artist": "Cliff Bot",         "image": "big11.jpg" },
+    { "start_ms": 55000, "title": "Roll Credits",      "artist": "Credits Bot",       "image": "big12.jpg" }
   ]
 }

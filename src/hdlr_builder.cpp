@@ -32,6 +32,13 @@ static std::unique_ptr<Atom> build_hdlr(const char type[4], const char *name) {
 
 std::unique_ptr<Atom> build_hdlr_sound() { return build_hdlr("soun", "sound handler"); }
 
-std::unique_ptr<Atom> build_hdlr_text() { return build_hdlr("text", "Chapter Titles"); }
+std::unique_ptr<Atom> build_hdlr_text(const std::string &name) {
+    return build_hdlr("text", name.c_str());
+}
+
+std::unique_ptr<Atom> build_hdlr_metadata(const std::string &name) {
+    // Timed metadata tracks use handler type 'meta'.
+    return build_hdlr("meta", name.c_str());
+}
 
 std::unique_ptr<Atom> build_hdlr_video() { return build_hdlr("vide", "Chapter Images"); }

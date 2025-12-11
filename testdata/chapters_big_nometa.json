@@ -1,16 +1,16 @@
 {
   "chapters": [
-    { "start_ms": 0,     "title": "Bare Intro",     "image": "big1.jpg" },
-    { "start_ms": 5000,  "title": "Bare 2",         "image": "big2.jpg" },
-    { "start_ms": 10000, "title": "Bare 3",         "image": "big3.jpg" },
-    { "start_ms": 15000, "title": "Bare 4",         "image": "big4.jpg" },
-    { "start_ms": 20000, "title": "Bare 5",         "image": "big5.jpg" },
-    { "start_ms": 25000, "title": "Bare 6",         "image": "big6.jpg" },
-    { "start_ms": 30000, "title": "Bare 7",         "image": "big7.jpg" },
-    { "start_ms": 35000, "title": "Bare 8",         "image": "big8.jpg" },
-    { "start_ms": 40000, "title": "Bare 9",         "image": "big9.jpg" },
-    { "start_ms": 45000, "title": "Bare 10",        "image": "big10.jpg" },
-    { "start_ms": 50000, "title": "Bare 11",        "image": "big11.jpg" },
-    { "start_ms": 55000, "title": "Bare 12",        "image": "big12.jpg" }
+    { "start_ms": 0,     "title": "Bare Intro",     "artist": "Bare Prelude",   "image": "big1.jpg" },
+    { "start_ms": 5000,  "title": "Bare 2",         "artist": "Bare Two",      "image": "big2.jpg" },
+    { "start_ms": 10000, "title": "Bare 3",         "artist": "Bare Three",    "image": "big3.jpg" },
+    { "start_ms": 15000, "title": "Bare 4",         "artist": "Bare Four",     "image": "big4.jpg" },
+    { "start_ms": 20000, "title": "Bare 5",         "artist": "Bare Five",     "image": "big5.jpg" },
+    { "start_ms": 25000, "title": "Bare 6",         "artist": "Bare Six",      "image": "big6.jpg" },
+    { "start_ms": 30000, "title": "Bare 7",         "artist": "Bare Seven",    "image": "big7.jpg" },
+    { "start_ms": 35000, "title": "Bare 8",         "artist": "Bare Eight",    "image": "big8.jpg" },
+    { "start_ms": 40000, "title": "Bare 9",         "artist": "Bare Nine",     "image": "big9.jpg" },
+    { "start_ms": 45000, "title": "Bare 10",        "artist": "Bare Ten",      "image": "big10.jpg" },
+    { "start_ms": 50000, "title": "Bare 11",        "artist": "Bare Eleven",   "image": "big11.jpg" },
+    { "start_ms": 55000, "title": "Bare 12",        "artist": "Bare Twelve",   "image": "big12.jpg" }
   ]
 }

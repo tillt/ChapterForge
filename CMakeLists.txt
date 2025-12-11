@@ -75,6 +75,7 @@ set(CHAPTERFORGE_CORE_SOURCES
     src/stbl_audio_builder.cpp
     src/stbl_builder.cpp
     src/stbl_image_builder.cpp
+    src/stbl_metadata_builder.cpp
     src/stbl_text_builder.cpp
     src/stco_builder.cpp
     src/stsc_builder.cpp

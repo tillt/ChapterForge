@@ -22,6 +22,7 @@
 #include "mp4_atoms.hpp"
 #include "stbl_audio_builder.hpp"
 #include "stbl_image_builder.hpp"
+#include "stbl_metadata_builder.hpp"
 #include "stbl_text_builder.hpp"
 #include "trak_builder.hpp"
 #include "udta_builder.hpp"
@@ -152,6 +153,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const std::vector<ChapterTextSample> &text_chapters,
                const std::vector<ChapterImageSample> &image_chapters, Mp4aConfig audio_cfg,
                const MetadataSet &metadata, bool fast_start,
+               const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
+                   &extra_text_tracks,
+               const std::vector<ChapterMetadataSample> &metadata_samples,
                const std::vector<uint8_t> *ilst_payload) {
     //
     // 0) open file.
@@ -200,6 +204,23 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     for (auto &tx : text_chapters) {
         text_samples.emplace_back(encode_tx3g(tx.text));
     }
+    std::vector<std::vector<std::vector<uint8_t>>> extra_text_samples;
+    extra_text_samples.reserve(extra_text_tracks.size());
+    for (const auto &track : extra_text_tracks) {
+        std::vector<std::vector<uint8_t>> samples;
+        samples.reserve(track.second.size());
+        for (const auto &tx : track.second) {
+            samples.emplace_back(encode_tx3g(tx.text));
+        }
+        extra_text_samples.push_back(std::move(samples));
+    }
+
+    // Metadata samples: raw UTF-8 payloads (no length prefix).
+    std::vector<std::vector<uint8_t>> metadata_payloads;
+    metadata_payloads.reserve(metadata_samples.size());
+    for (const auto &m : metadata_samples) {
+        metadata_payloads.emplace_back(m.payload.begin(), m.payload.end());
+    }
 
     //
     // Image samples: JPEG binary data (may be empty if no images were provided)
@@ -228,13 +249,18 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     const uint32_t chapter_timescale = 1000;
     auto text_durations = derive_durations_ms_from_starts(text_chapters);
     auto image_durations = derive_durations_ms_from_starts(image_chapters);
+    auto metadata_durations = derive_durations_ms_from_starts(metadata_samples);
     uint64_t text_duration_ts = 0;
     uint64_t image_duration_ts = 0;
+    uint64_t metadata_duration_ts = 0;
     for (auto dur_ms : text_durations) {
         text_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
     }
     for (auto dur_ms : image_durations) {
         image_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
+    }
+    for (auto dur_ms : metadata_durations) {
+        metadata_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
     }
 
     CH_LOG("info", "[durations] text_ts=" << text_duration_ts << " image_ts=" << image_duration_ts
@@ -248,6 +274,12 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         aac.stsc_payload.empty() ? build_audio_chunk_plan(audio_sample_count)
                                  : derive_chunk_plan(aac.stsc_payload, audio_sample_count);
     std::vector<uint32_t> text_chunk_plan(text_samples.size(), 1);
+    std::vector<std::vector<uint32_t>> extra_text_chunk_plans;
+    extra_text_chunk_plans.reserve(extra_text_samples.size());
+    for (const auto &samples : extra_text_samples) {
+        extra_text_chunk_plans.emplace_back(samples.size(), 1);
+    }
+    std::vector<uint32_t> metadata_chunk_plan(metadata_payloads.size(), 1);
     std::vector<uint32_t> image_chunk_plan = [](size_t count) {
         std::vector<uint32_t> plan;
         if (count == 0) {
@@ -263,6 +295,22 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         }
         return plan;
     }(image_samples.size());
+
+    // Aggregate text tracks (primary + extras) for mdat/offset handling.
+    std::vector<std::vector<std::vector<uint8_t>>> all_text_samples;
+    all_text_samples.push_back(text_samples);
+    all_text_samples.insert(all_text_samples.end(), extra_text_samples.begin(),
+                            extra_text_samples.end());
+    if (!metadata_payloads.empty()) {
+        all_text_samples.push_back(metadata_payloads);
+    }
+    std::vector<std::vector<uint32_t>> all_text_chunk_plans;
+    all_text_chunk_plans.push_back(text_chunk_plan);
+    all_text_chunk_plans.insert(all_text_chunk_plans.end(), extra_text_chunk_plans.begin(),
+                                extra_text_chunk_plans.end());
+    if (!metadata_chunk_plan.empty()) {
+        all_text_chunk_plans.push_back(metadata_chunk_plan);
+    }
 
     // Compute image width/height from the first JPEG when available to match.
     // encoded size.
@@ -307,18 +355,25 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     //
     const uint32_t AUDIO_TRACK_ID = 1;
     const uint32_t TEXT_TRACK_ID = 2;
-    const uint32_t IMAGE_TRACK_ID = 3;
+    const bool has_metadata_track = !metadata_payloads.empty();
+    const uint32_t IMAGE_TRACK_ID =
+        TEXT_TRACK_ID + 1 + static_cast<uint32_t>(extra_text_tracks.size()) +
+        static_cast<uint32_t>(has_metadata_track);
 
     const uint32_t mvhd_timescale = 600;
     const uint64_t tkhd_audio_duration = (audio_duration_ts * mvhd_timescale) / audio_timescale;
     const uint64_t tkhd_chapter_duration = (text_duration_ts * mvhd_timescale) / chapter_timescale;
+    const uint64_t tkhd_metadata_duration =
+        (metadata_duration_ts * mvhd_timescale) / chapter_timescale;
     const uint64_t tkhd_image_duration =
         has_image_track ? (image_duration_ts * mvhd_timescale) / chapter_timescale : 0;
     const uint64_t mvhd_duration =
         has_image_track
-            ? std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_image_duration})
-            : std::max(tkhd_audio_duration, tkhd_chapter_duration);
+            ? std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_image_duration,
+                        tkhd_metadata_duration})
+            : std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_metadata_duration});
 
+    // Only the primary title track (and optional image track) should be referenced as chapters.
     std::vector<uint32_t> chapter_refs = {TEXT_TRACK_ID};
     if (has_image_track) {
         chapter_refs.push_back(IMAGE_TRACK_ID);
@@ -327,8 +382,29 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     auto trak_audio = build_trak_audio(AUDIO_TRACK_ID, audio_timescale, audio_duration_ts,
                                        std::move(stbl_audio), chapter_refs, tkhd_audio_duration);
 
-    auto trak_text = build_trak_text(TEXT_TRACK_ID, chapter_timescale, text_duration_ts,
-                                     std::move(stbl_text), tkhd_chapter_duration);
+    std::vector<std::unique_ptr<Atom>> text_traks;
+    text_traks.push_back(build_trak_text(TEXT_TRACK_ID, chapter_timescale, text_duration_ts,
+                                         std::move(stbl_text), tkhd_chapter_duration,
+                                         "Chapter Titles"));
+
+    uint32_t metadata_track_id =
+        has_metadata_track ? (TEXT_TRACK_ID + 1 + static_cast<uint32_t>(extra_text_tracks.size()))
+                           : 0;
+
+    for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
+        uint32_t tid = TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i);
+        auto stbl_extra = build_text_stbl(extra_text_tracks[i].second, chapter_timescale);
+        text_traks.push_back(build_trak_text(tid, chapter_timescale, text_duration_ts,
+                                             std::move(stbl_extra), tkhd_chapter_duration,
+                                             extra_text_tracks[i].first));
+    }
+
+    if (has_metadata_track) {
+        auto stbl_meta = build_metadata_stbl(metadata_samples, chapter_timescale);
+        text_traks.push_back(build_trak_metadata(metadata_track_id, chapter_timescale,
+                                                 metadata_duration_ts, std::move(stbl_meta),
+                                                 tkhd_metadata_duration, "Chapter Metadata"));
+    }
 
     std::unique_ptr<Atom> trak_image;
     if (has_image_track) {
@@ -352,7 +428,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     // 8) Build moov.
     //
     auto moov = build_moov(mvhd_timescale, mvhd_duration, std::move(trak_audio),
-                           std::move(trak_text), std::move(trak_image), std::move(udta));
+                           std::move(text_traks), std::move(trak_image), std::move(udta));
     moov->fix_size_recursive();
 
     if (fast_start) {
@@ -363,18 +439,19 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         uint64_t payload_start =
             static_cast<uint64_t>(ftyp_size) + moov->size() + 8;  // +8 for mdat header
         MdatOffsets mdat_offs =
-            compute_mdat_offsets(payload_start, audio_samples, text_samples, image_samples,
-                                 audio_chunk_plan, text_chunk_plan, image_chunk_plan);
+            compute_mdat_offsets(payload_start, audio_samples, all_text_samples, image_samples,
+                                 audio_chunk_plan, all_text_chunk_plans, image_chunk_plan);
         patch_all_stco(moov.get(), mdat_offs, true);
 
         // write moov, then mdat.
         moov->write(out);
-        write_mdat(out, audio_samples, text_samples, image_samples, audio_chunk_plan,
-                   text_chunk_plan, image_chunk_plan);
+        write_mdat(out, audio_samples, all_text_samples, image_samples, audio_chunk_plan,
+                   all_text_chunk_plans, image_chunk_plan);
     } else {
         // Write mdat first and capture offsets.
-        MdatOffsets mdat_offs = write_mdat(out, audio_samples, text_samples, image_samples,
-                                           audio_chunk_plan, text_chunk_plan, image_chunk_plan);
+        MdatOffsets mdat_offs = write_mdat(out, audio_samples, all_text_samples, image_samples,
+                                           audio_chunk_plan, all_text_chunk_plans,
+                                           image_chunk_plan);
 
         // Patch STCO in moov using the actual offsets from written mdat.
         // If we reused the source audio stco, skip patching it.

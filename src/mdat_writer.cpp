@@ -12,12 +12,13 @@
 // -----------------------------------------------------------------------------
 // Write mdat and record sample offsets.
 // -----------------------------------------------------------------------------
-MdatOffsets write_mdat(std::ofstream &out, const std::vector<std::vector<uint8_t>> &audio_samples,
-                       const std::vector<std::vector<uint8_t>> &text_samples,
-                       const std::vector<std::vector<uint8_t>> &image_samples,
-                       const std::vector<uint32_t> &audio_chunk_sizes,
-                       const std::vector<uint32_t> &text_chunk_sizes,
-                       const std::vector<uint32_t> &image_chunk_sizes) {
+MdatOffsets write_mdat(
+    std::ofstream &out, const std::vector<std::vector<uint8_t>> &audio_samples,
+    const std::vector<std::vector<std::vector<uint8_t>>> &text_tracks_samples,
+    const std::vector<std::vector<uint8_t>> &image_samples,
+    const std::vector<uint32_t> &audio_chunk_sizes,
+    const std::vector<std::vector<uint32_t>> &text_chunk_sizes,
+    const std::vector<uint32_t> &image_chunk_sizes) {
     MdatOffsets result;
 
     // Start of mdat box.
@@ -69,9 +70,16 @@ MdatOffsets write_mdat(std::ofstream &out, const std::vector<std::vector<uint8_t
         }
     };
 
-    // Apple convention: audio first, then text, then image.
+    // Apple convention: audio first, then text tracks, then image.
     write_track(audio_samples, audio_chunk_sizes, result.audio_offsets);
-    write_track(text_samples, text_chunk_sizes, result.text_offsets);
+    for (size_t i = 0; i < text_tracks_samples.size(); ++i) {
+        std::vector<uint32_t> offsets;
+        const auto &samples = text_tracks_samples[i];
+        const auto &plan =
+            (i < text_chunk_sizes.size()) ? text_chunk_sizes[i] : std::vector<uint32_t>();
+        write_track(samples, plan, offsets);
+        result.text_offsets.push_back(std::move(offsets));
+    }
     write_track(image_samples, image_chunk_sizes, result.image_offsets);
 
     // Patch mdat size field.
@@ -126,36 +134,32 @@ void patch_stco_table(Atom *stco, const std::vector<uint32_t> &offsets,
 }
 
 // -----------------------------------------------------------------------------
-// Patch all stco atoms (in order: audio, text, image)
-// -----------------------------------------------------------------------------
+// Patch all stco atoms (order: audio, text tracks..., image)
 void patch_all_stco(Atom *moov, const MdatOffsets &offs, bool patch_audio) {
-    if (!moov) {
-        return;
-    }
-
+    if (!moov) { return; }
     auto stcos = moov->find("stco");
-
-    // Order is deterministic from our builder: audio, text, image.
-    if (patch_audio && stcos.size() >= 1) {
-        patch_stco_table(stcos[0], offs.audio_offsets, offs.payload_start);
+    size_t idx = 0;
+    if (patch_audio && stcos.size() > idx) {
+        patch_stco_table(stcos[idx], offs.audio_offsets, offs.payload_start);
     }
-    if (stcos.size() >= 2) {
-        patch_stco_table(stcos[1], offs.text_offsets, offs.payload_start);
+    idx += 1;
+    for (size_t t = 0; t < offs.text_offsets.size() && idx < stcos.size(); ++t, ++idx) {
+        patch_stco_table(stcos[idx], offs.text_offsets[t], offs.payload_start);
     }
-    if (stcos.size() >= 3) {
-        patch_stco_table(stcos[2], offs.image_offsets, offs.payload_start);
+    if (idx < stcos.size() && !offs.image_offsets.empty()) {
+        patch_stco_table(stcos[idx], offs.image_offsets, offs.payload_start);
     }
 }
 
 // -----------------------------------------------------------------------------
 // Compute offsets only (no writing), given a payload start.
 // -----------------------------------------------------------------------------
-MdatOffsets compute_mdat_offsets(uint64_t payload_start,
+MdatOffsets compute_mdat_offsets( uint64_t payload_start,
                                  const std::vector<std::vector<uint8_t>> &audio_samples,
-                                 const std::vector<std::vector<uint8_t>> &text_samples,
+                                 const std::vector<std::vector<std::vector<uint8_t>>> &text_tracks_samples,
                                  const std::vector<std::vector<uint8_t>> &image_samples,
                                  const std::vector<uint32_t> &audio_chunk_sizes,
-                                 const std::vector<uint32_t> &text_chunk_sizes,
+                                 const std::vector<std::vector<uint32_t>> &text_chunk_sizes,
                                  const std::vector<uint32_t> &image_chunk_sizes) {
     MdatOffsets result;
     result.payload_start = payload_start;
@@ -164,35 +168,30 @@ MdatOffsets compute_mdat_offsets(uint64_t payload_start,
     auto compute_track = [&](const std::vector<std::vector<uint8_t>> &samples,
                              const std::vector<uint32_t> &chunk_sizes,
                              std::vector<uint32_t> &offsets) {
-        if (samples.empty()) {
-            return;
-        }
-
-        std::vector<uint32_t> plan =
-            chunk_sizes.empty() ? std::vector<uint32_t>(samples.size(), 1) : chunk_sizes;
-
+        if (samples.empty()) { return; }
+        std::vector<uint32_t> plan = chunk_sizes.empty() ? std::vector<uint32_t>(samples.size(), 1) : chunk_sizes;
         size_t sample_index = 0;
         for (uint32_t chunk_size : plan) {
-            if (sample_index >= samples.size()) {
-                break;
-            }
+            if (sample_index >= samples.size()) { break; }
             offsets.push_back(static_cast<uint32_t>(cursor - payload_start));
-            for (uint32_t i = 0; i < chunk_size && sample_index < samples.size();
-                 ++i, ++sample_index) {
+            for (uint32_t i = 0; i < chunk_size && sample_index < samples.size(); ++i, ++sample_index) {
                 cursor += samples[sample_index].size();
             }
         }
         if (sample_index < samples.size()) {
             offsets.push_back(static_cast<uint32_t>(cursor - payload_start));
-            for (; sample_index < samples.size(); ++sample_index) {
-                cursor += samples[sample_index].size();
-            }
+            for (; sample_index < samples.size(); ++sample_index) { cursor += samples[sample_index].size(); }
         }
     };
 
-    // order: audio, text, image.
     compute_track(audio_samples, audio_chunk_sizes, result.audio_offsets);
-    compute_track(text_samples, text_chunk_sizes, result.text_offsets);
+    for (size_t i = 0; i < text_tracks_samples.size(); ++i) {
+        std::vector<uint32_t> offsets;
+        const auto &samples = text_tracks_samples[i];
+        const auto &plan = (i < text_chunk_sizes.size()) ? text_chunk_sizes[i] : std::vector<uint32_t>();
+        compute_track(samples, plan, offsets);
+        result.text_offsets.push_back(std::move(offsets));
+    }
     compute_track(image_samples, image_chunk_sizes, result.image_offsets);
 
     return result;

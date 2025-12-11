@@ -11,14 +11,17 @@
 #include "mvhd_builder.hpp"
 #include "tkhd_builder.hpp"
 
-std::unique_ptr<Atom> build_moov(uint32_t timescale, uint64_t duration_ts,
-                                 std::unique_ptr<Atom> trak_audio, std::unique_ptr<Atom> trak_text,
-                                 std::unique_ptr<Atom> trak_image, std::unique_ptr<Atom> udta) {
+std::unique_ptr<Atom> build_moov(
+    uint32_t timescale, uint64_t duration_ts, std::unique_ptr<Atom> trak_audio,
+    std::vector<std::unique_ptr<Atom>> text_tracks, std::unique_ptr<Atom> trak_image,
+    std::unique_ptr<Atom> udta) {
     auto moov = Atom::create("moov");
 
     moov->add(build_mvhd(timescale, duration_ts));
     moov->add(std::move(trak_audio));
-    moov->add(std::move(trak_text));
+    for (auto &t : text_tracks) {
+        moov->add(std::move(t));
+    }
     if (trak_image) {
         moov->add(std::move(trak_image));
     }
