@@ -254,6 +254,7 @@ static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &st
 std::optional<ParsedMp4> parse_mp4(const std::string &path) {
 ParsedMp4 out;
 uint32_t best_audio_samples = 0;
+    bool force_fallback = false;
 
     CH_LOG("parser", "parse_mp4 enter path=" << path);
     std::ifstream in(path, std::ios::binary);
@@ -267,8 +268,11 @@ uint32_t best_audio_samples = 0;
     in.seekg(0, std::ios::beg);
     CH_LOG("parser", "parse_mp4: size=" << file_size << " path=" << path);
 
-    while (in.peek() != EOF) {
-        Mp4AtomInfo atom = read_atom_header(in);
+while (in.peek() != EOF) {
+    if (force_fallback) {
+        break;
+    }
+    Mp4AtomInfo atom = read_atom_header(in);
         if (atom.size < 8 || atom.offset + atom.size > file_size) {
             CH_LOG("error", "parse_mp4: bad atom header size=" << atom.size
                                                                << " offset=" << atom.offset
@@ -376,6 +380,7 @@ uint32_t best_audio_samples = 0;
                                     // parse mdia.
                                     uint64_t mdia_end = (uint64_t)in.tellg() + tpay;
                                     uint64_t mdia_remain = tpay;
+                                    bool mdia_overflow = false;
 
                                     while (mdia_remain >= 8) {
                                         auto m = read_atom_header(in);
@@ -387,6 +392,16 @@ uint32_t best_audio_samples = 0;
                                         CH_LOG("parser", " mdia child=" << std::hex << m.type
                                                                         << std::dec
                                                                         << " size=" << m.size);
+
+                                        // If a bogus child claims to run past mdia, bail to fallback.
+                                        if (m.offset + m.size > mdia_end) {
+                                            CH_LOG("parser",
+                                                   " mdia child overflow; deferring to fallback stbl");
+                                            mdia_overflow = true;
+                                            in.seekg(mdia_end);
+                                            mdia_remain = 0;
+                                            break;
+                                        }
 
                                         if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
                                             parse_mdhd(in, mpay, mdhd_timescale, mdhd_duration);
@@ -433,13 +448,24 @@ uint32_t best_audio_samples = 0;
                                         } else {
                                             skip(in, mpay);
                                         }
+                                        if (m.size > mdia_remain) {
+                                            break;
+                                        }
                                         mdia_remain -= m.size;
                                     }
                                     in.seekg(mdia_end);
+                                    if (mdia_overflow) {
+                                        // Structured mdia failed; trigger fallback scan path.
+                                        force_fallback = true;
+                                        break;
+                                    }
                                 } else {
                                     skip(in, tpay);
                                 }
                                 trak_remain -= tchild.size;
+                                if (force_fallback) {
+                                    break;
+                                }
                             }
 
                             if (handler_type == fourcc("soun")) {
@@ -472,6 +498,9 @@ uint32_t best_audio_samples = 0;
 
                     uint64_t child_end = child.offset + child.size;
                     in.seekg(child_end);
+                    if (force_fallback) {
+                        break;
+                    }
                 }
                 in.seekg(end);
                 break;
