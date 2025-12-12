@@ -7,7 +7,7 @@
   "comment": "Built for ChapterForge tests. Contains two 5-second chapters.",
   "cover": "cover.jpg",
   "chapters": [
-    { "start_ms": 0,    "title": "Funny Intro (Tap to Begin)", "artist": "Intro Bot",   "image": "chapter1.jpg" },
-    { "start_ms": 5000, "title": "Punchline Arrives",          "artist": "Punchy Bot", "image": "chapter2.jpg" }
+    { "start_ms": 0,    "title": "Funny Intro (Tap to Begin)", "artist": "Intro Bot",   "url": "https://chapterforge.test/artist/intro-bot",  "image": "chapter1.jpg" },
+    { "start_ms": 5000, "title": "Punchline Arrives",          "artist": "Punchy Bot", "url": "https://chapterforge.test/artist/punchy-bot", "image": "chapter2.jpg" }
   ]
 }

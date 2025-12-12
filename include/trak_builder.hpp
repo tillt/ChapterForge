@@ -23,7 +23,7 @@ std::unique_ptr<Atom> build_trak_audio(uint32_t track_id, uint32_t timescale, ui
 // Build full text chapter track.
 std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                       std::unique_ptr<Atom> stbl_text, uint64_t tkhd_duration_mvhd,
-                                      const std::string &handler_name);
+                                      const std::string &handler_name, bool enabled);
 
 // Build timed metadata track (mdta/metx style).
 std::unique_ptr<Atom> build_trak_metadata(uint32_t track_id, uint32_t timescale,

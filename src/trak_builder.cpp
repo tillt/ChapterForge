@@ -81,11 +81,12 @@ std::unique_ptr<Atom> build_trak_audio(uint32_t track_id, uint32_t timescale, ui
 std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                       std::unique_ptr<Atom> stbl_text,
                                       uint64_t tkhd_duration_mvhd,
-                                      const std::string &handler_name) {
+                                      const std::string &handler_name,
+                                      bool enabled) {
     auto trak = Atom::create("trak");
 
     // tkhd: text track (disabled from normal playback, volume=0)
-    trak->add(build_tkhd_text(track_id, tkhd_duration_mvhd));
+    trak->add(build_tkhd_text(track_id, tkhd_duration_mvhd, enabled));
 
     // mdia.
     auto mdia = Atom::create("mdia");
@@ -115,7 +116,7 @@ std::unique_ptr<Atom> build_trak_metadata(uint32_t track_id, uint32_t timescale,
     auto trak = Atom::create("trak");
 
     // tkhd: metadata track (disabled from playback, no dimensions)
-    trak->add(build_tkhd_text(track_id, tkhd_duration_mvhd));
+    trak->add(build_tkhd_text(track_id, tkhd_duration_mvhd, true));
 
     auto mdia = Atom::create("mdia");
     mdia->add(build_mdhd(timescale, duration_ts, 0x15C7));      // mdhd, "eng"

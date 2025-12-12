@@ -60,13 +60,13 @@ struct PendingChapter {
     std::string title;
     uint32_t start_ms = 0;
     std::string image_path;
-    std::string artist;
+    std::string url;
 };
 
 static bool load_chapters_json(
     const std::string &json_path, std::vector<ChapterTextSample> &texts,
     std::vector<ChapterImageSample> &images, MetadataSet &meta,
-    std::vector<ChapterMetadataSample> &metadata_track) {
+    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> &extra_text_tracks) {
     std::ifstream f(json_path);
     if (!f.is_open()) {
         CH_LOG("io", "open failed for " << json_path << " errno=" << errno << " ("
@@ -87,16 +87,27 @@ static bool load_chapters_json(
             p.title = c.value("title", "");
             p.start_ms = c.value("start_ms", 0);
             p.image_path = c.value("image", "");
-            p.artist = c.value("artist", "");
+            p.url = c.value("url", "");
             pending.push_back(std::move(p));
         }
     }
 
+    std::vector<ChapterTextSample> url_chapters;
+    bool any_url = false;
     for (const auto &p : pending) {
         ChapterTextSample t{};
         t.text = p.title;
         t.start_ms = p.start_ms;
+        ChapterTextSample url_sample{};
+        url_sample.start_ms = p.start_ms;
+        // Keep URL track text empty; golden URL tracks can carry minimal/empty text.
+        url_sample.text = "";
+        if (!p.url.empty()) {
+            any_url = true;
+            url_sample.href = p.url;
+        }
         texts.push_back(t);
+        url_chapters.push_back(std::move(url_sample));
 
         if (!p.image_path.empty()) {
             ChapterImageSample im{};
@@ -104,12 +115,9 @@ static bool load_chapters_json(
             im.start_ms = t.start_ms;
             images.push_back(std::move(im));
         }
-        if (!p.artist.empty()) {
-            ChapterMetadataSample m{};
-            m.start_ms = p.start_ms;
-            m.payload = "title=" + p.title + ";artist=" + p.artist;
-            metadata_track.push_back(std::move(m));
-        }
+    }
+    if (any_url) {
+        extra_text_tracks.push_back({"Chapter URLs", std::move(url_chapters)});
     }
     meta.title = j.value("title", "");
     meta.artist = j.value("artist", "");
@@ -144,10 +152,10 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
 
     std::vector<ChapterTextSample> text_chapters;
     std::vector<ChapterImageSample> image_chapters;
-    std::vector<ChapterMetadataSample> metadata_track;
+    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
     MetadataSet meta;
     if (!load_chapters_json(chapter_json_path, text_chapters, image_chapters, meta,
-                            metadata_track)) {
+                            extra_text_tracks)) {
         CH_LOG("error", "Failed to load chapters JSON: " << chapter_json_path);
         return false;
     }
@@ -165,7 +173,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
         CH_LOG("meta", "Using metadata provided by JSON overrides");
     }
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta, fast_start,
-                     {}, metadata_track, ilst_ptr);
+                     extra_text_tracks, ilst_ptr);
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
@@ -190,9 +198,9 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     } else {
         CH_LOG("meta", "Using metadata provided by caller");
     }
-    std::vector<ChapterMetadataSample> metadata_track;
+    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                     {}, metadata_track, ilst_ptr);
+                     extra_text_tracks, ilst_ptr);
 }
 
 }  // namespace chapterforge

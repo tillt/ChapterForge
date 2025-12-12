@@ -15,6 +15,7 @@
 // Represents a chapter title sample.
 struct ChapterTextSample {
     std::string text;       // UTF-8 text
+    std::string href;       // optional hyperlink URL (tx3g modifier)
     uint32_t start_ms = 0;  // absolute start time in ms
 };
 

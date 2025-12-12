@@ -8,8 +8,8 @@
 #include "tkhd_builder.hpp"
 
 static std::unique_ptr<Atom> build_tkhd_common(uint32_t track_id, uint64_t duration, uint8_t flags3,
-                                               uint16_t volume, uint16_t layer, float width,
-                                               float height) {
+                                               uint16_t volume, uint16_t layer, uint16_t alt_group,
+                                               float width, float height) {
     auto tkhd = Atom::create("tkhd");
     std::vector<uint8_t> &p = tkhd->payload;
 
@@ -29,8 +29,8 @@ static std::unique_ptr<Atom> build_tkhd_common(uint32_t track_id, uint64_t durat
 
     write_u64(p, 0);  // reserved[8]
 
-    write_u16(p, layer);  // layer
-    write_u16(p, 0);      // alternate_group
+    write_u16(p, layer);      // layer
+    write_u16(p, alt_group);  // alternate_group
 
     write_u16(p, volume);  // 0x0100 for audio, 0 for others
     write_u16(p, 0);       // reserved
@@ -54,16 +54,19 @@ static std::unique_ptr<Atom> build_tkhd_common(uint32_t track_id, uint64_t durat
 }
 
 std::unique_ptr<Atom> build_tkhd_audio(uint32_t track_id, uint64_t duration) {
-    return build_tkhd_common(track_id, duration, 7, 0x0100, 0, 0.0f, 0.0f);
+    return build_tkhd_common(track_id, duration, 7, 0x0100, 0, 0, 0.0f, 0.0f);
 }
 
-std::unique_ptr<Atom> build_tkhd_text(uint32_t track_id, uint64_t duration) {
-    return build_tkhd_common(track_id, duration, 1, 0x0000, 0, 0.0f, 0.0f);
+std::unique_ptr<Atom> build_tkhd_text(uint32_t track_id, uint64_t duration, bool enabled) {
+    uint32_t flags = enabled ? 1 : 0;
+    // Use alternate_group=1 so parallel text tracks are grouped together (helps AVFoundation
+    // pair title + URL tracks like the golden samples).
+    return build_tkhd_common(track_id, duration, flags, 0x0000, 0, 1, 0.0f, 0.0f);
 }
 
 std::unique_ptr<Atom> build_tkhd_image(uint32_t track_id, uint64_t duration, uint16_t width,
                                        uint16_t height) {
     // Mark as enabled/in-movie/in-preview (flags=7) so players like QuickTime.
     // consider it for display as the visual track.
-    return build_tkhd_common(track_id, duration, 7, 0x0000, 0, (float)width, (float)height);
+    return build_tkhd_common(track_id, duration, 7, 0x0000, 0, 0, (float)width, (float)height);
 }

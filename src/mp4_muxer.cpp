@@ -12,6 +12,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <limits>
 
 #include "aac_extractor.hpp"
 #include "chapter_timing.hpp"
@@ -22,7 +23,6 @@
 #include "mp4_atoms.hpp"
 #include "stbl_audio_builder.hpp"
 #include "stbl_image_builder.hpp"
-#include "stbl_metadata_builder.hpp"
 #include "stbl_text_builder.hpp"
 #include "trak_builder.hpp"
 #include "udta_builder.hpp"
@@ -155,7 +155,6 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const MetadataSet &metadata, bool fast_start,
                const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
                    &extra_text_tracks,
-               const std::vector<ChapterMetadataSample> &metadata_samples,
                const std::vector<uint8_t> *ilst_payload) {
     //
     // 0) open file.
@@ -188,38 +187,50 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     //
     // Text samples: just raw UTF-8 data.
     //
-    auto encode_tx3g = [](const std::string &text) {
+    auto encode_tx3g = [](const ChapterTextSample &sample) {
         std::vector<uint8_t> out;
-        // length prefix (2 bytes)
-        uint16_t len = static_cast<uint16_t>(text.size());
+        uint16_t len = static_cast<uint16_t>(sample.text.size());
         write_u16(out, len);
-        out.insert(out.end(), text.begin(), text.end());
-        // style record count = 0 (2 bytes)
-        write_u16(out, 0);
+        out.insert(out.end(), sample.text.begin(), sample.text.end());
+        if (!sample.href.empty()) {
+            uint8_t url_len = static_cast<uint8_t>(std::min<size_t>(sample.href.size(), 255));
+            uint16_t start = 0;
+            uint16_t end = 0x000a;  // observed in golden samples
+            uint32_t box_size = 4 + 4 + 2 + 2 + 1 + url_len + 1;  // +1 pad
+            write_u32(out, box_size);
+            out.push_back('h');
+            out.push_back('r');
+            out.push_back('e');
+            out.push_back('f');
+            write_u16(out, start);
+            write_u16(out, end);
+            out.push_back(url_len);
+            out.insert(out.end(), sample.href.begin(), sample.href.begin() + url_len);
+            out.push_back(0x00);
+        }
         return out;
     };
 
     std::vector<std::vector<uint8_t>> text_samples;
-    text_samples.reserve(text_chapters.size());
+    text_samples.reserve(text_chapters.size() + 1);
     for (auto &tx : text_chapters) {
-        text_samples.emplace_back(encode_tx3g(tx.text));
+        text_samples.emplace_back(encode_tx3g(tx));
+    }
+    if (!text_chapters.empty()) {
+        text_samples.emplace_back(encode_tx3g(text_chapters.back()));  // pad trailing sample
     }
     std::vector<std::vector<std::vector<uint8_t>>> extra_text_samples;
     extra_text_samples.reserve(extra_text_tracks.size());
     for (const auto &track : extra_text_tracks) {
         std::vector<std::vector<uint8_t>> samples;
-        samples.reserve(track.second.size());
+        samples.reserve(track.second.size() + 1);
         for (const auto &tx : track.second) {
-            samples.emplace_back(encode_tx3g(tx.text));
+            samples.emplace_back(encode_tx3g(tx));
+        }
+        if (!track.second.empty()) {
+            samples.emplace_back(encode_tx3g(track.second.back()));  // pad trailing sample
         }
         extra_text_samples.push_back(std::move(samples));
-    }
-
-    // Metadata samples: raw UTF-8 payloads (no length prefix).
-    std::vector<std::vector<uint8_t>> metadata_payloads;
-    metadata_payloads.reserve(metadata_samples.size());
-    for (const auto &m : metadata_samples) {
-        metadata_payloads.emplace_back(m.payload.begin(), m.payload.end());
     }
 
     //
@@ -249,18 +260,13 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     const uint32_t chapter_timescale = 1000;
     auto text_durations = derive_durations_ms_from_starts(text_chapters);
     auto image_durations = derive_durations_ms_from_starts(image_chapters);
-    auto metadata_durations = derive_durations_ms_from_starts(metadata_samples);
     uint64_t text_duration_ts = 0;
     uint64_t image_duration_ts = 0;
-    uint64_t metadata_duration_ts = 0;
     for (auto dur_ms : text_durations) {
         text_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
     }
     for (auto dur_ms : image_durations) {
         image_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
-    }
-    for (auto dur_ms : metadata_durations) {
-        metadata_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
     }
 
     CH_LOG("info", "[durations] text_ts=" << text_duration_ts << " image_ts=" << image_duration_ts
@@ -279,7 +285,6 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     for (const auto &samples : extra_text_samples) {
         extra_text_chunk_plans.emplace_back(samples.size(), 1);
     }
-    std::vector<uint32_t> metadata_chunk_plan(metadata_payloads.size(), 1);
     std::vector<uint32_t> image_chunk_plan = [](size_t count) {
         std::vector<uint32_t> plan;
         if (count == 0) {
@@ -301,16 +306,10 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     all_text_samples.push_back(text_samples);
     all_text_samples.insert(all_text_samples.end(), extra_text_samples.begin(),
                             extra_text_samples.end());
-    if (!metadata_payloads.empty()) {
-        all_text_samples.push_back(metadata_payloads);
-    }
     std::vector<std::vector<uint32_t>> all_text_chunk_plans;
     all_text_chunk_plans.push_back(text_chunk_plan);
     all_text_chunk_plans.insert(all_text_chunk_plans.end(), extra_text_chunk_plans.begin(),
                                 extra_text_chunk_plans.end());
-    if (!metadata_chunk_plan.empty()) {
-        all_text_chunk_plans.push_back(metadata_chunk_plan);
-    }
 
     // Compute image width/height from the first JPEG when available to match.
     // encoded size.
@@ -355,26 +354,25 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     //
     const uint32_t AUDIO_TRACK_ID = 1;
     const uint32_t TEXT_TRACK_ID = 2;
-    const bool has_metadata_track = !metadata_payloads.empty();
     const uint32_t IMAGE_TRACK_ID =
-        TEXT_TRACK_ID + 1 + static_cast<uint32_t>(extra_text_tracks.size()) +
-        static_cast<uint32_t>(has_metadata_track);
+        TEXT_TRACK_ID + 1 + static_cast<uint32_t>(extra_text_tracks.size());
 
     const uint32_t mvhd_timescale = 600;
     const uint64_t tkhd_audio_duration = (audio_duration_ts * mvhd_timescale) / audio_timescale;
     const uint64_t tkhd_chapter_duration = (text_duration_ts * mvhd_timescale) / chapter_timescale;
-    const uint64_t tkhd_metadata_duration =
-        (metadata_duration_ts * mvhd_timescale) / chapter_timescale;
     const uint64_t tkhd_image_duration =
         has_image_track ? (image_duration_ts * mvhd_timescale) / chapter_timescale : 0;
     const uint64_t mvhd_duration =
-        has_image_track
-            ? std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_image_duration,
-                        tkhd_metadata_duration})
-            : std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_metadata_duration});
+        has_image_track ? std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_image_duration})
+                        : std::max(tkhd_audio_duration, tkhd_chapter_duration);
 
-    // Only the primary title track (and optional image track) should be referenced as chapters.
-    std::vector<uint32_t> chapter_refs = {TEXT_TRACK_ID};
+    // Reference all chapter text tracks (title + extras) and optional image in tref/chap.
+    std::vector<uint32_t> chapter_refs;
+    // Match golden ordering: primary title track first, then additional text (URLs), then image.
+    chapter_refs.push_back(TEXT_TRACK_ID);
+    for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
+        chapter_refs.push_back(TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i));
+    }
     if (has_image_track) {
         chapter_refs.push_back(IMAGE_TRACK_ID);
     }
@@ -383,27 +381,17 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                                        std::move(stbl_audio), chapter_refs, tkhd_audio_duration);
 
     std::vector<std::unique_ptr<Atom>> text_traks;
+    // Mirror golden sample: title track not default-enabled, URL track enabled.
     text_traks.push_back(build_trak_text(TEXT_TRACK_ID, chapter_timescale, text_duration_ts,
                                          std::move(stbl_text), tkhd_chapter_duration,
-                                         "Chapter Titles"));
-
-    uint32_t metadata_track_id =
-        has_metadata_track ? (TEXT_TRACK_ID + 1 + static_cast<uint32_t>(extra_text_tracks.size()))
-                           : 0;
+                                         "Chapter Titles", false));
 
     for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
         uint32_t tid = TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i);
         auto stbl_extra = build_text_stbl(extra_text_tracks[i].second, chapter_timescale);
         text_traks.push_back(build_trak_text(tid, chapter_timescale, text_duration_ts,
                                              std::move(stbl_extra), tkhd_chapter_duration,
-                                             extra_text_tracks[i].first));
-    }
-
-    if (has_metadata_track) {
-        auto stbl_meta = build_metadata_stbl(metadata_samples, chapter_timescale);
-        text_traks.push_back(build_trak_metadata(metadata_track_id, chapter_timescale,
-                                                 metadata_duration_ts, std::move(stbl_meta),
-                                                 tkhd_metadata_duration, "Chapter Metadata"));
+                                             extra_text_tracks[i].first, true));
     }
 
     std::unique_ptr<Atom> trak_image;

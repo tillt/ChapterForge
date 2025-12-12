@@ -18,7 +18,6 @@
 #include "mp4_atoms.hpp"
 #include "mp4a_builder.hpp"
 #include "stbl_image_builder.hpp"
-#include "stbl_metadata_builder.hpp"
 #include "stbl_text_builder.hpp"
 
 // Complete MP4 writer: takes raw AAC (ADTS) bytes, chapter text/image samples,
@@ -29,6 +28,6 @@ bool write_mp4(const std::string &path, const AacExtractResult &aac,
                const std::vector<ChapterTextSample> &text_chapters,
                const std::vector<ChapterImageSample> &image_chapters, Mp4aConfig audio_cfg,
                const MetadataSet &meta, bool fast_start = true,
-               const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> &extra_text_tracks = {},
-               const std::vector<ChapterMetadataSample> &metadata_samples = {},
+               const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
+                   &extra_text_tracks = {},
                const std::vector<uint8_t> *ilst_payload = nullptr);

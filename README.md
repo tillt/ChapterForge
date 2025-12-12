@@ -9,7 +9,7 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 
 ## Motivation and Backstory
 
-The MPEG4 standard does not explicitly describe chapter marks.
+MPEG4 and its container MP4 standard do not explicitly describe chapter marks. Apple however did, implicitly.
 
 Back in the days, under the umbrella of the QuickTime.framework, Apple had released authoring tools for audiobooks. With those tools you could add jump-marks to an M4A file. Those jump-marks could have a description text, an image and possibly more. That way a user could conveniently jump to specific sections of the audio -- useful for example as a mark for chapters. There are many players that understand those, but not all do. Specifically Apple who has pushed for this "extension" of the standard, has traditionally been understanding it in their players. That is true for Music.app, iTunes.app, QuickTime.app and even Books.app. All of them today support chapter marks. Windows has existing support there as well. That said it becomes clear, this is not standard but at least a functional solution for the challenge of encoding such thing into the audio file.
 
@@ -24,7 +24,14 @@ The player I am tinkering with needs support for storing a track-list / set-list
 
 ## Features
 
-ChapterForge uses the audio track from the input. It then combines that with a text track for the description and a video track for the optional chapter images. All of that information gets bundled in the resulting output M4A file. With that M4A file you can now see chapter marks in your player.
+ChapterForge uses the audio track from the input. It then combines that with a text track for the description, an optional text track for per-chapter URLs, and a video track for optional chapter images. All of that information gets bundled in the resulting output M4A file. With that M4A file you can now see chapter marks in your player.
+
+### Notes on Apple-style chapter URL handling
+
+- A second `tx3g` track is created only when at least one chapter provides a `url`. Its samples carry an `href` modifier box; AVFoundation surfaces this as `extraAttributes[HREF]`.
+- URL samples may have empty text; the `href` drives the URL display.
+- Text tracks are padded with two extra samples (like the golden files) to satisfy Apple players: sample_count = chapter_count + 2, stts/stsz/stsc entries match that.
+- Images remain separate (MJPEG track) and are unaffected by the URL/text pairing.
 
 
 ## Platforms
@@ -95,12 +102,14 @@ ChapterForge consumes a simple JSON document:
     {
       "title": "Introduction",           // required
       "start_ms": 0,                     // required: chapter start time in milliseconds
-      "image": "chapter1.jpg"            // optional; path relative to the JSON file
+      "image": "chapter1.jpg",           // optional; path relative to the JSON file
+      "url": "https://example.com"       // optional; creates a URL text track with HREF
     },
     {
       "title": "Main Discussion",
       "start_ms": 10000,
-      "image": "chapter2.jpg"
+      "image": "chapter2.jpg",
+      "url": ""
     }
   ]
 }
@@ -109,6 +118,7 @@ ChapterForge consumes a simple JSON document:
 Notes:
 - Chapters are positioned by absolute start times (`start_ms`); the muxer converts these to durations internally.
 - Chapter images are optional; omit `image` to create a text-only chapter.
+- Chapter URLs are optional; omit `url` to skip the URL track entirely.
 - If top-level metadata fields are omitted and the input file already contains an `ilst`, the existing metadata is preserved automatically.
 - Paths for `cover` and per-chapter `image` are resolved relative to the JSON file location.
 
@@ -173,7 +183,7 @@ Use the higher-level overload if you already have chapters/material in memory an
 
 ## Atom flow (input → output)
 
-ChapterForge preserves the source audio track and metadata (`ilst`) and adds two new tracks for chapters:
+ChapterForge preserves the source audio track and metadata (`ilst`) and adds up to three new tracks for chapters:
 
 ```
 Input (AAC in M4A/MP4)
@@ -193,8 +203,10 @@ Output (ChapterForge)
 ├─ moov
 │  ├─ mvhd
 │  ├─ trak (audio, reused stbl when input is MP4/M4A)
-│  ├─ trak (chapter text, tx3g)
-│  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco
+│  ├─ trak (chapter titles, tx3g)
+│  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco (padded samples)
+│  ├─ trak (chapter URLs, tx3g with href) [only if any chapter has `url`]
+│  │  └─ same structure as titles; text may be empty, href carries the URL
 │  ├─ trak (chapter images, jpeg)
 │  │  └─ stbl with stsd(jpeg) + stts/stsc/stsz/stco/stss
 │  └─ udta/meta/ilst (reused if present, otherwise from JSON)
@@ -202,6 +214,58 @@ Output (ChapterForge)
 ```
 
 Fast-start repacks `moov` ahead of `mdat` when requested.
+
+### Chapter track reference (titles, URLs, images)
+
+```
+trak (titles)
+  tkhd flags=1, alt_group=1, id=2
+  hdlr type='text', name='Chapter Titles'
+  mdia
+    mdhd timescale=1000
+    hdlr text
+    minf/nmhd
+      stbl
+        stsd -> tx3g sample entry
+          displayFlags=0x00000000
+          justification=0x01ff
+          bgColor=0x1f1f1f00
+          default style: start=0 end=0 fontID=1 face=1 size=0x12 color=000000FF
+          ftab: 1 font, "Sans-Serif"
+        stts: one entry per sample, sample_count = chapter_count + 2 (padded)
+        stsc: 3 entries, 1 sample per chunk
+        stsz: per-sample sizes (chapter_count + 2)
+        stco: chunk offsets (chapter_count + 2)
+
+trak (URLs, only if any chapter has `url`)
+  tkhd flags=1, alt_group=1, id=3
+  hdlr type='text', name='Chapter URLs'
+  mdia/mdhd timescale=1000
+  stbl mirrors titles; samples carry `href` box:
+    sample = [len][utf8 text (often empty)][href box]
+    href box: size=0x1a, type='href', start=0, end=0x000a, url_len, url bytes, pad
+  Same padding rule: chapter_count + 2 samples, matching stts/stsc/stsz/stco
+
+trak (images)
+  tkhd flags=7, id=4, width/height set from first JPEG
+  hdlr type='vide', name='Chapter Images'
+  mdia/mdhd timescale=1000
+  stsd jpeg sample entry
+  stts/stsc/stsz/stco sized to number of images; stss marks every sample as sync
+```
+
+These settings mirror Apple-authored “golden” files so that QuickTime, Music.app, and AVFoundation surface titles, URLs (`extraAttributes[HREF]`), and thumbnails reliably.
+
+### tx3g sample entry and samples (what we emit)
+
+- `stsd` `tx3g` sample entry matches Apple/golden layout:
+  - displayFlags: `0x00000000`
+  - justification: `0x01FF`
+  - bg color: `0x1f1f1f00`
+  - default style: start=0, end=0, fontID=1, face=1, size=0x12, color RGBA `00 00 00 FF`
+  - font table: single entry “Sans-Serif”
+- Text samples: `[len][utf8 text][href box?]` where href box is `size=0x1a type=href start=0 end=0x000a len url pad`.
+- Padding: we duplicate the final text/URL samples twice so Apple players see `chapter_count + 2` samples (mirrors golden behavior).
 
 ## Contributing
 
