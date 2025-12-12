@@ -17,9 +17,9 @@ CB_VOICE_CAND=("Samantha" "Victoria")
 # Arpeggiator scale ratios (quasi minor-ish) to sweep harmonies across chapters.
 ARP_SCALE=(1.0 1.12246 1.18921 1.33484 1.49830 1.68179 1.88775 2.0)
 
-# Number chains: Whisper at ~80% speed with +200% gain; Deep male at ~81% speed with reduced level.
-WHISPER_CHAIN="atempo=0.8,volume=3.0[wout]"
-DEEP_CHAIN="atempo=0.81,volume=0.5[dout]"
+# Number chains: both voices at the same pace; whisper carries its own spacey echo.
+WHISPER_CHAIN="atempo=0.85,aecho=0.6:0.6:500:0.45,volume=3.0[wout]"
+DEEP_CHAIN="atempo=0.85,volume=0.6[dout]"
 mkdir -p "${OUTDIR}"
 TMP=$(mktemp -d)
 trap 'rm -rf "${TMP}"' EXIT
@@ -67,19 +67,19 @@ make_seg() {
   local chor=${CHORUS_MOD[$((idx % ${#CHORUS_MOD[@]}))]}
   local arp=${ARP_SCALE[$((idx % ${#ARP_SCALE[@]}))]}
   ffmpeg -y -loglevel error \
-    -f lavfi -i "sine=frequency=${basefreq}:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*0.5:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*2:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*4:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*1.005:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*0.25:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*${arp}:duration=5" \
-    -f lavfi -i "sine=frequency=${basefreq}*${arp}*2:duration=5" \
-    -f lavfi -i "anoisesrc=d=5:c=pink" \
+    -f lavfi -i "sine=frequency=${basefreq}:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*0.5:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*2:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*4:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*1.005:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*0.25:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*${arp}:duration=8" \
+    -f lavfi -i "sine=frequency=${basefreq}*${arp}*2:duration=8" \
+    -f lavfi -i "anoisesrc=d=8:c=pink" \
     -i "${number_whisper_aiff}" \
     -i "${number_deep_aiff}" \
     -i "${comment_aiff}" \
-    -f lavfi -i "anoisesrc=d=5:c=brown" \
+    -f lavfi -i "anoisesrc=d=8:c=brown" \
     -filter_complex "\
 [0:a]volume=0.9[a0];\
 [1:a]volume=0.7[a1];\
@@ -90,7 +90,11 @@ make_seg() {
 [6:a]volume=0.7[a6];\
 [7:a]volume=0.5[a7];\
 [a0][a1][a2][a3][a4][a5][a6][a7]amix=inputs=8:normalize=0[tone];\
-[tone]lowpass=f=${lp},highpass=f=120,asetrate=44100*0.995,aresample=44100,chorus=0.5:0.7:${chor}:0.35:0.22:2,flanger=delay=0.4:depth=1.2:regen=0:width=7:speed=0.2[pad];\
+[tone]asplit=2[t_det][t_main];\
+[t_det]asetrate=44100*1.01,aresample=44100,afade=t=out:st=0:d=4[detune];\
+[t_main]afade=t=in:ss=0:d=4[steady];\
+[detune][steady]amix=inputs=2:normalize=0[tone_hybrid];\
+[tone_hybrid]lowpass=f=${lp},highpass=f=120,asetrate=44100*0.995,aresample=44100,chorus=0.5:0.7:${chor}:0.3:0.18:1.8,flanger=delay=0.4:depth=0.9:regen=0:width=6:speed=0.18[pad];\
 [8:a]lowpass=f=820,highpass=f=180,volume=${nv},tremolo=f=4:d=0.4[tex];\
 [pad][tex]amix=inputs=2:normalize=0,acompressor=threshold=-14dB:ratio=2.2:attack=10:release=80,alimiter=limit=0.8[padmix];\
 [9:a]${WHISPER_CHAIN};\
@@ -99,8 +103,14 @@ make_seg() {
 [11:a]highpass=f=1200,lowpass=f=3800,acompressor=threshold=-18dB:ratio=2:attack=5:release=60,volume=0.6[comcore];\
 [12:a]highpass=f=1000,lowpass=f=3200,volume=0.03,tremolo=f=6:d=0.7[comnoise];\
 [comcore][comnoise]amix=inputs=2:normalize=0[com];\
-[padmix][number][com]amix=inputs=3:normalize=0,atrim=duration=5,afade=t=in:ss=0:d=0.2,afade=t=out:st=4.6:d=0.3" \
-    -ac 1 "${out}"
+[padmix]pan=stereo|c0=c0|c1=c0[padst];\
+[com]pan=stereo|c0=c0|c1=c0[comst];\
+[number]asplit=2[nl][nr];\
+[nl]adelay=0|0,pan=stereo|c0=c0|c1=0*c0[nl_st];\
+[nr]adelay=320|320,pan=stereo|c0=0*c0|c1=c0[nr_st];\
+[nl_st][nr_st]amix=inputs=2:normalize=0,alimiter=limit=0.9,afade=t=out:st=0:d=12[number_st];\
+[padst][number_st][comst]amix=inputs=3:normalize=0,afade=t=in:ss=0:d=0.25,afade=t=out:st=6.5:d=1.5" \
+    -ac 2 "${out}"
 }
 
 # 50 fun voice lines to rotate through (female CB-ish)
@@ -165,7 +175,7 @@ voice_line() {
   echo "Chapter ${num}. ${base}"
 }
 
-# 10s sample (two 5s chapters)
+# 10s sample (two overlapping 5s-offset chapters)
 say_seg "${NUMBER_WHISPER}" "1" "${TMP}/numw1.aiff"
 say_seg "${NUMBER_DEEP}" "1" "${TMP}/numd1.aiff"
 say_seg "${CB_VOICE}" "$(voice_line 0)" "${TMP}/cb1.aiff"
@@ -175,9 +185,8 @@ say_seg "${CB_VOICE}" "$(voice_line 1)" "${TMP}/cb2.aiff"
 make_seg 220 "${TMP}/numw1.aiff" "${TMP}/numd1.aiff" "${TMP}/cb1.aiff" "${TMP}/seg1.wav" 0
 make_seg 330 "${TMP}/numw2.aiff" "${TMP}/numd2.aiff" "${TMP}/cb2.aiff" "${TMP}/seg2.wav" 1
 
-concat2="[0:a][1:a]concat=n=2:v=0:a=1,asetpts=PTS-STARTPTS"
 ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" \
-  -filter_complex "${concat2}" \
+  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,alimiter=limit=0.95" \
   -metadata title="ChapterForge Sample 10s (Pads)" \
   -metadata artist="ChapterForge Bot" \
   -metadata album="Synthetic Pad Chapters" \
@@ -186,7 +195,7 @@ ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" \
   -c:a aac -b:a 128k "${OUTDIR}/input.m4a"
 
 ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" \
-  -filter_complex "${concat2}" \
+  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,alimiter=limit=0.95" \
   -metadata title="ChapterForge Sample 10s (Pads)" \
   -metadata artist="ChapterForge Bot" \
   -metadata album="Synthetic Pad Chapters" \
@@ -206,12 +215,17 @@ for i in $(seq 1 50); do
   inputs+=(-i "${TMP}/seg${i}.wav")
 done
 
-concat12=""
-for idx in $(seq 0 49); do concat12+="[${idx}:a]"; done
-concat12+="concat=n=50:v=0:a=1,asetpts=PTS-STARTPTS"
+mix_filter=""
+mix_inputs=""
+for idx in $(seq 0 49); do
+  delay=$(( idx * 5000 ))
+  mix_filter+="[${idx}:a]adelay=${delay}|${delay}[d${idx}];"
+  mix_inputs+="[d${idx}]"
+done
+mix_filter+="${mix_inputs}amix=inputs=50:normalize=0,alimiter=limit=0.95"
 
 ffmpeg -y -loglevel error "${inputs[@]}" \
-  -filter_complex "${concat12}" \
+  -filter_complex "${mix_filter}" \
   -metadata title="ChapterForge Galactic Tour (Pads)" \
   -metadata artist="Sega Nebulae" \
   -metadata album="Interstellar Cartridge Deluxe" \
@@ -223,7 +237,7 @@ ffmpeg -y -loglevel error "${inputs[@]}" \
   -c:a aac -b:a 128k "${OUTDIR}/input_large.m4a"
 
 ffmpeg -y -loglevel error "${inputs[@]}" \
-  -filter_complex "${concat12}" \
+  -filter_complex "${mix_filter}" \
   -metadata title="ChapterForge Galactic Tour (Pads)" \
   -metadata artist="Sega Nebulae" \
   -metadata album="Interstellar Cartridge Deluxe" \
