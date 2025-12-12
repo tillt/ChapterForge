@@ -42,7 +42,7 @@ else()
     set(CHAPTERFORGE_VERSION_DISPLAY "${CHAPTERFORGE_VERSION_STRING}")
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -179,6 +179,9 @@ if(ENABLE_DOCS)
         configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
         add_custom_target(docs
             COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_BINARY_DIR}/docs/html
+                    ${CMAKE_CURRENT_SOURCE_DIR}/docs/html
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             COMMENT "Generating API documentation in ${CMAKE_CURRENT_BINARY_DIR}/docs/html"
             VERBATIM
