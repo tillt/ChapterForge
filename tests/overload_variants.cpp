@@ -27,6 +27,15 @@ int main(int argc, char **argv) {
     std::string cover = argv[2];
     std::string out_dir = argv[3];
 
+    if (!std::filesystem::exists(input)) {
+        std::cout << "[overload_variants] skipping: missing input fixture " << input << "\n";
+        return 0;
+    }
+    if (!cover.empty() && !std::filesystem::exists(cover)) {
+        std::cout << "[overload_variants] skipping: missing cover fixture " << cover << "\n";
+        return 0;
+    }
+
     std::filesystem::create_directories(out_dir);
 
     // Common text chapters (two chapters at 0ms and 5s).
