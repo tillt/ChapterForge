@@ -224,6 +224,12 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     if (sizes.empty()) {
         return std::nullopt;
     }
+    // Sanity: bound sample count to reasonable size relative to file.
+    if (sizes.size() > file_size / 8) {  // heuristic: avg sample >= 8 bytes
+        CH_LOG("error", "Unreasonable sample count (" << sizes.size()
+                                                      << "); aborting parse for " << path);
+        return std::nullopt;
+    }
 
     CH_LOG("parser", "mp4 reuse: sizes=" << sizes.size() << " stco_bytes=" << parsed.stco.size()
                                          << " stsc_bytes=" << parsed.stsc.size()
@@ -232,6 +238,11 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     std::vector<uint32_t> chunk_plan =
         derive_chunk_plan(parsed.stsc, static_cast<uint32_t>(sizes.size()));
     if (chunk_plan.empty()) {
+        return std::nullopt;
+    }
+    if (chunk_plan.size() > sizes.size() * 4 || chunk_plan.size() > 1000000) {
+        CH_LOG("error", "Unreasonable chunk plan size=" << chunk_plan.size()
+                                                        << " samples=" << sizes.size());
         return std::nullopt;
     }
 

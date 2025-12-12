@@ -11,7 +11,9 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
+#include <sstream>
 
 #include "logging.hpp"
 #include "mp4_atoms.hpp"
@@ -52,6 +54,29 @@ static std::vector<uint8_t> read_bytes(std::istream &in, uint64_t size) {
     std::vector<uint8_t> buf(size);
     in.read(reinterpret_cast<char *>(buf.data()), size);
     return buf;
+}
+
+// Render a short hex+ASCII preview from a given offset without changing the stream position.
+static std::string hex_preview(std::istream &in, uint64_t offset, uint64_t max_len) {
+    std::string out;
+    std::streampos cur = in.tellg();
+    in.seekg(offset);
+    const uint64_t len = std::min<uint64_t>(max_len, 64);
+    std::vector<uint8_t> buf(len);
+    in.read(reinterpret_cast<char *>(buf.data()), len);
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    for (size_t i = 0; i < buf.size(); ++i) {
+        oss << std::setw(2) << static_cast<unsigned>(buf[i]) << " ";
+    }
+    oss << "| ";
+    for (uint8_t b : buf) {
+        oss << (std::isprint(b) ? static_cast<char>(b) : '.');
+    }
+    out = oss.str();
+    in.clear();
+    in.seekg(cur);
+    return out;
 }
 
 // Naive scan for ilst payload (fallback when structured parse misses it)
@@ -126,7 +151,15 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
         }
         while (remain > 8) {
             auto child = read_atom_header(in);
+            if (!in || child.size < 8 || child.size > remain) {
+                CH_LOG("parser", "meta child invalid size=" << child.size << " remain=" << remain);
+                break;
+            }
             uint64_t payload_size = child.size - 8;
+            if (payload_size > remain - 8) {
+                CH_LOG("parser", "meta child payload exceeds remain; breaking");
+                break;
+            }
             if (child.type == fourcc("ilst")) {
                 out.ilst_payload = read_bytes(in, payload_size);
                 CH_LOG("parser", "captured ilst payload, bytes=" << out.ilst_payload.size());
@@ -158,10 +191,10 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
     in.seekg(end);
 }
 
-// Parse hdlr to retrieve handler type.
-static uint32_t parse_hdlr(std::istream &in, uint64_t size) {
-    if (size < 8) {
-        skip(in, size);
+// Parse hdlr to retrieve handler type. Expects payload size (box size minus 8).
+static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
+    if (payload_size < 20) {  // too small to contain required fields
+        skip(in, payload_size);
         return 0;
     }
 
@@ -177,8 +210,8 @@ static uint32_t parse_hdlr(std::istream &in, uint64_t size) {
 
     // skip reserved + name.
     uint64_t consumed = 1 + 3 + 4 + 4 + 12;
-    if (size > consumed) {
-        skip(in, size - consumed);
+    if (payload_size > consumed) {
+        skip(in, payload_size - consumed);
     }
     return handler_type;
 }
@@ -383,34 +416,58 @@ while (in.peek() != EOF) {
                                     bool mdia_overflow = false;
 
                                     while (mdia_remain >= 8) {
+                                        CH_LOG("parser", " mdia pos=" << (uint64_t)in.tellg()
+                                                                      << " remain=" << mdia_remain);
                                         auto m = read_atom_header(in);
-                                        if (!in || m.size < 8) {
-                                            CH_LOG("parser", "mdia break: stream bad or size<8");
-                                            break;
-                                        }
-                                        uint64_t mpay = m.size - 8;
-                                        CH_LOG("parser", " mdia child=" << std::hex << m.type
-                                                                        << std::dec
-                                                                        << " size=" << m.size);
+                                    if (!in || m.size < 8) {
+                                        CH_LOG("parser", "mdia break: stream bad or size<8");
+                                        break;
+                                    }
+                                    uint64_t mpay = m.size - 8;
+                                    if (m.size > mdia_remain) {
+                                        CH_LOG("parser",
+                                               " mdia child type=" << std::hex << m.type
+                                                                   << std::dec
+                                                                   << " claims size=" << m.size
+                                                                   << " but remain=" << mdia_remain
+                                                                   << " — clamping and bailing "
+                                                                      "from mdia");
+                                        mdia_overflow = true;
+                                        in.seekg(mdia_end);
+                                        mdia_remain = 0;
+                                        break;
+                                    }
+                                    CH_LOG("parser",
+                                           " mdia child type=" << std::hex << m.type << std::dec
+                                                               << " size=" << m.size
+                                                               << " offset=" << m.offset);
 
-                                        // If a bogus child claims to run past mdia, bail to fallback.
-                                        if (m.offset + m.size > mdia_end) {
+                                    // If a bogus child claims to run past mdia, clamp it but keep
+                                    // parsing so we can avoid a full fallback where possible.
+                                    if (m.offset + m.size > mdia_end) {
+                                        uint64_t allowed = mdia_end - m.offset;
+                                        if (allowed < 8) {
                                             CH_LOG("parser",
-                                                   " mdia child overflow; deferring to fallback stbl");
+                                                   " mdia child overflow too large; bail");
                                             mdia_overflow = true;
                                             in.seekg(mdia_end);
                                             mdia_remain = 0;
                                             break;
                                         }
+                                        CH_LOG("parser", " mdia child overflow; clamping size "
+                                                             << m.size << " -> " << allowed);
+                                        m.size = allowed;
+                                        mpay = m.size - 8;
+                                    }
 
-                                        if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
-                                            parse_mdhd(in, mpay, mdhd_timescale, mdhd_duration);
-                                            CH_LOG("parser", "  mdhd timescale=" << mdhd_timescale
-                                                                                << " duration="
-                                                                                << mdhd_duration);
+                                    if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
+                                        parse_mdhd(in, mpay, mdhd_timescale, mdhd_duration);
+                                        CH_LOG("parser", "  mdhd timescale=" << mdhd_timescale
+                                                                            << " duration="
+                                                                            << mdhd_duration);
                                         } else if (m.type ==
                                                    ('h' << 24 | 'd' << 16 | 'l' << 8 | 'r')) {
-                                            handler_type = parse_hdlr(in, mpay);
+                                            handler_type = parse_hdlr(in, m.size);
                                             CH_LOG("parser",
                                                    "  hdlr=" << std::hex << handler_type
                                                              << std::dec);
@@ -446,13 +503,47 @@ while (in.peek() != EOF) {
                                             }
                                             in.seekg(minf_end);
                                         } else {
-                                            skip(in, mpay);
+                                            // Try to salvage by scanning this mdia child payload for
+                                            // an embedded 'minf' (some malformed files nest it oddly).
+                                            if (mpay > 0 && mpay < 256 * 1024) {  // cap read size
+                                                auto buf = read_bytes(in, mpay);
+                                                const uint32_t minf_tag = ('m' << 24 | 'i' << 16 |
+                                                                           'n' << 8 | 'f');
+                                                for (size_t off = 0; off + 4 <= buf.size(); ++off) {
+                                                    uint32_t maybe =
+                                                        (buf[off] << 24) | (buf[off + 1] << 16) |
+                                                        (buf[off + 2] << 8) | buf[off + 3];
+                                                    if (maybe == minf_tag) {
+                                                        uint64_t abs_pos = m.offset + 8 + off;
+                                                        CH_LOG("parser", "  found nested minf @"
+                                                                             << abs_pos << " inside "
+                                                                             << std::hex << m.type
+                                                                             << std::dec);
+                                                        in.seekg((std::streamoff)abs_pos);
+                                                        // Re-run minf parse from here.
+                                                        uint64_t minf_remaining = mdia_end - abs_pos;
+                                                        parse_stbl(in, minf_remaining, stsd, stts,
+                                                                   stsc, stsz, stco);
+                                                        // Position to end of mdia.
+                                                        in.seekg(mdia_end);
+                                                        mdia_remain = 0;
+                                                        goto mdia_done;
+                                                    }
+                                                }
+                                            } else {
+                                                skip(in, mpay);
+                                            }
                                         }
                                         if (m.size > mdia_remain) {
                                             break;
                                         }
+                                        // Ensure we land exactly at the end of this child before
+                                        // reading the next atom, even if the parser above consumed
+                                        // slightly less than declared.
+                                        in.seekg((std::streamoff)(m.offset + m.size));
                                         mdia_remain -= m.size;
                                     }
+mdia_done:
                                     in.seekg(mdia_end);
                                     if (mdia_overflow) {
                                         // Structured mdia failed; trigger fallback scan path.
@@ -471,12 +562,15 @@ while (in.peek() != EOF) {
                             if (handler_type == fourcc("soun")) {
                                 // prefer the audio track with the largest sample_count.
                                 uint32_t sample_count = 0;
-                                if (stsz.size() >= 8) {
-                                    // stsz payload: sample_size(4), sample_count(4), then table.
-                                    sample_count = (stsz[4] << 24) | (stsz[5] << 16) |
-                                                   (stsz[6] << 8) | stsz[7];
+                                if (stsz.size() >= 12) {
+                                    // stsz payload: version/flags(4), sample_size(4), sample_count(4).
+                                    sample_count = (stsz[8] << 24) | (stsz[9] << 16) |
+                                                   (stsz[10] << 8) | stsz[11];
                                 }
-                                if (sample_count > best_audio_samples) {
+                                // If we have no audio yet, keep the first parsed audio even if the
+                                // sample_count field is zero (some sources omit it).
+                                if (!stsz.empty() &&
+                                    (best_audio_samples == 0 || sample_count >= best_audio_samples)) {
                                     best_audio_samples = sample_count;
                                     out.audio_timescale = mdhd_timescale;
                                     out.audio_duration = mdhd_duration;
