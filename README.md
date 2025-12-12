@@ -222,8 +222,6 @@ Fast-start repacks `moov` ahead of `mdat` when requested.
 
 ### Chapter track reference (titles, URLs, images)
 
-![ChapterForge track layout](docs/diagrams/chapter_tracks.png)
-
 ```
 trak (titles)
   tkhd flags=1, alt_group=1, id=2
