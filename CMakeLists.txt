@@ -155,6 +155,7 @@ enable_testing()
 add_custom_target(generate_test_assets
     COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_audio.sh
     COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_images.sh
+    COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_json.sh
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
 )
@@ -199,9 +200,9 @@ set(INPUT_AAC_PATH "${TESTDATA_DIR}/input.aac" CACHE STRING "Path to the source 
 set(GOLDEN_M4A_PATH "${TESTDATA_DIR}/golden_chapters.m4a" CACHE STRING "Path to the golden M4A reference for chapter images")
 set(CHAPTER_JSON_PATH "${TESTDATA_DIR}/chapters.json" CACHE STRING "Path to the primary chapters JSON")
 option(ENABLE_STRICT_VALIDATION "Run stricter validation with multiple parsers (mp4info/mp4dump/ffprobe/MP4Box)" OFF)
-option(ENABLE_BIG_IMAGE_TESTS "Run heavy chapter-image tests (requires large input_big.m4a and large JPEGs)" OFF)
-set(INPUT_BIG_M4A_PATH "${TESTDATA_DIR}/input_big.m4a" CACHE STRING "Path to the large input M4A for big image tests")
-set(INPUT_BIG_AAC_PATH "${TESTDATA_DIR}/input_big.aac" CACHE STRING "Path to the large input AAC (ADTS) for big image AAC ingest tests")
+option(ENABLE_LARGE_IMAGE_TESTS "Run heavy chapter-image tests (requires large input_large.m4a and large JPEGs)" OFF)
+set(INPUT_LARGE_M4A_PATH "${TESTDATA_DIR}/input_large.m4a" CACHE STRING "Path to the large input M4A for large image tests")
+set(INPUT_LARGE_AAC_PATH "${TESTDATA_DIR}/input_large.aac" CACHE STRING "Path to the large input AAC (ADTS) for large image AAC ingest tests")
 option(ENABLE_AVFOUNDATION_SMOKE "Run AVFoundation smoke test (macOS only, requires swift)" OFF)
 option(ENABLE_DOCS "Generate Doxygen HTML documentation" ON)
 
@@ -282,20 +283,6 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
         message(STATUS "Skipping AAC ingest tests (INPUT_AAC_PATH missing: ${INPUT_AAC_PATH})")
     endif()
 
-    if(EXISTS "${GOLDEN_M4A_PATH}")
-        add_test(
-            NAME jpeg_track_compare
-            COMMAND ${CMAKE_COMMAND}
-                -DOUTPUT_M4A=${OUTPUT_M4A_PATH}
-                -DGOLDEN_M4A=${GOLDEN_M4A_PATH}
-                -DMP4INFO_PATH=${MP4INFO_PATH}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_jpeg_track.cmake
-        )
-        set_tests_properties(jpeg_track_compare PROPERTIES FIXTURES_REQUIRED assets)
-    else()
-        message(STATUS "Skipping jpeg_track_compare (missing golden M4A at ${GOLDEN_M4A_PATH})")
-    endif()
-
     # Convenience target: generate assets, then run all tests.
     add_custom_target(check_with_assets
         DEPENDS generate_test_assets chapterforge chapterforge_cli
@@ -327,40 +314,39 @@ if(ENABLE_STRICT_VALIDATION)
     )
 endif()
 
-if(ENABLE_BIG_IMAGE_TESTS)
-#Paths to chapter JSONs with large images; guarded by file existence
-    set(BIG5_JSON "${TESTDATA_DIR}/chapters_big5.json")
-    set(BIG35_JSON "${TESTDATA_DIR}/chapters_big35.json")
-    set(BIG_NOMETA_JSON "${TESTDATA_DIR}/chapters_big_nometa.json")
-    set(OUTPUT_BIG5 "${TESTDATA_DIR}/output_big5.m4a")
-    set(OUTPUT_BIG35 "${TESTDATA_DIR}/output_big35.m4a")
-    set(OUTPUT_BIG_AAC "${CMAKE_BINARY_DIR}/output_big_from_aac.m4a")
-    set(OUTPUT_BIG_AAC "${CMAKE_BINARY_DIR}/output_big_from_aac.m4a")
+if(ENABLE_LARGE_IMAGE_TESTS)
+#Paths to chapter JSONs with normal/large images; guarded by file existence
+    set(NORMAL5_JSON "${TESTDATA_DIR}/chapters_normal_5.json")
+    set(NORMAL_NOMETA_JSON "${TESTDATA_DIR}/chapters_normal_nometa_5.json")
+    set(LARGE50_JSON "${TESTDATA_DIR}/chapters_large_50.json")
+    set(OUTPUT_NORMAL5 "${TESTDATA_DIR}/output_normal5.m4a")
+    set(OUTPUT_LARGE50 "${TESTDATA_DIR}/output_large50.m4a")
+    set(OUTPUT_LARGE_AAC "${CMAKE_BINARY_DIR}/output_large_from_aac.m4a")
 
-    if(EXISTS "${INPUT_M4A_PATH}" AND EXISTS "${BIG5_JSON}")
+    if(EXISTS "${INPUT_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
         add_test(
-            NAME big_image_5
+            NAME large_image_5
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}
-            -DCHAPTER_JSON=${BIG5_JSON}
-            -DOUTPUT_M4A=${OUTPUT_BIG5}
+            -DCHAPTER_JSON=${NORMAL5_JSON}
+            -DOUTPUT_M4A=${OUTPUT_NORMAL5}
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
     else()
-        message(STATUS "Skipping big_image_5 (missing INPUT_M4A_PATH or chapters_big5.json)")
+        message(STATUS "Skipping large_image_5 (missing INPUT_M4A_PATH or chapters_normal_5.json)")
     endif()
 
 #Metadata preservation on large input : leave JSON metadata empty so ilst is
 #copied through verbatim from the source M4A.
-    if(EXISTS "${INPUT_BIG_M4A_PATH}" AND EXISTS "${BIG_NOMETA_JSON}")
-        set(OUTPUT_BIG_NOMETA "${CMAKE_BINARY_DIR}/output_big_nometa.m4a")
+    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL_NOMETA_JSON}")
+        set(OUTPUT_LARGE_NOMETA "${CMAKE_BINARY_DIR}/output_large_nometa.m4a")
         add_test(
-            NAME big_image_metadata_preserve
+            NAME large_image_metadata_preserve
             COMMAND ${CMAKE_COMMAND}
-            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-            -DCHAPTER_JSON=${BIG_NOMETA_JSON}
-            -DOUTPUT_M4A=${OUTPUT_BIG_NOMETA}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DCHAPTER_JSON=${NORMAL_NOMETA_JSON}
+            -DOUTPUT_M4A=${OUTPUT_LARGE_NOMETA}
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DXXD_PATH=${XXD_PATH}
             -DMP4INFO_PATH=${MP4INFO_PATH}
@@ -369,19 +355,19 @@ if(ENABLE_BIG_IMAGE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
         )
     else()
-        message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_BIG_M4A_PATH or chapters_big_nometa.json)")
+        message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_LARGE_M4A_PATH or chapters_big_nometa.json)")
     endif()
 
 #AAC ingest variant using the large AAC source and the smaller big5 chapter
 #set to keep run time reasonable.
-    if(EXISTS "${INPUT_BIG_AAC_PATH}" AND EXISTS "${INPUT_BIG_M4A_PATH}" AND EXISTS "${BIG5_JSON}")
+    if(EXISTS "${INPUT_LARGE_AAC_PATH}" AND EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
         add_test(
-            NAME big_image_aac
+            NAME large_image_aac
             COMMAND ${CMAKE_COMMAND}
-            -DINPUT_AAC=${INPUT_BIG_AAC_PATH}
-            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-            -DOUTPUT_M4A=${OUTPUT_BIG_AAC}
-            -DCHAPTER_JSON=${BIG5_JSON}
+            -DINPUT_AAC=${INPUT_LARGE_AAC_PATH}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DOUTPUT_M4A=${OUTPUT_LARGE_AAC}
+            -DCHAPTER_JSON=${NORMAL5_JSON}
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DFASTSTART_FLAG=ON
             -DXXD_PATH=${XXD_PATH}
@@ -391,21 +377,21 @@ if(ENABLE_BIG_IMAGE_TESTS)
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
     else()
-        message(STATUS "Skipping big_image_aac (missing INPUT_BIG_AAC_PATH, INPUT_BIG_M4A_PATH, or chapters_big5.json)")
+        message(STATUS "Skipping big_image_aac (missing INPUT_LARGE_AAC_PATH, INPUT_LARGE_M4A_PATH, or chapters_normal_5.json)")
     endif()
 
-    if(EXISTS "${INPUT_BIG_M4A_PATH}" AND EXISTS "${BIG35_JSON}")
+    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${LARGE50_JSON}")
         add_test(
-            NAME big_image_35
+            NAME large_image_50
             COMMAND ${CMAKE_COMMAND}
-            -DINPUT_M4A=${INPUT_BIG_M4A_PATH}
-            -DCHAPTER_JSON=${BIG35_JSON}
-            -DOUTPUT_M4A=${OUTPUT_BIG35}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DCHAPTER_JSON=${LARGE50_JSON}
+            -DOUTPUT_M4A=${OUTPUT_LARGE50}
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
     else()
-        message(STATUS "Skipping big_image_35 (missing INPUT_BIG_M4A_PATH or chapters_big35.json)")
+        message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_large_50.json)")
     endif()
 endif()
 

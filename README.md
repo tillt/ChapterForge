@@ -143,6 +143,13 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
+// JSON helper
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::string& chapter_json_path,
+                     const std::string& output_path,
+                     bool fast_start = true);
+
+// Titles + images + metadata
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::string& chapter_json_path,
                      const std::string& output_path);
@@ -152,6 +159,22 @@ bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::vector<ChapterImageSample>& image_chapters,
                      const MetadataSet& metadata,
                      const std::string& output_path);
+
+// Titles + metadata (no images)
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::vector<ChapterTextSample>& text_chapters,
+                     const MetadataSet& metadata,
+                     const std::string& output_path,
+                     bool fast_start = true);
+
+// Titles + URLs + images + metadata (URL track optional)
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::vector<ChapterTextSample>& text_chapters,
+                     const std::vector<ChapterTextSample>& url_chapters,
+                     const std::vector<ChapterImageSample>& image_chapters,
+                     const MetadataSet& metadata,
+                     const std::string& output_path,
+                     bool fast_start = true);
 ```
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.

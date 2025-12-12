@@ -1,62 +1,98 @@
 #!/usr/bin/env bash
-# Generate clean “neon on dark” poster-style chapter artwork with numbered labels.
-# Outputs:
-#   - chapter1.jpg .. chapter9.jpg at 1280x720 plus cover.jpg
-#   - big1.jpg .. big35.jpg at 800x800
-# Requirements: ffmpeg with drawtext (fontconfig) available on PATH.
+# Generate CRT-flavored, neon-on-dark artwork with numbered labels.
+# Output files land in testdata/images (small/normal/large sets).
 set -euo pipefail
 
-OUTDIR="testdata"
+OUTDIR="testdata/images"
 mkdir -p "${OUTDIR}"
 
-# Soft gradient pairs (top/bottom) and matching accents.
-TOP_COLORS=("#0b132b" "#0d1b2a" "#0a0f1f" "#0b1024" "#0c1c2c" "#10192a")
-BOT_COLORS=("#1f2a44" "#1f4068" "#1c2e4a" "#2a1f3f" "#17324a" "#22324f")
-ACCENTS=("#6fffe9" "#ff7edb" "#7dff8a" "#ffd166" "#9f7bff" "#7be0ff")
+# neon_pop settings from generate_variations.sh
+COLOR1="#00f0ff"
+COLOR2="#0c1024"
+SPACING1=8
+SPACING2=6
+GHOST_OFFSET=12
+SCROLL_STEP=-480
+SAT=1.6
+CTR=1.15
 
 make_image() {
     local name=$1 width=$2 height=$3 label=$4 idx=$5
 
-    local top=${TOP_COLORS[$((idx % ${#TOP_COLORS[@]}))]}
-    local bot=${BOT_COLORS[$((idx % ${#BOT_COLORS[@]}))]}
-    local accent=${ACCENTS[$((idx % ${#ACCENTS[@]}))]}
-
     local font_size=$((height / 4))
-    local brand_size=$((height / 14))
-    local grid_gap=$((width / 18))
+    local brand_size_small=$((width * 14 / 100))
+    local big_scroll=$(( -2 * width + (idx * SCROLL_STEP) ))
 
-    # Choose a motif to make each image distinct.
-    local motif=$((idx % 4))
-    local pattern=""
-    if [[ ${motif} -eq 0 ]]; then
-        pattern="drawgrid=width=${grid_gap}:height=${grid_gap}:thickness=1:color=${accent}@0.09"
-    elif [[ ${motif} -eq 1 ]]; then
-        pattern="geq=r='mod((X-${width}/2)*(X-${width}/2)+(Y-${height}/2)*(Y-${height}/2),255)':g='mod((X-${width}/2)*(X-${width}/2),255)':b='mod((Y-${height}/2)*(Y-${height}/2),255)',boxblur=10"
-    elif [[ ${motif} -eq 2 ]]; then
-        pattern="drawgrid=width=$((grid_gap/2)):height=$((grid_gap/2)):thickness=2:color=${accent}@0.12,drawgrid=width=${grid_gap}:height=${grid_gap}:thickness=1:color=${accent}@0.08"
-    else
-        pattern="geq=r='128+40*sin(0.04*X+0.01*Y)':g='128+40*sin(0.02*X-0.03*Y)':b='128+40*sin(0.03*X+0.02*Y)'"
+    # Scale pattern sizes: 1x small, 2x normal, 5x large.
+    local scale=1
+    if [[ ${width} -ge 2000 ]]; then
+        scale=5
+    elif [[ ${width} -ge 800 ]]; then
+        scale=2
     fi
+    local sp1=$((SPACING1 * scale))
+    local sp2=$((SPACING2 * scale))
+    # Lower frequencies for larger scale to make waves/lines thicker.
+    local f1=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.27/s) }')
+    local f2=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.1125/s) }')
+    local f3=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.225/s) }')
+    local f4=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.18/s) }')
+    local f5=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.315/s) }')
+    local f6=$(awk -v s=${scale} 'BEGIN { printf("%.6f", 0.135/s) }')
 
-    # Build the filter graph: vertical gradient, blur, motif overlay, bloom/screen blend, glow-ish number, brand tag.
-    local filters="[0:v][1:v]blend=all_expr='A*(1-Y/H)+B*(Y/H)',boxblur=6,${pattern},split[bbase][bbright];[bbright]curves=all='0/0 0.4/0.05 0.7/1 1/1',gblur=sigma=12,eq=brightness=0.02:saturation=1.15[glow];[bbase][glow]blend=all_mode=screen:all_opacity=0.55,drawtext=font=Helvetica:text='${label}':fontcolor=${accent}@0.9:bordercolor=${accent}@0.4:borderw=16:fontsize=${font_size}:x=(w-text_w)/2:y=(h-text_h)/2:shadowx=6:shadowy=6:shadowcolor=${accent}@0.25,drawtext=font=Helvetica:text='${label}':fontcolor=${accent}:bordercolor=${accent}@0.15:borderw=4:fontsize=${font_size}:x=(w-text_w)/2:y=(h-text_h)/2:shadowx=2:shadowy=2:shadowcolor=${accent}@0.3,drawtext=font=Helvetica:text='ChapterForge':fontcolor=${accent}@0.9:fontsize=${brand_size}:x=w-30-text_w:y=h-30-text_h:shadowx=2:shadowy=2:shadowcolor=${accent}@0.25"
-
-    ffmpeg -v quiet -y \
-        -f lavfi -i "color=c=${top}:s=${width}x${height}" \
-        -f lavfi -i "color=c=${bot}:s=${width}x${height}" \
-        -filter_complex "${filters}" \
-        -frames:v 1 "${OUTDIR}/${name}"
+    # Minimal filter graph that matches neon_pop final composition.
+    FILTERS=$(cat <<EOF
+[0:v][1:v]blend=all_expr='A*(1-0.6*Y/H)+B*(0.6*Y/H)',gblur=sigma=8,curves=all='0/0 0.35/0.05 0.7/1 1/1',eq=saturation=${SAT}:contrast=${CTR},vignette=PI/4:0.7[base];
+color=c=black@0:s=${width}x${height},geq=r='128+110*sin(${f1}*X+${f2}*Y)':g='128+110*sin(${f3}*X-${f4}*Y)':b='128+110*sin(${f5}*X+${f6}*Y)',eq=saturation=2.8:contrast=1.05:brightness=0.06,curves=all='0/0 0.35/0.2 0.65/1 1/1',gblur=sigma=1.0,format=rgba[rainbow];
+[rainbow][base]blend=all_mode=addition:all_opacity=0.6[mix];
+[2:v]geq=r='if(eq(mod(floor(X/(${sp1}/2)),3),0),255,0)':g='if(eq(mod(floor(X/(${sp1}/2)),3),1),255,0)':b='if(eq(mod(floor(X/(${sp1}/2)),3),2),255,0)':a='if(eq(mod(floor(X/(${sp1}/2)),3),0)+eq(mod(floor(X/(${sp1}/2)),3),1)+eq(mod(floor(X/(${sp1}/2)),3),2),255,0)',format=rgba,eq=saturation=3.5:brightness=0.2,gblur=sigma=1.2[scan1];
+[3:v]geq=r='if(eq(mod(floor(X/(${sp2}/2)),3),0),255,0)':g='if(eq(mod(floor(X/(${sp2}/2)),3),1),255,0)':b='if(eq(mod(floor(X/(${sp2}/2)),3),2),255,0)':a='if(eq(mod(floor(X/(${sp2}/2)),3),0)+eq(mod(floor(X/(${sp2}/2)),3),1)+eq(mod(floor(X/(${sp2}/2)),3),2),235,0)',format=rgba,eq=saturation=3.0:brightness=0.15,gblur=sigma=0.9[scan2];
+[4:v]drawtext=font=Helvetica-Bold:text='ChapterForge':fontcolor=#ffb000@1.0:fontsize=${brand_size_small}:x=(w-text_w)/2:y=(h-text_h)/2+(${height}/4):shadowx=-4:shadowy=-4:shadowcolor=#ff7a00@0.3,format=rgba[brand_small_src];
+[4:v]drawtext=font=Helvetica-Bold:text='ChapterForge':fontcolor=#ffd60a@0.2:fontsize=$((height*3)):x=${big_scroll}:y=(h-text_h)/2:shadowx=10:shadowy=10:shadowcolor=#ff7a00@0.05,format=rgba[brand_big_src];
+[brand_small_src]colorchannelmixer=aa=0.8[brand_small];
+[brand_big_src]colorchannelmixer=aa=0.0005[brand_big];
+[brand_big][brand_small]blend=all_mode=addition:all_opacity=0.05[brand_pure];
+[mix][brand_pure]blend=all_mode=addition:all_opacity=1.0[brand_mix];
+[brand_mix][scan1]blend=all_mode=multiply:all_opacity=0.3[s1];
+[s1][scan2]blend=all_mode=multiply:all_opacity=0.3[stage_scan];
+color=c=black@0:s=${width}x${height},format=rgba[ov_small];
+[ov_small]drawtext=font=Helvetica-Bold:text='ChapterForge':fontcolor=#ffb000@1.0:fontsize=${brand_size_small}:x=(w-text_w)/2:y=(h-text_h)/2+(${height}/4):shadowx=-4:shadowy=-4:shadowcolor=#ff7a00@0.3[ov_s_ready];
+color=c=black@0:s=${width}x${height},format=rgba[ov_big];
+[ov_big]drawtext=font=Helvetica-Bold:text='ChapterForge':fontcolor=#ffd60a@0.25:fontsize=$((height*3)):x=${big_scroll}:y=(h-text_h)/2:shadowx=8:shadowy=8:shadowcolor=#ff7a00@0.08[ov_b_ready];
+[stage_scan][ov_s_ready]overlay=format=auto[tmp1];
+[tmp1][ov_b_ready]overlay=format=auto[stage_color];
+[4:v]drawtext=font=Helvetica-Bold:text='${label}':fontcolor=red:fontsize=${font_size}:x=(w-text_w)/2-${GHOST_OFFSET}:y=(h-text_h)/2-${GHOST_OFFSET}:shadowx=2:shadowy=2:shadowcolor=red@0.3,format=rgba[r];
+[4:v]drawtext=font=Helvetica-Bold:text='${label}':fontcolor=green:fontsize=${font_size}:x=(w-text_w)/2+${GHOST_OFFSET}:y=(h-text_h)/2+${GHOST_OFFSET}:shadowx=2:shadowy=2:shadowcolor=green@0.3,format=rgba[g];
+[4:v]drawtext=font=Helvetica-Bold:text='${label}':fontcolor=blue:fontsize=${font_size}:x=(w-text_w)/2+${GHOST_OFFSET}/2:y=(h-text_h)/2-${GHOST_OFFSET}:shadowx=2:shadowy=2:shadowcolor=blue@0.3,format=rgba[b];
+[r][g]blend=all_mode=screen[rg];
+[rg][b]blend=all_mode=screen[ghost];
+[stage_color][ghost]overlay=format=auto:alpha=0.05[final_s]
+EOF
+    )
+    ffmpeg -v error -y \
+        -f lavfi -i "color=c=${COLOR1}:s=${width}x${height}" \
+        -f lavfi -i "color=c=${COLOR2}:s=${width}x${height}" \
+        -f lavfi -i "color=c=black@0:s=${width}x${height},format=rgba" \
+        -f lavfi -i "color=c=black@0:s=${width}x${height},format=rgba" \
+        -f lavfi -i "color=c=black@0:s=${width}x${height},format=rgba" \
+        -filter_complex "${FILTERS}" \
+        -map "[final_s]" -frames:v 1 "${OUTDIR}/${name}"
 }
 
-echo "Generating 1280x720 chapter images..."
+echo "Generating 400x400 small chapter images..."
 for i in $(seq 1 2); do
-    make_image "chapter${i}.jpg" 1280 720 "${i}" $((i-1))
+    make_image "chapter${i}.jpg" 400 400 "${i}" $((i-1))
 done
-make_image "cover.jpg" 1280 720 "Cover" 99
+make_image "cover.jpg" 400 400 "Cover" 99
 
-echo "Generating 800x800 big images..."
+echo "Generating 800x800 normal images..."
 for i in $(seq 1 12); do
-    make_image "big${i}.jpg" 800 800 "${i}" $((i-1))
+    make_image "normal${i}.jpg" 800 800 "${i}" $((i-1))
+done
+
+echo "Generating 2000x2000 large images..."
+for i in $(seq 1 50); do
+    make_image "large${i}.jpg" 2000 2000 "${i}" $((i-1))
 done
 
 echo "Images written to ${OUTDIR}"

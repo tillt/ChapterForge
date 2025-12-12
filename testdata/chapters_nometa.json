@@ -1,6 +1,9 @@
 {
   "chapters": [
-    { "start_ms": 0,    "title": "Silent Metadata Ninja", "image": "chapter1.jpg" },
-    { "start_ms": 5000, "title": "Steals Nothing, Leaves All", "image": "chapter2.jpg" }
+    { "start_ms": 0, "title": "Silent Hello" },
+    { "start_ms": 2200, "title": "Mildly Lost" },
+    { "start_ms": 5100, "title": "Found Snacks" },
+    { "start_ms": 7600, "title": "Dramatic Pause" },
+    { "start_ms": 9100, "title": "End Credits" }
   ]
 }

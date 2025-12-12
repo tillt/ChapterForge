@@ -1,23 +1,16 @@
 {
-  "title": "ChapterForge Longform – Twelve Tiny Tales",
+  "title": "ChapterForge Longform – Five Tangents",
   "artist": "The Pad Sprites",
   "album": "Extended Neon Stories",
   "genre": "Test Audio",
   "year": "2025",
-  "comment": "Twelve 5-second chapters with matching big artwork.",
+  "comment": "Five uneven stops on a 60s pad ride.",
   "cover": "big1.jpg",
   "chapters": [
-    { "start_ms": 0,     "title": "Gate Opens",        "artist": "Prelude Bot",       "image": "big1.jpg" },
-    { "start_ms": 5000,  "title": "Left at Albuquerque", "artist": "Wanderer Bot",    "image": "big2.jpg" },
-    { "start_ms": 10000, "title": "Snack Interlude",   "artist": "Snacky Bot",        "image": "big3.jpg" },
-    { "start_ms": 15000, "title": "Quantum Detour",    "artist": "Quark Bot",         "image": "big4.jpg" },
-    { "start_ms": 20000, "title": "Coffee Break",      "artist": "Barista Bot",       "image": "big5.jpg" },
-    { "start_ms": 25000, "title": "Unexpected Dance",  "artist": "Groove Bot",        "image": "big6.jpg" },
-    { "start_ms": 30000, "title": "Plot Twist",        "artist": "Twister Bot",       "image": "big7.jpg" },
-    { "start_ms": 35000, "title": "Debugging Dreams",  "artist": "Debugger Bot",      "image": "big8.jpg" },
-    { "start_ms": 40000, "title": "Late for Standup",  "artist": "Sprint Bot",        "image": "big9.jpg" },
-    { "start_ms": 45000, "title": "Cache Miss",        "artist": "Cache Bot",         "image": "big10.jpg" },
-    { "start_ms": 50000, "title": "Mild Cliffhanger",  "artist": "Cliff Bot",         "image": "big11.jpg" },
-    { "start_ms": 55000, "title": "Roll Credits",      "artist": "Credits Bot",       "image": "big12.jpg" }
+    { "start_ms": 0, "title": "Chapter 1", "image": "big1.jpg" },
+    { "start_ms": 5000, "title": "Chapter 2", "image": "big2.jpg" },
+    { "start_ms": 10000, "title": "Chapter 3", "image": "big3.jpg" },
+    { "start_ms": 15000, "title": "Chapter 4", "image": "big4.jpg" },
+    { "start_ms": 20000, "title": "Chapter 5", "image": "big5.jpg" }
   ]
 }
