@@ -6,7 +6,10 @@ on:
 jobs:
   notarize:
     runs-on: macos-latest
-    steps:
+    environment:
+      name: release
+      url: https://release.example.com
+	steps:
       - name: Checkout
         uses: actions/checkout@v4
 
