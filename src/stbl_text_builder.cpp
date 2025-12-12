@@ -1,8 +1,9 @@
 //
-//  stbl_text_builder.cpp.
-//  ChapterForge.
+//  stbl_text_builder.cpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #include "stbl_text_builder.hpp"

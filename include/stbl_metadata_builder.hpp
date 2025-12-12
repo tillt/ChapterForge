@@ -1,9 +1,9 @@
 //
-//  stbl_metadata_builder.hpp.
-//  ChapterForge.
+//  stbl_metadata_builder.hpp
+//  ChapterForge
 //
-//  Builds a timed-metadata (mdta) sample table using a simple text-based 'mett'
-//  sample entry. Each sample payload is arbitrary bytes (we emit UTF-8 text).
+//  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #pragma once

@@ -1,8 +1,9 @@
 //
-//  meta_builder.hpp.
-//  ChapterForge.
+//  meta_builder.hpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #pragma once

@@ -1,8 +1,9 @@
 //
-//  chapter_timing.hpp.
-//  ChapterForge.
+//  chapter_timing.hpp
+//  ChapterForge
 //
-//  Utility to derive per-chapter durations from absolute start times.
+//  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #pragma once

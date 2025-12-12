@@ -164,6 +164,30 @@ target_link_libraries(parser_fallback_check PRIVATE chapterforge)
 target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
 
+add_executable(overload_variants tests/overload_variants.cpp)
+target_link_libraries(overload_variants PRIVATE chapterforge)
+target_include_directories(overload_variants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(NAME overload_variants
+    COMMAND overload_variants "${INPUT_M4A_PATH}" "${TESTDATA_DIR}/cover.jpg" "${CMAKE_BINARY_DIR}/overload_outputs")
+
+# Documentation (HTML via Doxygen)
+if(ENABLE_DOCS)
+    find_package(Doxygen)
+    if(DOXYGEN_FOUND)
+        set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+        set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+        configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT} @ONLY)
+        add_custom_target(docs
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMENT "Generating API documentation in ${CMAKE_CURRENT_BINARY_DIR}/docs/html"
+            VERBATIM
+        )
+    else()
+        message(WARNING "ENABLE_DOCS=ON but Doxygen not found; docs target will not be generated.")
+    endif()
+endif()
+
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 set(TESTDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 set(OUTPUT_M4A_PATH "${TESTDATA_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")
@@ -176,6 +200,7 @@ option(ENABLE_BIG_IMAGE_TESTS "Run heavy chapter-image tests (requires large inp
 set(INPUT_BIG_M4A_PATH "${TESTDATA_DIR}/input_big.m4a" CACHE STRING "Path to the large input M4A for big image tests")
 set(INPUT_BIG_AAC_PATH "${TESTDATA_DIR}/input_big.aac" CACHE STRING "Path to the large input AAC (ADTS) for big image AAC ingest tests")
 option(ENABLE_AVFOUNDATION_SMOKE "Run AVFoundation smoke test (macOS only, requires swift)" OFF)
+option(ENABLE_DOCS "Generate Doxygen HTML documentation" ON)
 
 if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(XXD_PATH xxd)

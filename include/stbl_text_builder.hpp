@@ -1,8 +1,9 @@
 //
-//  stbl_text_builder.hpp.
-//  ChapterForge.
+//  stbl_text_builder.hpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #pragma once
@@ -12,7 +13,10 @@
 
 #include "mp4_atoms.hpp"
 
-// Represents a chapter title sample.
+/// Represents a chapter title sample.
+/// - `text`: UTF-8 chapter title.
+/// - `href`: Optional hyperlink URL (tx3g modifier). Leave empty for plain title.
+/// - `start_ms`: Absolute start time in milliseconds.
 struct ChapterTextSample {
     std::string text;       // UTF-8 text
     std::string href;       // optional hyperlink URL (tx3g modifier)

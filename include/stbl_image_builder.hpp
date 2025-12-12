@@ -1,8 +1,9 @@
 //
-//  stbl_image_builder.hpp.
-//  ChapterForge.
+//  stbl_image_builder.hpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #pragma once
@@ -12,6 +13,9 @@
 
 #include "mp4_atoms.hpp"
 
+/// Represents a chapter image sample (JPEG).
+/// - `data`: Raw JPEG bytes for the chapter thumbnail/frame.
+/// - `start_ms`: Absolute start time in milliseconds.
 struct ChapterImageSample {
     std::vector<uint8_t> data;  // JPEG binary data
     uint32_t start_ms = 0;      // absolute start time in ms

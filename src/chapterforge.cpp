@@ -203,4 +203,53 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      extra_text_tracks, ilst_ptr);
 }
 
+bool mux_file_to_m4a(const std::string &input_audio_path,
+                     const std::vector<ChapterTextSample> &text_chapters,
+                     const MetadataSet &metadata, const std::string &output_path,
+                     bool fast_start) {
+    std::vector<ChapterImageSample> empty_images;
+    return mux_file_to_m4a(input_audio_path, text_chapters, empty_images, metadata, output_path,
+                           fast_start);
+}
+
+bool mux_file_to_m4a(const std::string &input_audio_path,
+                     const std::vector<ChapterTextSample> &text_chapters,
+                     const std::vector<ChapterImageSample> &image_chapters,
+                     const std::string &output_path, bool fast_start) {
+    MetadataSet empty{};
+    return mux_file_to_m4a(input_audio_path, text_chapters, image_chapters, empty, output_path,
+                           fast_start);
+}
+
+bool mux_file_to_m4a(const std::string &input_audio_path,
+                     const std::vector<ChapterTextSample> &text_chapters,
+                     const std::vector<ChapterTextSample> &url_chapters,
+                     const std::vector<ChapterImageSample> &image_chapters,
+                     const MetadataSet &metadata, const std::string &output_path, bool fast_start) {
+    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
+    auto aac = load_audio(input_audio_path);
+    if (!aac) {
+        CH_LOG("error", "Failed to load audio from " << input_audio_path);
+        return false;
+    }
+    Mp4aConfig cfg{};
+    const std::vector<uint8_t> *ilst_ptr = nullptr;
+    if (!aac->ilst_payload.empty()) {
+        ilst_ptr = &aac->ilst_payload;
+        CH_LOG("meta", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
+    } else if (metadata_is_empty(metadata)) {
+        CH_LOG("meta",
+               "WARNING: source metadata missing and no metadata "
+               "provided; output will carry empty ilst");
+    } else {
+        CH_LOG("meta", "Using metadata provided by caller");
+    }
+    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
+    if (!url_chapters.empty()) {
+        extra_text_tracks.push_back({"Chapter URLs", url_chapters});
+    }
+    return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
+                     extra_text_tracks, ilst_ptr);
+}
+
 }  // namespace chapterforge

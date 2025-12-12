@@ -1,8 +1,9 @@
 //
-//  aac_extractor.cpp.
-//  ChapterForge.
+//  aac_extractor.cpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #include "aac_extractor.hpp"

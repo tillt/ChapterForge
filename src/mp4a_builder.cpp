@@ -1,8 +1,9 @@
 //
-//  mp4a_builder.cpp.
-//  ChapterForge.
+//  mp4a_builder.cpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #include "mp4a_builder.hpp"

@@ -1,8 +1,9 @@
 //
-//  minf_builder.cpp.
-//  ChapterForge.
+//  minf_builder.cpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
 
 #include "minf_builder.hpp"

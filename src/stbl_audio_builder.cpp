@@ -1,9 +1,11 @@
 //
-//  stbl_audio_builder.cpp.
-//  ChapterForge.
+//  stbl_audio_builder.cpp
+//  ChapterForge
 //
 //  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
 //
+
 #include "stbl_audio_builder.hpp"
 
 #include <tuple>
