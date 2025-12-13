@@ -191,61 +191,73 @@ file(APPEND "${TEST_LOG}" "==== xxd full dump (output) ====\n${OUTPUT_XXD_DUMP}\
 
 # When input is present, compare key audio properties between input and output
 if(HAVE_INPUT_M4A AND MP4INFO_PATH)
-    set(fields sample_count timescale sample_rate channels codec_string)
-
-    # Normalize mp4info output to lowercase for tolerant matching.
-    string(TOLOWER "${INPUT_MP4INFO}" INPUT_MP4INFO_LC)
-    string(TOLOWER "${OUTPUT_MP4INFO}" OUTPUT_MP4INFO_LC)
-
-    function(extract_field PREFIX REGEX FIELDNAME)
-        string(REGEX MATCH "${REGEX}" _match "${${PREFIX}_MP4INFO_LC}")
-        if(NOT _match)
-            message(FATAL_ERROR
-                "Could not find '${REGEX}' in ${PREFIX} mp4info output.\n"
-                "mp4info ${PREFIX} output was:\n${${PREFIX}_MP4INFO}")
+    # Require Bento4 mp4info; use JSON output for deterministic parsing.
+    function(run_mp4info_json OUTVAR FILE)
+        execute_process(
+            COMMAND ${MP4INFO_PATH} --format json "${FILE}"
+            RESULT_VARIABLE rv
+            OUTPUT_VARIABLE out
+            ERROR_VARIABLE err
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_STRIP_TRAILING_WHITESPACE
+        )
+        if(NOT rv EQUAL 0)
+            message(FATAL_ERROR "mp4info --format json failed for ${FILE} (ensure Bento4 mp4info is installed):\n${err}\n${out}")
         endif()
-        set(${PREFIX}_${FIELDNAME} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        set(${OUTVAR} "${out}" PARENT_SCOPE)
     endfunction()
 
-    # Tolerant patterns for both mp4v2 and gpac mp4info variants.
-    extract_field(INPUT "sample[ _]?count[^0-9]*([0-9]+)" sample_count)
-    extract_field(INPUT "timescale[^0-9]*([0-9]+)" timescale)
-    extract_field(INPUT "sample[ _]?rate[^0-9]*([0-9]+)" sample_rate)
-    extract_field(INPUT "channels[^0-9]*([0-9]+)" channels)
-    # Codec string: fall back to any line containing "codec"
-    string(REGEX MATCH "codec string[^\\n]*:?[ \\t]*([^\\n]+)" _codec_in "${INPUT_MP4INFO}")
-    if(_codec_in)
-        set(INPUT_codec_string "${CMAKE_MATCH_1}")
-    else()
-        string(REGEX MATCH "codec[^\\n]*:?[ \\t]*([^\\n]+)" _codec_in2 "${INPUT_MP4INFO}")
-        if(_codec_in2)
-            set(INPUT_codec_string "${CMAKE_MATCH_1}")
-        else()
-            message(FATAL_ERROR
-                "Could not find codec string in input mp4info output.\n"
-                "mp4info input output was:\n${INPUT_MP4INFO}")
-        endif()
-    endif()
+    run_mp4info_json(INPUT_MP4INFO_JSON "${INPUT_M4A}")
+    run_mp4info_json(OUTPUT_MP4INFO_JSON "${OUTPUT_M4A}")
 
-    extract_field(OUTPUT "sample[ _]?count[^0-9]*([0-9]+)" sample_count)
-    extract_field(OUTPUT "timescale[^0-9]*([0-9]+)" timescale)
-    extract_field(OUTPUT "sample[ _]?rate[^0-9]*([0-9]+)" sample_rate)
-    extract_field(OUTPUT "channels[^0-9]*([0-9]+)" channels)
-    string(REGEX MATCH "codec string[^\\n]*:?[ \\t]*([^\\n]+)" _codec_out "${OUTPUT_MP4INFO}")
-    if(_codec_out)
-        set(OUTPUT_codec_string "${CMAKE_MATCH_1}")
-    else()
-        string(REGEX MATCH "codec[^\\n]*:?[ \\t]*([^\\n]+)" _codec_out2 "${OUTPUT_MP4INFO}")
-        if(_codec_out2)
-            set(OUTPUT_codec_string "${CMAKE_MATCH_1}")
+    string(TOLOWER "${INPUT_MP4INFO_JSON}" INPUT_MP4INFO_LC)
+    string(TOLOWER "${OUTPUT_MP4INFO_JSON}" OUTPUT_MP4INFO_LC)
+
+    set(fields sample_count timescale sample_rate channels codec_string)
+
+    function(parse_mp4info_json PREFIX JSON_LC JSON_RAW)
+        # Sample count: match sample_count or samplecount
+        foreach(pair "sample_count:\"sample_count\"[ \t]*:[ \t]*([0-9]+)"
+                     "sample_count:\"samplecount\"[ \t]*:[ \t]*([0-9]+)"
+                     "timescale:\"timescale\"[ \t]*:[ \t]*([0-9]+)"
+                     "sample_rate:\"sample_rate\"[ \t]*:[ \t]*([0-9]+)"
+                     "sample_rate:\"samplerate\"[ \t]*:[ \t]*([0-9]+)"
+                     "channels:\"channels\"[ \t]*:[ \t]*([0-9]+)"
+                     "channels:\"channel_count\"[ \t]*:[ \t]*([0-9]+)")
+            string(REPLACE ":" ";" parts "${pair}")
+            list(GET parts 0 field)
+            list(GET parts 1 regex)
+            string(REGEX MATCH "${regex}" _m "${JSON_LC}")
+            if(_m)
+                set(${PREFIX}_${field} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+            endif()
+        endforeach()
+        # Codec string: prefer codecs_string, otherwise codec or coding.
+        string(REGEX MATCH "\"codecs_string\"[ \t]*:[ \t]*\"([^\"]+)\"" _codec1 "${JSON_RAW}")
+        if(_codec1)
+            set(${PREFIX}_codec_string "${CMAKE_MATCH_1}" PARENT_SCOPE)
         else()
-            message(FATAL_ERROR
-                "Could not find codec string in output mp4info output.\n"
-                "mp4info output was:\n${OUTPUT_MP4INFO}")
+            string(REGEX MATCH "\"codec\"[ \t]*:[ \t]*\"([^\"]+)\"" _codec2 "${JSON_RAW}")
+            if(_codec2)
+                set(${PREFIX}_codec_string "${CMAKE_MATCH_1}" PARENT_SCOPE)
+            else()
+                string(REGEX MATCH "\"coding\"[ \t]*:[ \t]*\"([^\"]+)\"" _codec3 "${JSON_RAW}")
+                if(_codec3)
+                    set(${PREFIX}_codec_string "${CMAKE_MATCH_1}" PARENT_SCOPE)
+                endif()
+            endif()
         endif()
-    endif()
+    endfunction()
+
+    parse_mp4info_json(INPUT "${INPUT_MP4INFO_LC}" "${INPUT_MP4INFO_JSON}")
+    parse_mp4info_json(OUTPUT "${OUTPUT_MP4INFO_LC}" "${OUTPUT_MP4INFO_JSON}")
 
     foreach(f IN LISTS fields)
+        if(NOT DEFINED INPUT_${f} OR NOT DEFINED OUTPUT_${f})
+            message(FATAL_ERROR
+                "mp4info JSON missing field '${f}'. Bento4 mp4info is required.\n"
+                "Input mp4info json:\n${INPUT_MP4INFO_JSON}\n\nOutput mp4info json:\n${OUTPUT_MP4INFO_JSON}")
+        endif()
         if(NOT "${INPUT_${f}}" STREQUAL "${OUTPUT_${f}}")
             message(FATAL_ERROR "Audio field mismatch for ${f}: input='${INPUT_${f}}' output='${OUTPUT_${f}}'")
         endif()

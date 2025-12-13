@@ -28,16 +28,22 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xxd gpac vim-common
-          sudo apt-get install -y nlohmann-json3-dev
-          # AtomicParsley may be available in some images
+          sudo apt-get install -y xxd gpac vim-common nlohmann-json3-dev
           sudo apt-get install -y atomicparsley || true
+          # Prefer distro bento4; fall back to upstream binaries if missing.
+          if ! sudo apt-get install -y bento4; then
+            curl -L -o /tmp/bento4.zip https://github.com/axiomatic-systems/Bento4/releases/download/v1.6.0-641/Bento4-SDK-1-6-0-641.x86_64-unknown-linux.zip
+            sudo unzip -q /tmp/bento4.zip -d /opt/bento4
+            echo "/opt/bento4/Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin" | sudo tee /etc/profile.d/bento4.sh
+            sudo ln -sf /opt/bento4/Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin/mp4info /usr/local/bin/mp4info
+            sudo ln -sf /opt/bento4/Bento4-SDK-1-6-0-641.x86_64-unknown-linux/bin/mp4dump /usr/local/bin/mp4dump
+          fi
 
       - name: Install tools (macOS)
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install mp4v2 gpac atomicparsley nlohmann-json || true
+          brew install mp4v2 gpac atomicparsley nlohmann-json bento4 || true
 
       - name: Install tools (Windows)
         if: runner.os == 'Windows'
@@ -46,6 +52,11 @@ jobs:
           choco install -y gpac
           choco install -y vim || true
           choco install -y nlohmann-json || true
+          # Bento4: download prebuilt SDK and expose mp4info/mp4dump
+          curl -L -o /tmp/bento4.zip https://github.com/axiomatic-systems/Bento4/releases/download/v1.6.0-641/Bento4-SDK-1-6-0-641.x86_64-microsoft-win32.zip
+          mkdir -p /c/bento4
+          unzip -q /tmp/bento4.zip -d /c/bento4
+          echo "/c/bento4/Bento4-SDK-1-6-0-641.x86_64-microsoft-win32/bin" >> $GITHUB_PATH
           # xxd available via git or vim; ensure it's on PATH
           echo "Checking xxd..."
           which xxd || true
