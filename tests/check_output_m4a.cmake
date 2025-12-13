@@ -66,6 +66,12 @@ function(run_tool name)
 endfunction()
 
 function(capture_tool outvar name)
+    # If the command is empty (e.g., optional tool not found), skip gracefully.
+    list(LENGTH ARGN _argc)
+    if(_argc EQUAL 0)
+        message(STATUS "${name} skipped (tool not available)")
+        return()
+    endif()
     execute_process(
         COMMAND ${ARGN}
         RESULT_VARIABLE rv
