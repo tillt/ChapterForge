@@ -28,8 +28,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xxd mp4box libmp4v2-2 libmp4v2-dev mp4v2-utils vim-common
-          # mp4info/mp4dump via mp4v2-utils, AtomicParsley often available as 'atomicparsley'
+          sudo apt-get install -y xxd gpac vim-common
+          # AtomicParsley may be available in some images
           sudo apt-get install -y atomicparsley || true
 
       - name: Install tools (macOS)
