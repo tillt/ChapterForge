@@ -30,8 +30,10 @@ namespace chapterforge {
 ///   - fast_start: When true, places `moov` ahead of `mdat` (fast-start/streamable).
 ///
 /// - Returns: true on success, false on failure.
-bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &chapter_json_path,
-                     const std::string &output_path, bool fast_start = true);
+bool mux_file_to_m4a(const std::string &input_audio_path,
+					 const std::string &chapter_json_path,
+                     const std::string &output_path,
+					 bool fast_start = true);
 
 /// Mux AAC input + in-memory chapter data (titles + images).
 ///
@@ -80,6 +82,25 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const std::string &output_path, bool fast_start = true);
+
+/// Mux AAC input + in-memory chapter data (with optional URL track).
+///
+/// - Parameters:
+///   - input_audio_path: Path to AAC (ADTS) or MP4/M4A containing AAC.
+///   - text_chapters: Chapter titles (`text`/`start_ms`; `href` unused here).
+///   - url_chapters: Optional URL track; set `href` per sample, `text` may be empty. Leave empty to
+///     skip the URL track.
+///   - image_chapters: Optional JPEG data per chapter; leave empty to omit the image track.
+///   - output_path: Destination .m4a file.
+///   - fast_start: When true, places `moov` ahead of `mdat`.
+///
+/// - Returns: true on success, false on failure.
+bool mux_file_to_m4a(const std::string &input_audio_path,
+                     const std::vector<ChapterTextSample> &text_chapters,
+                     const std::vector<ChapterTextSample> &url_chapters,
+                     const std::vector<ChapterImageSample> &image_chapters,
+					 const std::string &output_path,
+                     bool fast_start = true);
 
 /// Mux AAC input + in-memory chapter data (with optional URL track).
 ///

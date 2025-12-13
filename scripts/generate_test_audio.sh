@@ -8,6 +8,10 @@
 set -euo pipefail
 
 OUTDIR="testdata"
+if ! command -v say >/dev/null 2>&1; then
+  echo "[generate_test_audio] 'say' not found; skipping audio generation."
+  exit 0
+fi
 # Explicit voices to avoid platform defaults (number voice must be male).
 # Numbers: layered Whisper + deep male (Bruce/Fred/Alex). Comments: female.
 NUMBER_WHISPER_CAND=("Whisper" "Alex")

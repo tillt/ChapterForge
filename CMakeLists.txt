@@ -171,12 +171,14 @@ add_executable(parser_fallback_check tests/parser_fallback.cpp)
 target_link_libraries(parser_fallback_check PRIVATE chapterforge)
 target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
+set_tests_properties(parser_fallback_check PROPERTIES FIXTURES_REQUIRED assets)
 
 add_executable(overload_variants tests/overload_variants.cpp)
 target_link_libraries(overload_variants PRIVATE chapterforge)
 target_include_directories(overload_variants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME overload_variants
     COMMAND overload_variants "${INPUT_M4A_PATH}" "${TESTDATA_DIR}/cover.jpg" "${CMAKE_BINARY_DIR}/overload_outputs")
+set_tests_properties(overload_variants PROPERTIES FIXTURES_REQUIRED assets)
 
 # Documentation (HTML via Doxygen)
 if(ENABLE_DOCS)
@@ -218,12 +220,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(MP4INFO_PATH mp4info)
     find_program(MP4DUMP_PATH mp4dump)
     find_program(ATOMIC_PARSLEY_PATH AtomicParsley)
-
-    add_test(
-        NAME generate_assets
-        COMMAND bash -c "cd \"${CMAKE_CURRENT_SOURCE_DIR}\" && bash scripts/generate_test_audio.sh && bash scripts/generate_test_images.sh"
-    )
-    set_tests_properties(generate_assets PROPERTIES FIXTURES_SETUP assets)
+    find_program(FFPROBE_PATH ffprobe)
 
     add_executable(audio_reuse_check
         tests/audio_reuse_check.cpp
