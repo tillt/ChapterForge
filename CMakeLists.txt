@@ -6,6 +6,7 @@ project(ChapterForge VERSION 0.0.0 LANGUAGES CXX)
 set(CHAPTERFORGE_VERSION_STRING "dev")
 set(CHAPTERFORGE_VERSION_DEV TRUE)
 set(CHAPTERFORGE_GIT_HASH "unknown")
+find_package(nlohmann_json REQUIRED)
 find_program(GIT_EXE git)
 if(GIT_EXE)
     execute_process(
@@ -93,9 +94,9 @@ set(CHAPTERFORGE_CORE_SOURCES
 add_library(chapterforge STATIC ${CHAPTERFORGE_CORE_SOURCES})
 target_include_directories(chapterforge PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
+target_link_libraries(chapterforge PUBLIC nlohmann_json::nlohmann_json)
 file(GENERATE
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/chapterforge_version.hpp
     CONTENT "//
@@ -124,7 +125,6 @@ if(CLANG_FORMAT_EXE)
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists.txt
     )
-    list(FILTER FORMAT_FILES EXCLUDE REGEX ".*/include/nlohmann/.*")
     add_custom_target(format
         COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${FORMAT_FILES}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -139,7 +139,6 @@ if(CLANG_TIDY_EXE)
         ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
     )
-    list(FILTER TIDY_FILES EXCLUDE REGEX ".*/include/nlohmann/.*")
     add_custom_target(lint
         COMMAND ${CLANG_TIDY_EXE}
             -checks=-*,readability-braces-around-statements
@@ -167,17 +166,22 @@ add_custom_target(generate_test_assets
     COMMENT "Generating synthetic test audio/images into ${TESTDATA_DIR}"
 )
 
+find_package(nlohmann_json QUIET)
 add_executable(parser_fallback_check tests/parser_fallback.cpp)
 target_link_libraries(parser_fallback_check PRIVATE chapterforge)
 target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
 set_tests_properties(parser_fallback_check PROPERTIES FIXTURES_REQUIRED assets)
 
-add_executable(image_fixtures tests/image_fixtures.cpp)
-target_link_libraries(image_fixtures PRIVATE chapterforge nlohmann_json::nlohmann_json)
-target_include_directories(image_fixtures PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-add_test(NAME image_fixtures COMMAND image_fixtures "${TESTDATA_DIR}")
-set_tests_properties(image_fixtures PROPERTIES FIXTURES_REQUIRED assets)
+if(nlohmann_json_FOUND)
+    add_executable(image_fixtures tests/image_fixtures.cpp)
+    target_link_libraries(image_fixtures PRIVATE chapterforge nlohmann_json::nlohmann_json)
+    target_include_directories(image_fixtures PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    add_test(NAME image_fixtures COMMAND image_fixtures "${TESTDATA_DIR}")
+    set_tests_properties(image_fixtures PROPERTIES FIXTURES_REQUIRED assets)
+else()
+    message(WARNING "nlohmann_json not found; image_fixtures test will be skipped")
+endif()
 
 add_executable(overload_variants tests/overload_variants.cpp)
 target_link_libraries(overload_variants PRIVATE chapterforge)

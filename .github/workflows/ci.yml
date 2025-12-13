@@ -29,6 +29,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xxd gpac vim-common
+          sudo apt-get install -y nlohmann-json3-dev
           # AtomicParsley may be available in some images
           sudo apt-get install -y atomicparsley || true
 
@@ -36,7 +37,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install mp4v2 gpac atomicparsley || true
+          brew install mp4v2 gpac atomicparsley nlohmann-json || true
 
       - name: Install tools (Windows)
         if: runner.os == 'Windows'
@@ -44,6 +45,7 @@ jobs:
         run: |
           choco install -y gpac
           choco install -y vim || true
+          choco install -y nlohmann-json || true
           # xxd available via git or vim; ensure it's on PATH
           echo "Checking xxd..."
           which xxd || true
