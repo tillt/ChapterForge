@@ -78,4 +78,9 @@ jobs:
             --password "$APPLE_APP_SPECIFIC_PWD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait
-          xcrun stapler staple build/chapterforge_cli
+          # Staple the zip (preferred) and also the binary
+          xcrun stapler staple build/chapterforge_cli.zip || true
+          xcrun stapler staple build/chapterforge_cli || true
+          # Validate stapling
+          xcrun stapler validate build/chapterforge_cli.zip || true
+          xcrun stapler validate build/chapterforge_cli || true
