@@ -147,7 +147,12 @@ endfunction()
 
 if(HAVE_INPUT_M4A)
     run_tool("xxd head (input)" ${XXD_PATH} -l 256 "${INPUT_M4A}")
-    capture_tool(INPUT_MP4INFO "mp4info (input)" ${MP4INFO_PATH} "${INPUT_M4A}")
+    if(MP4INFO_PATH)
+        capture_tool(INPUT_MP4INFO "mp4info (input)" ${MP4INFO_PATH} "${INPUT_M4A}")
+    else()
+        set(INPUT_MP4INFO "")
+        message(STATUS "Skipping mp4info (input) (mp4info missing)")
+    endif()
     execute_process(
         COMMAND ${XXD_PATH} -c 4 -g 4 "${INPUT_M4A}"
         RESULT_VARIABLE rv

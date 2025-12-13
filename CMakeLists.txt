@@ -164,7 +164,7 @@ set(TEST_INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory 
 set(TESTDATA_DIR "${TEST_INPUT_DIR}" CACHE PATH "Alias for TEST_INPUT_DIR")
 set(TEST_OUTPUT_DIR "${CMAKE_BINARY_DIR}/test_outputs" CACHE PATH "Directory for generated test outputs")
 file(MAKE_DIRECTORY "${TEST_OUTPUT_DIR}")
-set(OUTPUT_M4A_PATH "${TEST_OUTPUT_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools")
+set(OUTPUT_M4A_PATH "${TEST_OUTPUT_DIR}/output.m4a" CACHE STRING "Path to the output M4A to inspect with tools" FORCE)
 set(INPUT_M4A_PATH "${TEST_INPUT_DIR}/input.m4a" CACHE STRING "Path to the source input M4A to inspect with tools")
 set(INPUT_AAC_PATH "${TEST_INPUT_DIR}/input.aac" CACHE STRING "Path to the source AAC (ADTS) file for AAC ingest test")
 set(GOLDEN_M4A_PATH "${TEST_INPUT_DIR}/golden_chapters.m4a" CACHE STRING "Path to the golden M4A reference for chapter images")
@@ -175,13 +175,14 @@ set(INPUT_LARGE_AAC_PATH "${TEST_INPUT_DIR}/input_large.aac" CACHE STRING "Path 
 enable_testing()
 
 # Always provide a fixture that regenerates synthetic assets before tests need them.
-add_test(
-    NAME generate_assets
-    COMMAND ${CMAKE_COMMAND}
-        -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/generate_assets.cmake
-)
-set_tests_properties(generate_assets PROPERTIES FIXTURES_SETUP assets)
+    add_test(
+        NAME generate_assets
+        COMMAND ${CMAKE_COMMAND}
+            -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/generate_assets.cmake
+    )
+    set_tests_properties(generate_assets PROPERTIES FIXTURES_SETUP assets)
+    set_tests_properties(generate_assets PROPERTIES LABELS "core")
 
 add_custom_target(generate_test_assets
     COMMAND ${CMAKE_COMMAND} -E env bash ${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_test_audio.sh
@@ -197,6 +198,7 @@ target_link_libraries(parser_fallback_check PRIVATE chapterforge)
 target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
 set_tests_properties(parser_fallback_check PROPERTIES FIXTURES_REQUIRED assets)
+set_tests_properties(parser_fallback_check PROPERTIES LABELS "core")
 
 if(nlohmann_json_FOUND)
     add_executable(image_fixtures tests/image_fixtures.cpp)
@@ -204,6 +206,7 @@ if(nlohmann_json_FOUND)
     target_include_directories(image_fixtures PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     add_test(NAME image_fixtures COMMAND image_fixtures "${TESTDATA_DIR}")
     set_tests_properties(image_fixtures PROPERTIES FIXTURES_REQUIRED assets)
+    set_tests_properties(image_fixtures PROPERTIES LABELS "core")
 else()
     message(WARNING "nlohmann_json not found; image_fixtures test will be skipped")
 endif()
@@ -214,6 +217,7 @@ target_include_directories(overload_variants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 add_test(NAME overload_variants
     COMMAND overload_variants "${INPUT_M4A_PATH}" "${TESTDATA_DIR}/cover.jpg" "${CMAKE_BINARY_DIR}/overload_outputs")
 set_tests_properties(overload_variants PROPERTIES FIXTURES_REQUIRED assets)
+set_tests_properties(overload_variants PROPERTIES LABELS "core")
 
 # Documentation (HTML via Doxygen)
 if(ENABLE_DOCS)
@@ -249,16 +253,17 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(ATOMIC_PARSLEY_PATH AtomicParsley)
     find_program(FFPROBE_PATH ffprobe)
 
-    add_executable(audio_reuse_check
-        tests/audio_reuse_check.cpp
-    )
-    target_link_libraries(audio_reuse_check PRIVATE chapterforge)
-    target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    add_test(
-        NAME audio_reuse_check
-        COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
-    )
-    set_tests_properties(audio_reuse_check PROPERTIES FIXTURES_REQUIRED assets DEPENDS output_tool_checks)
+add_executable(audio_reuse_check
+    tests/audio_reuse_check.cpp
+)
+target_link_libraries(audio_reuse_check PRIVATE chapterforge)
+target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(
+    NAME audio_reuse_check
+    COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
+)
+set_tests_properties(audio_reuse_check PROPERTIES FIXTURES_REQUIRED assets DEPENDS output_tool_checks)
+set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
 
     add_test(
         NAME output_tool_checks
@@ -274,7 +279,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    set_tests_properties(output_tool_checks PROPERTIES FIXTURES_REQUIRED assets)
+    set_tests_properties(output_tool_checks PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
 #Metadata preservation on small input(JSON has no metadata)
     add_test(
         NAME metadata_preserve_small
@@ -290,7 +295,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
     )
-    set_tests_properties(metadata_preserve_small PROPERTIES FIXTURES_REQUIRED assets)
+    set_tests_properties(metadata_preserve_small PROPERTIES FIXTURES_REQUIRED assets LABELS "core")
 #AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
     set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
@@ -309,7 +314,7 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
-        set_tests_properties(output_tool_checks_aac PROPERTIES FIXTURES_REQUIRED assets)
+        set_tests_properties(output_tool_checks_aac PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
     else()
         message(STATUS "Skipping AAC ingest tests (INPUT_AAC_PATH missing: ${INPUT_AAC_PATH})")
     endif()
@@ -343,6 +348,7 @@ if(ENABLE_STRICT_VALIDATION)
             -DMP4BOX_PATH=${MP4BOX_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/strict_validate.cmake
     )
+    set_tests_properties(strict_validation PROPERTIES LABELS "tooling")
 endif()
 
 if(ENABLE_LARGE_IMAGE_TESTS)
@@ -350,9 +356,9 @@ if(ENABLE_LARGE_IMAGE_TESTS)
     set(NORMAL5_JSON "${TESTDATA_DIR}/chapters_normal_5.json")
     set(NORMAL_NOMETA_JSON "${TESTDATA_DIR}/chapters_normal_nometa_5.json")
     set(LARGE50_JSON "${TESTDATA_DIR}/chapters_large_50.json")
-    set(OUTPUT_NORMAL5 "${TEST_OUTPUT_DIR}/output_normal5.m4a")
-    set(OUTPUT_LARGE50 "${TEST_OUTPUT_DIR}/output_large50.m4a")
-    set(OUTPUT_LARGE_AAC "${CMAKE_BINARY_DIR}/output_large_from_aac.m4a")
+    set(OUTPUT_NORMAL5 "${TEST_OUTPUT_DIR}/output_normal5.m4a" CACHE STRING "Normal 5-chapter output" FORCE)
+    set(OUTPUT_LARGE50 "${TEST_OUTPUT_DIR}/output_large50.m4a" CACHE STRING "Large 50-chapter output" FORCE)
+    set(OUTPUT_LARGE_AAC "${CMAKE_BINARY_DIR}/output_large_from_aac.m4a" CACHE STRING "Large AAC ingest output" FORCE)
 
     if(EXISTS "${INPUT_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
         add_test(
@@ -364,6 +370,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
+        set_tests_properties(large_image_5 PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping large_image_5 (missing INPUT_M4A_PATH or chapters_normal_5.json)")
     endif()
@@ -385,6 +392,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
         )
+        set_tests_properties(large_image_metadata_preserve PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_LARGE_M4A_PATH or chapters_big_nometa.json)")
     endif()
@@ -407,6 +415,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
         )
+        set_tests_properties(large_image_aac PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping big_image_aac (missing INPUT_LARGE_AAC_PATH, INPUT_LARGE_M4A_PATH, or chapters_normal_5.json)")
     endif()
@@ -421,6 +430,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
+        set_tests_properties(large_image_50 PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_large_50.json)")
     endif()
