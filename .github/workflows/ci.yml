@@ -55,7 +55,7 @@ jobs:
           if [[ -n "${{ matrix.arch || '' }}" ]]; then
             ARCH_FLAG="-DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }}"
           fi
-          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ${ARCH_FLAG}
+          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON -DCMAKE_BUILD_TYPE=Release ${ARCH_FLAG}
 
       - name: Build
         shell: bash

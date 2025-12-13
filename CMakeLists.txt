@@ -173,6 +173,12 @@ target_include_directories(parser_fallback_check PRIVATE ${CMAKE_CURRENT_SOURCE_
 add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
 set_tests_properties(parser_fallback_check PROPERTIES FIXTURES_REQUIRED assets)
 
+add_executable(image_fixtures tests/image_fixtures.cpp)
+target_link_libraries(image_fixtures PRIVATE chapterforge nlohmann_json::nlohmann_json)
+target_include_directories(image_fixtures PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(NAME image_fixtures COMMAND image_fixtures "${TESTDATA_DIR}")
+set_tests_properties(image_fixtures PROPERTIES FIXTURES_REQUIRED assets)
+
 add_executable(overload_variants tests/overload_variants.cpp)
 target_link_libraries(overload_variants PRIVATE chapterforge)
 target_include_directories(overload_variants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

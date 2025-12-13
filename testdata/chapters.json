@@ -5,12 +5,12 @@
   "genre": "Test Audio",
   "year": "2025",
   "comment": "Five bumpy jumps with synth pads and bad jokes.",
-  "cover": "cover.jpg",
+  "cover": "images/cover.jpg",
   "chapters": [
-    { "start_ms": 0,     "title": "Wobble Warmup", "url": "https://chapterforge.test/wobble", "image": "chapter1.jpg" },
-    { "start_ms": 1200,  "title": "Left Shoe Disco", "url": "https://chapterforge.test/shoe", "image": "chapter2.jpg" },
-    { "start_ms": 3200,  "title": "Snack Break", "url": "https://chapterforge.test/snack", "image": "chapter1.jpg" },
-    { "start_ms": 5800,  "title": "Sudden Cliffhanger", "url": "https://chapterforge.test/cliff", "image": "chapter2.jpg" },
-    { "start_ms": 8400,  "title": "Okay Bye", "url": "https://chapterforge.test/bye", "image": "chapter1.jpg" }
+    { "start_ms": 0,     "title": "Wobble Warmup", "url": "https://chapterforge.test/wobble", "image": "images/chapter1.jpg" },
+    { "start_ms": 1200,  "title": "Left Shoe Disco", "url": "https://chapterforge.test/shoe", "image": "images/chapter2.jpg" },
+    { "start_ms": 3200,  "title": "Snack Break", "url": "https://chapterforge.test/snack", "image": "images/chapter1.jpg" },
+    { "start_ms": 5800,  "title": "Sudden Cliffhanger", "url": "https://chapterforge.test/cliff", "image": "images/chapter2.jpg" },
+    { "start_ms": 8400,  "title": "Okay Bye", "url": "https://chapterforge.test/bye", "image": "images/chapter1.jpg" }
   ]
 }
