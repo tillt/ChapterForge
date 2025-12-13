@@ -62,9 +62,9 @@ Notes:
 - Fast-start is on by default.
 - Tests and docs are optional targets (see below).
 
+## Tests & Dependencies
 
-## Tests
-
+Quick run:
 ```bash
 cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON
 cmake --build build
@@ -72,27 +72,22 @@ cd build
 ctest --output-on-failure
 ```
 
-Optional toggles (pass during configure):
-- `-DENABLE_BIG_IMAGE_TESTS=ON` — run heavy image/long-duration fixtures (requires `input_big.m4a` and large JPEGs).
-- `-DENABLE_STRICT_VALIDATION=ON` — run additional tool-based checks if mp4info/mp4dump/AtomicParsley/ffprobe/MP4Box are present.
-- `-DENABLE_AVFOUNDATION_SMOKE=ON` — macOS-only Swift smoke test (requires `swift`).
+Optional toggles (configure-time):
+- `-DENABLE_BIG_IMAGE_TESTS=ON` — heavy image/long-duration fixtures (needs `input_big.m4a` + large JPEGs).
+- `-DENABLE_STRICT_VALIDATION=ON` — extra tool-based checks (mp4info/mp4dump/AtomicParsley/ffprobe/MP4Box).
+- `-DENABLE_AVFOUNDATION_SMOKE=ON` — macOS Swift smoke test (needs `swift`).
 
-### Dependencies
-
-Runtime:
-- C++20 compiler and CMake (library + CLI)
-
-Tests (tooling tier):
+Tooling deps (used only by `tooling`-labeled tests):
 - Bento4 `mp4info`/`mp4dump` (JSON parsing for audio/atom checks)
 - `AtomicParsley` (atom tree inspection)
 - `gpac` (`MP4Box`) and `ffprobe` (strict validation, optional)
 - `xxd` (hex dumps for atom offset checks)
-- `say` (macOS only, optional for synthetic audio generation)
+- `say` (macOS only; optional for synthetic audio generation)
 
 Notes:
-- Core tests (label `core`) don’t require external tools beyond the compiler/runtime.
-- Tooling tests (label `tooling`) are optional and only run when dependencies are available.
-- CI installs these tools per-platform; locally you can skip tooling by leaving `ENABLE_OUTPUT_TOOL_TESTS=OFF`.
+- Core tests (label `core`) require only the compiler/runtime.
+- Tooling tests are optional and run only when deps are present; skip by leaving `ENABLE_OUTPUT_TOOL_TESTS=OFF`.
+- CI installs these per-platform; local runs can be minimal.
 
 
 ## CLI Usage
