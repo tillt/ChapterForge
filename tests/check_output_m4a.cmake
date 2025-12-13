@@ -193,29 +193,61 @@ file(APPEND "${TEST_LOG}" "==== xxd full dump (output) ====\n${OUTPUT_XXD_DUMP}\
 if(HAVE_INPUT_M4A AND MP4INFO_PATH)
     set(fields sample_count timescale sample_rate channels codec_string)
 
-    macro(extract_field PREFIX REGEX)
-        string(REGEX MATCH "${REGEX}" _match "${${PREFIX}_MP4INFO}")
+    # Normalize mp4info output to lowercase for tolerant matching.
+    string(TOLOWER "${INPUT_MP4INFO}" INPUT_MP4INFO_LC)
+    string(TOLOWER "${OUTPUT_MP4INFO}" OUTPUT_MP4INFO_LC)
+
+    function(extract_field PREFIX REGEX FIELDNAME)
+        string(REGEX MATCH "${REGEX}" _match "${${PREFIX}_MP4INFO_LC}")
         if(NOT _match)
-            message(FATAL_ERROR "Could not find '${REGEX}' in ${PREFIX} mp4info output")
+            message(FATAL_ERROR
+                "Could not find '${REGEX}' in ${PREFIX} mp4info output.\n"
+                "mp4info ${PREFIX} output was:\n${${PREFIX}_MP4INFO}")
         endif()
-        set(${PREFIX}_${ARGV2} "${CMAKE_MATCH_1}")
-    endmacro()
+        set(${PREFIX}_${FIELDNAME} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+    endfunction()
 
-    extract_field(INPUT "sample count:[ \t]*([0-9]+)")
-    extract_field(INPUT "timescale:[ \t]*([0-9]+)")
-    extract_field(INPUT "Sample Rate:[ \t]*([0-9]+)")
-    extract_field(INPUT "Channels:[ \t]*([0-9]+)")
-    extract_field(INPUT "Codec String:[ \t]*([^\\n]+)")
+    # Tolerant patterns for both mp4v2 and gpac mp4info variants.
+    extract_field(INPUT "sample[ _]?count[^0-9]*([0-9]+)" sample_count)
+    extract_field(INPUT "timescale[^0-9]*([0-9]+)" timescale)
+    extract_field(INPUT "sample[ _]?rate[^0-9]*([0-9]+)" sample_rate)
+    extract_field(INPUT "channels[^0-9]*([0-9]+)" channels)
+    # Codec string: fall back to any line containing "codec"
+    string(REGEX MATCH "codec string[^\\n]*:?[ \\t]*([^\\n]+)" _codec_in "${INPUT_MP4INFO}")
+    if(_codec_in)
+        set(INPUT_codec_string "${CMAKE_MATCH_1}")
+    else()
+        string(REGEX MATCH "codec[^\\n]*:?[ \\t]*([^\\n]+)" _codec_in2 "${INPUT_MP4INFO}")
+        if(_codec_in2)
+            set(INPUT_codec_string "${CMAKE_MATCH_1}")
+        else()
+            message(FATAL_ERROR
+                "Could not find codec string in input mp4info output.\n"
+                "mp4info input output was:\n${INPUT_MP4INFO}")
+        endif()
+    endif()
 
-    extract_field(OUTPUT "sample count:[ \t]*([0-9]+)")
-    extract_field(OUTPUT "timescale:[ \t]*([0-9]+)")
-    extract_field(OUTPUT "Sample Rate:[ \t]*([0-9]+)")
-    extract_field(OUTPUT "Channels:[ \t]*([0-9]+)")
-    extract_field(OUTPUT "Codec String:[ \t]*([^\\n]+)")
+    extract_field(OUTPUT "sample[ _]?count[^0-9]*([0-9]+)" sample_count)
+    extract_field(OUTPUT "timescale[^0-9]*([0-9]+)" timescale)
+    extract_field(OUTPUT "sample[ _]?rate[^0-9]*([0-9]+)" sample_rate)
+    extract_field(OUTPUT "channels[^0-9]*([0-9]+)" channels)
+    string(REGEX MATCH "codec string[^\\n]*:?[ \\t]*([^\\n]+)" _codec_out "${OUTPUT_MP4INFO}")
+    if(_codec_out)
+        set(OUTPUT_codec_string "${CMAKE_MATCH_1}")
+    else()
+        string(REGEX MATCH "codec[^\\n]*:?[ \\t]*([^\\n]+)" _codec_out2 "${OUTPUT_MP4INFO}")
+        if(_codec_out2)
+            set(OUTPUT_codec_string "${CMAKE_MATCH_1}")
+        else()
+            message(FATAL_ERROR
+                "Could not find codec string in output mp4info output.\n"
+                "mp4info output was:\n${OUTPUT_MP4INFO}")
+        endif()
+    endif()
 
     foreach(f IN LISTS fields)
         if(NOT "${INPUT_${f}}" STREQUAL "${OUTPUT_${f}}")
-    message(FATAL_ERROR "Audio field mismatch for ${f}: input='${INPUT_${f}}' output='${OUTPUT_${f}}'")
+            message(FATAL_ERROR "Audio field mismatch for ${f}: input='${INPUT_${f}}' output='${OUTPUT_${f}}'")
         endif()
     endforeach()
     message(STATUS "Input/Output audio properties match (sample count, timescale, sample rate, channels, codec string)")
