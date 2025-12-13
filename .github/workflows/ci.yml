@@ -110,12 +110,16 @@ jobs:
             echo "No notarization credentials; skipping notarization."
             exit 0
           fi
-          xcrun notarytool submit build/chapterforge_cli \
+          zip -j build/chapterforge_cli.zip build/chapterforge_cli
+          xcrun notarytool submit build/chapterforge_cli.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PWD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait
-          xcrun stapler staple build/chapterforge_cli
+          xcrun stapler staple build/chapterforge_cli.zip || true
+          xcrun stapler staple build/chapterforge_cli || true
+          xcrun stapler validate build/chapterforge_cli.zip || true
+          xcrun stapler validate build/chapterforge_cli || true
 
       - name: Package
         shell: bash
@@ -126,9 +130,16 @@ jobs:
             suffix="-${{ matrix.arch }}"
           fi
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            cp build/Release/chapterforge_cli.exe dist/chapterforge_cli${suffix}.exe
+            zip -j dist/chapterforge${suffix}.zip build/Release/chapterforge_cli.exe build/Release/chapterforge.lib LICENSE README.md
+            # include headers
+            (cd "${{ github.workspace }}" && zip -r dist/chapterforge${suffix}.zip include)
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+            tar czf dist/chapterforge${suffix}.tar.gz \
+              -C build chapterforge_cli libchapterforge.a \
+              -C "${{ github.workspace }}" LICENSE README.md include
           else
-            cp build/chapterforge_cli dist/chapterforge_cli${suffix}
+            zip -j dist/chapterforge${suffix}.zip build/chapterforge_cli build/libchapterforge.a LICENSE README.md
+            (cd "${{ github.workspace }}" && zip -r dist/chapterforge${suffix}.zip include)
           fi
 
       - name: Upload artifact
