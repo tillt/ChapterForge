@@ -6,7 +6,17 @@ project(ChapterForge VERSION 0.0.0 LANGUAGES CXX)
 set(CHAPTERFORGE_VERSION_STRING "dev")
 set(CHAPTERFORGE_VERSION_DEV TRUE)
 set(CHAPTERFORGE_GIT_HASH "unknown")
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+    message(STATUS "nlohmann_json not found; fetching header-only dependency")
+    include(FetchContent)
+    FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+        URL_HASH SHA256=40fbe56120a82759bb6a78c621dcc612e7994a76ef6d3c2b821a687840fa9297
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+endif()
 find_program(GIT_EXE git)
 if(GIT_EXE)
     execute_process(
