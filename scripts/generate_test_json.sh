@@ -18,13 +18,13 @@ cat > "${OUTDIR}/chapters.json" <<'EOF'
   "genre": "Test Audio",
   "year": "2025",
   "comment": "Five bumpy jumps with synth pads and bad jokes.",
-  "cover": "cover.jpg",
+  "cover": "images/cover.jpg",
   "chapters": [
-    { "start_ms": 0,     "title": "Wobble Warmup", "url": "https://chapterforge.test/wobble", "image": "chapter1.jpg" },
-    { "start_ms": 1200,  "title": "Left Shoe Disco", "url": "https://chapterforge.test/shoe", "image": "chapter2.jpg" },
-    { "start_ms": 3200,  "title": "Snack Break", "url": "https://chapterforge.test/snack", "image": "chapter1.jpg" },
-    { "start_ms": 5800,  "title": "Sudden Cliffhanger", "url": "https://chapterforge.test/cliff", "image": "chapter2.jpg" },
-    { "start_ms": 8400,  "title": "Okay Bye", "url": "https://chapterforge.test/bye", "image": "chapter1.jpg" }
+    { "start_ms": 0,     "title": "Wobble Warmup", "url": "https://chapterforge.test/wobble", "image": "images/chapter1.jpg" },
+    { "start_ms": 1200,  "title": "Left Shoe Disco", "url": "https://chapterforge.test/shoe", "image": "images/chapter2.jpg" },
+    { "start_ms": 3200,  "title": "Snack Break", "url": "https://chapterforge.test/snack", "image": "images/chapter1.jpg" },
+    { "start_ms": 5800,  "title": "Sudden Cliffhanger", "url": "https://chapterforge.test/cliff", "image": "images/chapter2.jpg" },
+    { "start_ms": 8400,  "title": "Okay Bye", "url": "https://chapterforge.test/bye", "image": "images/chapter1.jpg" }
   ]
 }
 EOF
@@ -77,10 +77,10 @@ emit_chapters() {
   "genre": "Test Audio",
   "year": "2025",
   "comment": "Five uneven stops on a 60s pad ride.",
-  "cover": "normal1.jpg",
+  "cover": "images/normal1.jpg",
   "chapters": [
 EOF
-  imgs=(normal1.jpg normal2.jpg normal3.jpg normal4.jpg normal5.jpg)
+  imgs=(images/normal1.jpg images/normal2.jpg images/normal3.jpg images/normal4.jpg images/normal5.jpg)
   emit_chapters 5 "${imgs[@]}"
   cat <<'EOF'
   ]
@@ -95,7 +95,7 @@ echo "Wrote ${OUTDIR}/chapters_normal_5.json"
 {
   "chapters": [
 EOF
-  imgs=(normal1.jpg normal2.jpg normal3.jpg normal4.jpg normal5.jpg)
+  imgs=(images/normal1.jpg images/normal2.jpg images/normal3.jpg images/normal4.jpg images/normal5.jpg)
   emit_chapters 5 "${imgs[@]}"
   cat <<'EOF'
   ]
@@ -113,11 +113,11 @@ echo "Wrote ${OUTDIR}/chapters_normal_nometa_5.json"
   "album": "Lots of Motifs",
   "genre": "Test Audio",
   "year": "2025",
-  "cover": "large1.jpg",
+  "cover": "images/large1.jpg",
   "chapters": [
 EOF
   imgs=()
-  for i in $(seq 1 50); do imgs+=("large${i}.jpg"); done
+  for i in $(seq 1 50); do imgs+=("images/large${i}.jpg"); done
   emit_chapters 50 "${imgs[@]}"
   cat <<'EOF'
   ]

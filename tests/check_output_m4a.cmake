@@ -35,7 +35,7 @@ if(NOT XXD_PATH)
 endif()
 
 if(NOT MP4INFO_PATH)
-    message(FATAL_ERROR "mp4info not found; install it or set MP4INFO_PATH")
+    message(WARNING "mp4info not found; mp4info checks will be skipped")
 endif()
 
 if(NOT MP4DUMP_PATH)
@@ -159,7 +159,12 @@ else()
 endif()
 
 run_tool("xxd head (output)" ${XXD_PATH} -l 256 "${OUTPUT_M4A}")
-capture_tool(OUTPUT_MP4INFO "mp4info (output)" ${MP4INFO_PATH} "${OUTPUT_M4A}")
+if(MP4INFO_PATH)
+    capture_tool(OUTPUT_MP4INFO "mp4info (output)" ${MP4INFO_PATH} "${OUTPUT_M4A}")
+else()
+    set(OUTPUT_MP4INFO "")
+    message(STATUS "Skipping mp4info (output) (mp4info missing)")
+endif()
 execute_process(
     COMMAND ${XXD_PATH} -c 4 -g 4 "${OUTPUT_M4A}"
     RESULT_VARIABLE rv
@@ -174,7 +179,7 @@ endif()
 file(APPEND "${TEST_LOG}" "==== xxd full dump (output) ====\n${OUTPUT_XXD_DUMP}\n\n")
 
 # When input is present, compare key audio properties between input and output
-if(HAVE_INPUT_M4A)
+if(HAVE_INPUT_M4A AND MP4INFO_PATH)
     set(fields sample_count timescale sample_rate channels codec_string)
 
     macro(extract_field PREFIX REGEX)
@@ -203,6 +208,8 @@ if(HAVE_INPUT_M4A)
         endif()
     endforeach()
     message(STATUS "Input/Output audio properties match (sample count, timescale, sample rate, channels, codec string)")
+elseif(NOT MP4INFO_PATH)
+    message(STATUS "Skipping mp4info input/output audio property compare (mp4info missing)")
 endif()
 
 # Locate key atoms via xxd; fail if missing
