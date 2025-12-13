@@ -48,10 +48,16 @@ jobs:
           fi
           echo "$MAC_CERT_P12_BASE64" | base64 --decode > cert.p12
           security create-keychain -p "$MAC_KEYCHAIN_PASS" build.keychain
+          security list-keychains -d user -s build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$MAC_KEYCHAIN_PASS" build.keychain
           security import cert.p12 -k build.keychain -P "$MAC_CERT_PASS" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "$MAC_KEYCHAIN_PASS" build.keychain
+          echo "Identities in build.keychain:"
+          security find-identity -v build.keychain || true
+          if [[ -z "$MAC_CODESIGN_ID" ]]; then
+            echo "MAC_CODESIGN_ID not set"; exit 1
+          fi
           codesign --options runtime --timestamp --force --sign "$MAC_CODESIGN_ID" build/chapterforge_cli
 
       - name: Notarize (macOS)
