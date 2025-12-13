@@ -71,7 +71,9 @@ jobs:
             echo "No notarization credentials; skipping notarization."
             exit 0
           fi
-          xcrun notarytool submit build/chapterforge_cli \
+          # Create a zip for notarization
+          zip -j build/chapterforge_cli.zip build/chapterforge_cli
+          xcrun notarytool submit build/chapterforge_cli.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_SPECIFIC_PWD" \
             --team-id "$APPLE_TEAM_ID" \
