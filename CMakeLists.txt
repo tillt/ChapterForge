@@ -154,7 +154,9 @@ enable_testing()
 # Always provide a fixture that regenerates synthetic assets before tests need them.
 add_test(
     NAME generate_assets
-    COMMAND bash -c "cd \"${CMAKE_CURRENT_SOURCE_DIR}\" && bash scripts/generate_test_audio.sh && bash scripts/generate_test_images.sh && bash scripts/generate_test_json.sh"
+    COMMAND ${CMAKE_COMMAND}
+        -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/generate_assets.cmake
 )
 set_tests_properties(generate_assets PROPERTIES FIXTURES_SETUP assets)
 

@@ -5,6 +5,11 @@ set -euo pipefail
 OUTDIR="testdata"
 mkdir -p "${OUTDIR}"
 
+if ls "${OUTDIR}"/chapters*.json >/dev/null 2>&1; then
+    echo "[generate_test_json] chapter JSON already present, skipping generation."
+    exit 0
+fi
+
 cat > "${OUTDIR}/chapters.json" <<'EOF'
 {
   "title": "ChapterForge Sample (Five)",

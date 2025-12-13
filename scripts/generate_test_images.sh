@@ -5,6 +5,11 @@ set -euo pipefail
 
 OUTDIR="testdata/images"
 mkdir -p "${OUTDIR}"
+# If images already exist, skip regeneration.
+if ls "${OUTDIR}"/*.jpg >/dev/null 2>&1; then
+    echo "Images already present in ${OUTDIR}, skipping generation."
+    exit 0
+fi
 
 # neon_pop settings from generate_variations.sh
 COLOR1="#00f0ff"

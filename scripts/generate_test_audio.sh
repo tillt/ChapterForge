@@ -8,6 +8,11 @@
 set -euo pipefail
 
 OUTDIR="testdata"
+# Skip if outputs already exist.
+if ls "${OUTDIR}"/input*.m4a "${OUTDIR}"/input*.aac >/dev/null 2>&1; then
+  echo "[generate_test_audio] audio fixtures already present, skipping generation."
+  exit 0
+fi
 if ! command -v say >/dev/null 2>&1; then
   echo "[generate_test_audio] 'say' not found; skipping audio generation."
   exit 0
