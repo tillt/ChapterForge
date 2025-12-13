@@ -10,6 +10,16 @@ jobs:
       name: release
       url: https://release.example.com
 	steps:
+ 	  - name: Check secrets present
+		run: |
+			for v in MAC_CERT_P12_BASE64 MAC_CERT_PASS MAC_KEYCHAIN_PASS MAC_CODESIGN_ID; do
+			if [[ -n "${!v}" ]]; then echo "$v is set"; else echo "$v is missing"; fi
+			done
+		env:
+			MAC_CERT_P12_BASE64: ${{ secrets.MAC_CERT_P12_BASE64 }}
+			MAC_CERT_PASS: ${{ secrets.MAC_CERT_PASS }}
+			MAC_KEYCHAIN_PASS: ${{ secrets.MAC_KEYCHAIN_PASS }}
+			MAC_CODESIGN_ID: ${{ secrets.MAC_CODESIGN_ID }}
       - name: Checkout
         uses: actions/checkout@v4
 
