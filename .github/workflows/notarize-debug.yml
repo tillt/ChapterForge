@@ -8,7 +8,6 @@ jobs:
     runs-on: macos-latest
     environment:
       name: release
-      url: https://release.example.com
 	steps:
  	  - name: Check secrets present
 		run: |
