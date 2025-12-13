@@ -24,6 +24,30 @@ jobs:
       - name: Set up CMake
         uses: jwlawson/actions-setup-cmake@v1
 
+      - name: Install tools (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xxd mp4box libmp4v2-2 libmp4v2-dev mp4v2-utils vim-common
+          # mp4info/mp4dump via mp4v2-utils, AtomicParsley often available as 'atomicparsley'
+          sudo apt-get install -y atomicparsley || true
+
+      - name: Install tools (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install mp4v2 gpac atomicparsley || true
+
+      - name: Install tools (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          choco install -y gpac
+          choco install -y vim || true
+          # xxd available via git or vim; ensure it's on PATH
+          echo "Checking xxd..."
+          which xxd || true
+
       - name: Configure
         shell: bash
         run: |
