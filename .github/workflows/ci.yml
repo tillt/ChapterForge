@@ -43,7 +43,8 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install mp4v2 gpac atomicparsley nlohmann-json bento4 || true
+          # Prefer Bento4 mp4info/mp4dump; avoid mp4v2 to prevent binary conflicts.
+          brew install gpac atomicparsley nlohmann-json bento4 || true
 
       - name: Install tools (Windows)
         if: runner.os == 'Windows'
