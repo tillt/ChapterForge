@@ -7,7 +7,8 @@
 
 set -euo pipefail
 
-FILE="${1:-testdata/output.m4a}"
+# Default to a build/test_outputs artifact to avoid polluting testdata.
+FILE="${1:-build/test_outputs/output.m4a}"
 DURATION="${DURATION:-10}"
 LOG_FILE="${QT_LOG:-/tmp/qtplay_$(date +%s).log}"
 
