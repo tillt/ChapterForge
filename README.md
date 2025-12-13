@@ -77,6 +77,23 @@ Optional toggles (pass during configure):
 - `-DENABLE_STRICT_VALIDATION=ON` — run additional tool-based checks if mp4info/mp4dump/AtomicParsley/ffprobe/MP4Box are present.
 - `-DENABLE_AVFOUNDATION_SMOKE=ON` — macOS-only Swift smoke test (requires `swift`).
 
+### Dependencies
+
+Runtime:
+- C++20 compiler and CMake (library + CLI)
+
+Tests (tooling tier):
+- Bento4 `mp4info`/`mp4dump` (JSON parsing for audio/atom checks)
+- `AtomicParsley` (atom tree inspection)
+- `gpac` (`MP4Box`) and `ffprobe` (strict validation, optional)
+- `xxd` (hex dumps for atom offset checks)
+- `say` (macOS only, optional for synthetic audio generation)
+
+Notes:
+- Core tests (label `core`) don’t require external tools beyond the compiler/runtime.
+- Tooling tests (label `tooling`) are optional and only run when dependencies are available.
+- CI installs these tools per-platform; locally you can skip tooling by leaving `ENABLE_OUTPUT_TOOL_TESTS=OFF`.
+
 
 ## CLI Usage
 
