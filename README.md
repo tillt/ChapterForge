@@ -11,15 +11,17 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 - [Table of Contents](#table-of-contents)
 - [Motivation and Backstory](#motivation-and-backstory)
 - [Features](#features)
-  - [Notes on Apple-style chapter URL handling & artwork](#notes-on-apple-style-chapter-url-handling-artwork)
 - [Platforms](#platforms)
 - [Building](#building)
   - [Example output to validate players](#example-output-to-validate-players)
 - [CLI Usage](#cli-usage)
 - [Chapters JSON format](#chapters-json-format)
-- [Atom flow (input → output)](#atom-flow-input-output)
-  - [Chapter track reference (titles, URLs, images)](#chapter-track-reference-titles-urls-images)
-  - [tx3g sample entry and samples (what we emit)](#tx3g-sample-entry-and-samples-what-we-emit)
+- [Output](#output)
+  - [Atom flow (input → output)](#atom-flow-input-output)
+  - [Technical Breakdown](#technical-breakdown)
+    - [Chapter track reference (titles, URLs, images)](#chapter-track-reference-titles-urls-images)
+    - [title and url as tx3g sample entry](#title-and-url-as-tx3g-sample-entry)
+    - [image as MJPEG sample entry](#image-as-mjpeg-sample-entry)
 - [Embedding API (C++)](#embedding-api-c)
 - [Minimal C++ usage (CLI equivalent)](#minimal-c-usage-cli-equivalent)
 - [Tests & Dependencies](#tests-dependencies)
@@ -48,18 +50,6 @@ The player I am tinkering with needs support for storing a track-list / set-list
 ## Features
 
 ChapterForge uses the audio track from the input. It then combines that with a text track for the description, an optional text track for per-chapter URLs, and a video track for optional chapter images. All of that information gets bundled in the resulting output M4A file. With that M4A file you can now see chapter marks in your player.
-
-### Notes on Apple-style chapter URL handling & artwork
-
-- A second `tx3g` track is created only when at least one chapter provides a `url`. Its samples carry an `href` modifier box; AVFoundation surfaces this as `extraAttributes[HREF]`.
-- URL samples may have empty text; the `href` drives the URL display.
-- Text tracks are padded with two extra samples (like the golden files) to satisfy Apple players: sample_count = chapter_count + 2, stts/stsz/stsc entries match that.
-- `tref/chap` from the audio track points only to the title text track and (if present) the image track; the URL `tx3g` is intentionally omitted. This keeps QuickTime showing titles while Music.app still shows thumbnails. **When extending ChapterForge or adding fixtures, keep this `chap` reference pattern intact so all builds behave identically across players.**
-- Images remain separate (MJPEG track) and are unaffected by the URL/text pairing.
-- **Artwork requirement:** encode chapter images as baseline JPEG in **4:2:0 (yuvj420p)**. QuickTime/AVFoundation can ignore or blank thumbnails if they are 4:4:4. Our generators force `-pix_fmt yuvj420p`; if you supply your own art, re-encode with:
-  ```bash
-  ffmpeg -y -i your_art.jpg -pix_fmt yuvj420p your_art_420.jpg
-  ```
 
 
 ## Platforms
@@ -162,7 +152,9 @@ Notes:
 - Paths for `cover` and per-chapter `image` are resolved relative to the JSON file location.
 
 
-## Atom flow (input → output)
+## Output
+
+### Atom flow (input → output)
 
 ChapterForge preserves the source audio track and metadata (`ilst`) and adds up to three new tracks for chapters:
 
@@ -196,7 +188,15 @@ Output (ChapterForge)
 
 Fast-start repacks `moov` ahead of `mdat` when requested.
 
-### Chapter track reference (titles, URLs, images)
+
+These settings mirror Apple-authored “golden” files so that QuickTime, Music.app, and AVFoundation surface titles, URLs (`extraAttributes[HREF]`), and thumbnails reliably.
+
+### Technical Breakdown
+
+- Track references (`tref/chap`): audio track points only to the title text track and the image track (when present); the URL track is deliberately **not** referenced. This matches Apple-authored files and keeps QuickTime showing titles while Music.app shows thumbnails.
+- Timescales: text/url/image tracks use 1000 Hz; audio timescale is preserved from the source. Track IDs may differ; structure/flags/handlers remain.
+
+#### Chapter track reference (titles, URLs, images)
 
 ```
 trak (titles)
@@ -209,9 +209,9 @@ trak (titles)
       stbl
         stsd -> tx3g sample entry
           displayFlags=0x00000000
-          justification=0x01ff
-          bgColor=0x1f1f1f00
-          default style: start=0 end=0 fontID=1 face=1 size=0x12 color=000000FF
+          justification=0x01ff (horizontal: center, vertical: baseline)
+          bgColor=0x1f1f1f00 (RGBA: dark gray, fully transparent)
+          default style: start=0 end=0 fontID=1 face=1 size=0x12 color=000000FF (RGBA: black, opaque)
           ftab: 1 font, "Sans-Serif"
         stts: one entry per sample, sample_count = chapter_count + 2 (padded)
         stsc: 3 entries, 1 sample per chunk
@@ -235,18 +235,24 @@ trak (images)
   stts/stsc/stsz/stco sized to number of images; stss marks every sample as sync
 ```
 
-These settings mirror Apple-authored “golden” files so that QuickTime, Music.app, and AVFoundation surface titles, URLs (`extraAttributes[HREF]`), and thumbnails reliably.
-
-### tx3g sample entry and samples (what we emit)
+#### title and url as tx3g sample entry
 
 - `stsd` `tx3g` sample entry matches Apple/golden layout:
   - displayFlags: `0x00000000`
-  - justification: `0x01FF`
-  - bg color: `0x1f1f1f00`
-  - default style: start=0, end=0, fontID=1, face=1, size=0x12, color RGBA `00 00 00 FF`
+  - justification: `0x01FF` (horizontal: center, vertical: baseline)
+  - bg color: `0x1f1f1f00` (RGBA: dark gray, fully transparent)
+  - default style: start=0, end=0, fontID=1, face=1, size=0x12, color=000000FF (RGBA: black, opaque)
   - font table: single entry “Sans-Serif”
 - Text samples: `[len][utf8 text][href box?]` where href box is `size=0x1a type=href start=0 end=0x000a len url pad`.
 - Padding: we duplicate the final text/URL samples twice so Apple players see `chapter_count + 2` samples (mirrors golden behavior).
+- URL track (`tx3g` with `href`): same padding rule and sample entry; samples may have empty text, `href` drives AVFoundation’s `extraAttributes[HREF]`.
+
+#### image as MJPEG sample entry
+
+- Every sample is sync-marked (`stss`), timescale 1000. Use baseline JPEG **yuvj420p**; 4:4:4 art can blank thumbnails in QuickTime/Music. If you supply art, re-encode with:
+  ```bash
+  ffmpeg -y -i your_art.jpg -pix_fmt yuvj420p your_art_420.jpg
+  ```
 
 ## Embedding API (C++)
 
