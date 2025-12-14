@@ -88,7 +88,7 @@ static bool load_chapters_json(
             p.start_ms = c.value("start_ms", 0);
             p.image_path = c.value("image", "");
             p.url = c.value("url", "");
-            pending.push_back(std::move(p));
+            pending.emplace_back(std::move(p));
         }
     }
 
@@ -107,17 +107,17 @@ static bool load_chapters_json(
             url_sample.href = p.url;
         }
         texts.push_back(t);
-        url_chapters.push_back(std::move(url_sample));
+        url_chapters.emplace_back(std::move(url_sample));
 
         if (!p.image_path.empty()) {
             ChapterImageSample im{};
             im.data = load_jpeg(resolve_path(p.image_path));
             im.start_ms = t.start_ms;
-            images.push_back(std::move(im));
+            images.emplace_back(std::move(im));
         }
     }
     if (any_url) {
-        extra_text_tracks.push_back({"Chapter URLs", std::move(url_chapters)});
+        extra_text_tracks.emplace_back("Chapter URLs", std::move(url_chapters));
     }
     meta.title = j.value("title", "");
     meta.artist = j.value("artist", "");
