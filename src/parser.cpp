@@ -25,6 +25,16 @@ constexpr uint64_t kFullBoxBaseHeader = 12;  // size+type+version/flags
 constexpr uint64_t kMetaReservedBytes = 4;
 constexpr uint64_t kHdlrMinPayload = 20;
 
+static bool is_printable_fourcc(uint32_t type) {
+    for (int i = 0; i < 4; ++i) {
+        uint8_t c = (type >> (24 - 8 * i)) & 0xFF;
+        if (c < 0x20 || c > 0x7E) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }  // namespace
 
 static void skip(std::istream &in, uint64_t n) { in.seekg(n, std::ios::cur); }
@@ -151,9 +161,31 @@ static void parse_mdhd(std::istream &in, uint64_t size, uint32_t &timescale, uin
 static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
     const uint64_t start = (uint64_t)in.tellg();
 
+    // meta full box header.
+    uint8_t version = in.get();
+    uint8_t flags[3];
+    in.read((char *)flags, 3);
+    (void)version;
+    (void)flags;
+
+    // Peek ahead to guess whether the next word is a valid atom size/type (ISO).
+    const uint64_t payload_remain = size - 4;
+    bool iso_style_first = true;
+    if (payload_remain >= kAtomHeaderSize) {
+        std::streampos after_flags = in.tellg();
+        uint32_t next_size = read_u32(in);
+        uint32_t next_type = read_u32(in);
+        bool looks_like_atom = next_size >= kAtomHeaderSize && next_size <= payload_remain &&
+                               is_printable_fourcc(next_type);
+        iso_style_first = looks_like_atom;
+        in.clear();
+        in.seekg(after_flags);
+    }
+
     auto parse_children = [&](bool consume_reserved) {
-        // Expect caller to be positioned right after version+flags.
-        uint64_t remain = size - 4;
+        in.clear();
+        in.seekg(start + 4);  // after version+flags
+        uint64_t remain = payload_remain;
         if (consume_reserved && remain >= kMetaReservedBytes) {
             read_u32(in);
             remain -= kMetaReservedBytes;
@@ -179,20 +211,17 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
         }
     };
 
-    // meta full box header.
-    uint8_t version = in.get();
-    uint8_t flags[3];
-    in.read((char *)flags, 3);
-    (void)version;
-    (void)flags;
-
-    // First attempt assuming a reserved 4-byte field (iTunes-style). If ilst is.
-    // still empty, rewind and try without consuming the reserved field.
-    parse_children(true);
-    if (out.ilst_payload.empty()) {
-        in.clear();
-        in.seekg(start + 4);  // after version+flags
+    // Try the likely style first, then fall back to the other.
+    if (iso_style_first) {
         parse_children(false);
+        if (out.ilst_payload.empty()) {
+            parse_children(true);
+        }
+    } else {
+        parse_children(true);
+        if (out.ilst_payload.empty()) {
+            parse_children(false);
+        }
     }
 
     // Seek to end of meta box.
