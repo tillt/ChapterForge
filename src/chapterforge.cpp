@@ -18,8 +18,8 @@ namespace {
 static bool read_file(const std::string &path, std::vector<uint8_t> &out) {
     std::ifstream f(path, std::ios::binary);
     if (!f.is_open()) {
-        CH_LOG("io", "open failed for " << path << " errno=" << errno << " ("
-                                        << std::generic_category().message(errno) << ")");
+        CH_LOG("error", "open failed for " << path << " errno=" << errno << " ("
+                                           << std::generic_category().message(errno) << ")");
         return false;
     }
     f.seekg(0, std::ios::end);
@@ -69,8 +69,8 @@ static bool load_chapters_json(
     std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> &extra_text_tracks) {
     std::ifstream f(json_path);
     if (!f.is_open()) {
-        CH_LOG("io", "open failed for " << json_path << " errno=" << errno << " ("
-                                        << std::generic_category().message(errno) << ")");
+        CH_LOG("error", "open failed for " << json_path << " errno=" << errno << " ("
+                                           << std::generic_category().message(errno) << ")");
         return false;
     }
     json j;
@@ -171,13 +171,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
     const std::vector<uint8_t> *ilst_ptr = nullptr;
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
-        CH_LOG("meta", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
+        CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
     } else if (metadata_is_empty(meta)) {
-        CH_LOG("meta",
-               "WARNING: source metadata missing and no metadata "
-               "provided; output will carry empty ilst");
+        CH_LOG("warn", "source metadata missing and no metadata provided; output will carry empty ilst");
     } else {
-        CH_LOG("meta", "Using metadata provided by JSON overrides");
+        CH_LOG("debug", "Using metadata provided by JSON overrides");
     }
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta, fast_start,
                      extra_text_tracks, ilst_ptr);
@@ -204,13 +202,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     const std::vector<uint8_t> *ilst_ptr = nullptr;
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
-        CH_LOG("meta", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
+        CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
     } else if (metadata_is_empty(metadata)) {
-        CH_LOG("meta",
-               "WARNING: source metadata missing and no metadata "
-               "provided; output will carry empty ilst");
+        CH_LOG("warn", "source metadata missing and no metadata provided; output will carry empty ilst");
     } else {
-        CH_LOG("meta", "Using metadata provided by caller");
+        CH_LOG("debug", "Using metadata provided by caller");
     }
     std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
@@ -279,13 +275,12 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     const std::vector<uint8_t> *ilst_ptr = nullptr;
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
-        CH_LOG("meta", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
+        CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
     } else if (metadata_is_empty(metadata)) {
-        CH_LOG("meta",
-               "WARNING: source metadata missing and no metadata "
-               "provided; output will carry empty ilst");
+        CH_LOG("warn",
+               "source metadata missing and no metadata provided; output will carry empty ilst");
     } else {
-        CH_LOG("meta", "Using metadata provided by caller");
+        CH_LOG("debug", "Using metadata provided by caller");
     }
     std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
     if (!url_chapters.empty()) {

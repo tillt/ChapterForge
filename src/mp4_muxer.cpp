@@ -302,9 +302,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         image_duration_ts += (uint64_t)dur_ms * chapter_timescale / 1000;
     }
 
-    CH_LOG("info", "[durations] text_ts=" << text_duration_ts << " image_ts=" << image_duration_ts
-                                          << " audio_ts=" << audio_duration_ts
-                                          << " (audio_timescale=" << audio_timescale << ")");
+    CH_LOG("debug", "[durations] text_ts=" << text_duration_ts << " image_ts=" << image_duration_ts
+                                           << " audio_ts=" << audio_duration_ts
+                                           << " (audio_timescale=" << audio_timescale << ")");
     CH_LOG("debug", "derived text durations=" << text_durations.size()
                                               << " image durations=" << image_durations.size());
 
@@ -366,11 +366,11 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         // stbl for audio triggered decoding issues in Apple players even when.
         // the fields were “correct” per spec, so we preserve the original.
         // structure whenever we can.
-        CH_LOG("info", "Reusing source audio stbl");
+        CH_LOG("debug", "Reusing source audio stbl");
         stbl_audio = build_audio_stbl_raw(aac.stsd_payload, aac.stts_payload, aac.stsc_payload,
                                           aac.stsz_payload, aac.stco_payload);
     } else {
-        CH_LOG("info", "Building new audio stbl");
+        CH_LOG("debug", "Building new audio stbl");
         stbl_audio =
             build_audio_stbl(audio_cfg, aac.sizes, audio_chunk_plan, audio_sample_count, nullptr);
     }

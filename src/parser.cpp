@@ -152,17 +152,17 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
         while (remain > 8) {
             auto child = read_atom_header(in);
             if (!in || child.size < 8 || child.size > remain) {
-                CH_LOG("parser", "meta child invalid size=" << child.size << " remain=" << remain);
+                CH_LOG("debug", "meta child invalid size=" << child.size << " remain=" << remain);
                 break;
             }
             uint64_t payload_size = child.size - 8;
             if (payload_size > remain - 8) {
-                CH_LOG("parser", "meta child payload exceeds remain; breaking");
+                CH_LOG("debug", "meta child payload exceeds remain; breaking");
                 break;
             }
             if (child.type == fourcc("ilst")) {
                 out.ilst_payload = read_bytes(in, payload_size);
-                CH_LOG("parser", "captured ilst payload, bytes=" << out.ilst_payload.size());
+                CH_LOG("debug", "captured ilst payload, bytes=" << out.ilst_payload.size());
             } else {
                 skip(in, payload_size);
             }
@@ -220,7 +220,7 @@ static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
 static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &stsd,
                        std::vector<uint8_t> &stts, std::vector<uint8_t> &stsc,
                        std::vector<uint8_t> &stsz, std::vector<uint8_t> &stco) {
-    CH_LOG("parser", "parse_stbl size=" << size);
+    CH_LOG("debug", "parse_stbl size=" << size);
     uint64_t start = (uint64_t)in.tellg();
     uint64_t remain = size;
 
@@ -276,7 +276,7 @@ static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &st
 
     uint64_t end = start + size;
     in.seekg(end);
-    CH_LOG("parser", "stbl parsed sizes stsd=" << stsd.size() << " stts=" << stts.size()
+    CH_LOG("debug", "stbl parsed sizes stsd=" << stsd.size() << " stts=" << stts.size()
                                                << " stsc=" << stsc.size() << " stsz=" << stsz.size()
                                                << " stco=" << stco.size());
 }
@@ -289,7 +289,7 @@ ParsedMp4 out;
 uint32_t best_audio_samples = 0;
     bool force_fallback = false;
 
-    CH_LOG("parser", "parse_mp4 enter path=" << path);
+    CH_LOG("debug", "parse_mp4 enter path=" << path);
     std::ifstream in(path, std::ios::binary);
     if (!in) {
         CH_LOG("error", "parse_mp4: cannot open " << path << " errno=" << errno);
@@ -299,7 +299,7 @@ uint32_t best_audio_samples = 0;
     in.seekg(0, std::ios::end);
     const uint64_t file_size = static_cast<uint64_t>(in.tellg());
     in.seekg(0, std::ios::beg);
-    CH_LOG("parser", "parse_mp4: size=" << file_size << " path=" << path);
+    CH_LOG("debug", "parse_mp4: size=" << file_size << " path=" << path);
 
 while (in.peek() != EOF) {
     if (force_fallback) {
@@ -333,7 +333,7 @@ while (in.peek() != EOF) {
                     break;
                 }
 
-                CH_LOG("parser", "enter moov @0x" << std::hex << atom.offset << std::dec
+                CH_LOG("debug", "enter moov @0x" << std::hex << atom.offset << std::dec
                                                 << " end=" << end);
                 while (((uint64_t)in.tellg()) + 8 <= end) {
                     auto child = read_atom_header(in);
@@ -355,7 +355,7 @@ while (in.peek() != EOF) {
                     }
 
                     uint64_t c_payload = child.size - 8;
-                    CH_LOG("parser", "moov child=" << std::hex << child.type << std::dec
+                    CH_LOG("debug", "moov child=" << std::hex << child.type << std::dec
                                                    << " size=" << child.size
                                                    << " offset=0x" << std::hex << child.offset
                                                    << std::dec);
@@ -373,7 +373,7 @@ while (in.peek() != EOF) {
                                     uint64_t upay = u.size - 8;
 
                                     if (u.type == ('m' << 24 | 'e' << 16 | 't' << 8 | 'a')) {
-                                        CH_LOG("parser", "found meta inside udta");
+                                        CH_LOG("debug", "found meta inside udta");
                                         parse_meta(in, upay, out);
                                     } else {
                                         skip(in, upay);
@@ -385,7 +385,7 @@ while (in.peek() != EOF) {
                         case ('m' << 24 | 'e' << 16 | 't' << 8 | 'a'): {
                             // Some files place meta directly under moov (not inside.
                             // udta)
-                            CH_LOG("parser", "found meta under moov");
+                            CH_LOG("debug", "found meta under moov");
                             parse_meta(in, c_payload, out);
                             break;
                         }
@@ -397,7 +397,7 @@ while (in.peek() != EOF) {
                             uint32_t mdhd_timescale = 0;
                             uint64_t mdhd_duration = 0;
                             std::vector<uint8_t> stsd, stts, stsc, stsz, stco;
-                    CH_LOG("parser", "trak start end=" << trak_end);
+                    CH_LOG("debug", "trak start end=" << trak_end);
 
                             while (trak_remain >= 8) {
                                 auto tchild = read_atom_header(in);
@@ -405,27 +405,27 @@ while (in.peek() != EOF) {
                                     break;
                                 }
                                 uint64_t tpay = tchild.size - 8;
-                                CH_LOG("parser", " trak child=" << std::hex << tchild.type
+                                CH_LOG("debug", " trak child=" << std::hex << tchild.type
                                                                 << std::dec << " size=" << tchild.size);
 
                                 if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
-                                    CH_LOG("parser", "trak: entering mdia");
+                                    CH_LOG("debug", "trak: entering mdia");
                                     // parse mdia.
                                     uint64_t mdia_end = (uint64_t)in.tellg() + tpay;
                                     uint64_t mdia_remain = tpay;
                                     bool mdia_overflow = false;
 
                                     while (mdia_remain >= 8) {
-                                        CH_LOG("parser", " mdia pos=" << (uint64_t)in.tellg()
+                                        CH_LOG("debug", " mdia pos=" << (uint64_t)in.tellg()
                                                                       << " remain=" << mdia_remain);
                                         auto m = read_atom_header(in);
                                     if (!in || m.size < 8) {
-                                        CH_LOG("parser", "mdia break: stream bad or size<8");
+                                        CH_LOG("debug", "mdia break: stream bad or size<8");
                                         break;
                                     }
                                     uint64_t mpay = m.size - 8;
                                     if (m.size > mdia_remain) {
-                                        CH_LOG("parser",
+                                        CH_LOG("debug",
                                                " mdia child type=" << std::hex << m.type
                                                                    << std::dec
                                                                    << " claims size=" << m.size
@@ -437,7 +437,7 @@ while (in.peek() != EOF) {
                                         mdia_remain = 0;
                                         break;
                                     }
-                                    CH_LOG("parser",
+                                    CH_LOG("debug",
                                            " mdia child type=" << std::hex << m.type << std::dec
                                                                << " size=" << m.size
                                                                << " offset=" << m.offset);
@@ -447,14 +447,14 @@ while (in.peek() != EOF) {
                                     if (m.offset + m.size > mdia_end) {
                                         uint64_t allowed = mdia_end - m.offset;
                                         if (allowed < 8) {
-                                            CH_LOG("parser",
+                                            CH_LOG("debug",
                                                    " mdia child overflow too large; bail");
                                             mdia_overflow = true;
                                             in.seekg(mdia_end);
                                             mdia_remain = 0;
                                             break;
                                         }
-                                        CH_LOG("parser", " mdia child overflow; clamping size "
+                                        CH_LOG("debug", " mdia child overflow; clamping size "
                                                              << m.size << " -> " << allowed);
                                         m.size = allowed;
                                         mpay = m.size - 8;
@@ -462,13 +462,13 @@ while (in.peek() != EOF) {
 
                                     if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
                                         parse_mdhd(in, mpay, mdhd_timescale, mdhd_duration);
-                                        CH_LOG("parser", "  mdhd timescale=" << mdhd_timescale
+                                        CH_LOG("debug", "  mdhd timescale=" << mdhd_timescale
                                                                             << " duration="
                                                                             << mdhd_duration);
                                         } else if (m.type ==
                                                    ('h' << 24 | 'd' << 16 | 'l' << 8 | 'r')) {
                                             handler_type = parse_hdlr(in, m.size);
-                                            CH_LOG("parser",
+                                            CH_LOG("debug",
                                                    "  hdlr=" << std::hex << handler_type
                                                              << std::dec);
                                         } else if (m.type ==
@@ -476,17 +476,17 @@ while (in.peek() != EOF) {
                                             // find stbl.
                                             uint64_t minf_end = (uint64_t)in.tellg() + mpay;
                                             uint64_t minf_rem = mpay;
-                                            CH_LOG("parser", "  enter minf end=" << minf_end);
+                                            CH_LOG("debug", "  enter minf end=" << minf_end);
 
                                             while (minf_rem >= 8) {
                                                 auto mi = read_atom_header(in);
                                                 if (!in || mi.size < 8) {
-                                                    CH_LOG("parser",
+                                                    CH_LOG("debug",
                                                            "  minf break: stream bad or size<8");
                                                     break;
                                                 }
                                                 uint64_t mi_pay = mi.size - 8;
-                                                CH_LOG("parser", "  minf child=" << std::hex
+                                                CH_LOG("debug", "  minf child=" << std::hex
                                                                                  << mi.type
                                                                                  << std::dec
                                                                                  << " size="
@@ -515,7 +515,7 @@ while (in.peek() != EOF) {
                                                         (buf[off + 2] << 8) | buf[off + 3];
                                                     if (maybe == minf_tag) {
                                                         uint64_t abs_pos = m.offset + 8 + off;
-                                                        CH_LOG("parser", "  found nested minf @"
+                                                        CH_LOG("debug", "  found nested minf @"
                                                                              << abs_pos << " inside "
                                                                              << std::hex << m.type
                                                                              << std::dec);
@@ -607,7 +607,7 @@ mdia_done:
 
     // Fallback: flat scan for sample-table atoms if they were not captured.
     if (out.stsz.empty() || out.stco.empty() || out.stsc.empty() || out.stsd.empty()) {
-        CH_LOG("parser", "fallback flat scan for stbl atoms");
+        CH_LOG("debug", "fallback flat scan for stbl atoms");
         out.used_fallback_stbl = true;
         // load whole file into memory and search for atoms by signature.
         in.clear();
@@ -634,7 +634,7 @@ mdia_done:
                     uint64_t end = static_cast<uint64_t>(i) + static_cast<uint64_t>(sz);
                     if (sz >= 8 && end <= buf.size() && end >= i + 8) {
                         dst.assign(buf.begin() + i + 8, buf.begin() + end);
-                        CH_LOG("parser",
+                        CH_LOG("debug",
                                "grabbed " << fourcc << " via raw scan, bytes=" << dst.size());
                         break;
                     }
@@ -657,13 +657,13 @@ mdia_done:
         auto ilst = scan_ilst_payload(path);
         if (!ilst.empty()) {
             out.ilst_payload = std::move(ilst);
-            CH_LOG("parser", "ilst found via naive scan, bytes=" << out.ilst_payload.size());
+            CH_LOG("debug", "ilst found via naive scan, bytes=" << out.ilst_payload.size());
         }
     }
     if (out.stco.empty() || out.stsc.empty() || out.stsz.empty() || out.stsd.empty()) {
         CH_LOG("error", "parse_mp4: missing stbl atoms stco/stsc/stsz/stsd");
     }
-    CH_LOG("parser", "parse_mp4 done stco=" << out.stco.size() << " stsc=" << out.stsc.size()
+    CH_LOG("debug", "parse_mp4 done stco=" << out.stco.size() << " stsc=" << out.stsc.size()
                                             << " stsz=" << out.stsz.size()
                                             << " stsd=" << out.stsd.size()
                                             << " ilst=" << out.ilst_payload.size()

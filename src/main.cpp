@@ -27,10 +27,9 @@ int main(int argc, char **argv) {
     }
 
     if (argc < 4 || argc > 7) {
-        CH_LOG(
-            "usage",
-            "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a> "
-            "[--faststart] [--log-level warn|info|debug]");
+        std::cerr
+            << "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a> "
+            << "[--faststart] [--log-level warn|info|debug]\n";
         return 2;
     }
 

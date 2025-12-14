@@ -183,11 +183,11 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
 }
 
 std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
-    CH_LOG("parser", "mp4 reuse start: " << path);
+    CH_LOG("debug", "mp4 reuse start: " << path);
     std::ifstream f(path, std::ios::binary);
     if (!f.is_open()) {
-        CH_LOG("io", "Failed to open MP4: " << path << " (errno=" << errno
-                                            << " msg=" << std::strerror(errno) << ")");
+        CH_LOG("debug", "Failed to open MP4: " << path << " (errno=" << errno
+                                               << " msg=" << std::strerror(errno) << ")");
         return std::nullopt;
     }
 
@@ -200,17 +200,17 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
         return std::nullopt;
     }
 
-    CH_LOG("parser", "calling parse_mp4 size=" << file_size << " path=" << path);
+    CH_LOG("debug", "calling parse_mp4 size=" << file_size << " path=" << path);
     auto parsed_opt = parse_mp4(path);
     if (!parsed_opt) {
         CH_LOG("error", "Failed to parse MP4 (required moov/stbl atoms not found): " << path);
         return std::nullopt;
     }
-    CH_LOG("parser", "mp4 parsed optional has value for " << path);
+    CH_LOG("debug", "mp4 parsed optional has value for " << path);
     ParsedMp4 &parsed = *parsed_opt;
-    CH_LOG("parser", "mp4 parsed: stco=" << parsed.stco.size() << " stsc=" << parsed.stsc.size()
-                                         << " stsz=" << parsed.stsz.size()
-                                         << " stsd=" << parsed.stsd.size());
+    CH_LOG("debug", "mp4 parsed: stco=" << parsed.stco.size() << " stsc=" << parsed.stsc.size()
+                                        << " stsz=" << parsed.stsz.size()
+                                        << " stsd=" << parsed.stsd.size());
     if (parsed.stco.empty() || parsed.stsc.empty() || parsed.stsz.empty() || parsed.stsd.empty()) {
         CH_LOG("error", "Missing required stbl atoms (stco/stsc/stsz/stsd) in " << path);
         return std::nullopt;
@@ -231,9 +231,9 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
         return std::nullopt;
     }
 
-    CH_LOG("parser", "mp4 reuse: sizes=" << sizes.size() << " stco_bytes=" << parsed.stco.size()
-                                         << " stsc_bytes=" << parsed.stsc.size()
-                                         << " file_size=" << file_size);
+    CH_LOG("debug", "mp4 reuse: sizes=" << sizes.size() << " stco_bytes=" << parsed.stco.size()
+                                        << " stsc_bytes=" << parsed.stsc.size()
+                                        << " file_size=" << file_size);
 
     std::vector<uint32_t> chunk_plan =
         derive_chunk_plan(parsed.stsc, static_cast<uint32_t>(sizes.size()));
@@ -271,8 +271,8 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
                                                       << " expected>=" << stsc_expected);
         return std::nullopt;
     }
-    CH_LOG("parser", "mp4 reuse: stco_count=" << stco_count << " stsc_entries=" << stsc_entries
-                                              << " chunk_plan=" << chunk_plan.size());
+    CH_LOG("debug", "mp4 reuse: stco_count=" << stco_count << " stsc_entries=" << stsc_entries
+                                             << " chunk_plan=" << chunk_plan.size());
 
     size_t stco_pos = 8;
     for (uint32_t chunk_idx = 0; chunk_idx < stco_count && chunk_idx < chunk_plan.size() &&
