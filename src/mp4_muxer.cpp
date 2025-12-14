@@ -106,8 +106,8 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
 // -----------------------------------------------------------------------------
 // Minimal JPEG dimension parser (SOF0/1/2/3/5/6/7/9/10/11/12/13/14/15)
 // -----------------------------------------------------------------------------
-static bool parse_jpeg_dimensions(const std::vector<uint8_t> &data, uint16_t &width,
-                                  uint16_t &height) {
+static bool parse_jpeg_info(const std::vector<uint8_t> &data, uint16_t &width, uint16_t &height,
+                            bool &is_yuv420) {
     if (data.size() < 10 || data[0] != 0xFF || data[1] != 0xD8) {
         return false;  // not a JPEG SOI
     }
@@ -140,6 +140,22 @@ static bool parse_jpeg_dimensions(const std::vector<uint8_t> &data, uint16_t &wi
         if (is_sof && seg_len >= 7) {
             height = (static_cast<uint16_t>(data[i + 5]) << 8) | data[i + 6];
             width = (static_cast<uint16_t>(data[i + 7]) << 8) | data[i + 8];
+            is_yuv420 = false;
+            // Subsampling factors live in component tables that follow; expect 3 components.
+            if (seg_len >= 2 + 6 + 3 * 3) {
+                uint8_t comps = data[i + 9];
+                if (comps == 3) {
+                    uint8_t hv1 = data[i + 11];
+                    uint8_t hv2 = data[i + 14];
+                    uint8_t hv3 = data[i + 17];
+                    uint8_t h1 = hv1 >> 4, v1 = hv1 & 0x0F;
+                    uint8_t h2 = hv2 >> 4, v2 = hv2 & 0x0F;
+                    uint8_t h3 = hv3 >> 4, v3 = hv3 & 0x0F;
+                    if (h1 == 2 && v1 == 2 && h2 == 1 && v2 == 1 && h3 == 1 && v3 == 1) {
+                        is_yuv420 = true;
+                    }
+                }
+            }
             return true;
         }
 
@@ -328,9 +344,17 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     bool has_image_track = !image_samples.empty();
     if (has_image_track) {
         uint16_t w = 0, h = 0;
-        if (parse_jpeg_dimensions(image_samples.front(), w, h) && w > 0 && h > 0) {
+        bool is_yuv420 = false;
+        if (parse_jpeg_info(image_samples.front(), w, h, is_yuv420) && w > 0 && h > 0) {
             image_width = w;
             image_height = h;
+            if (!is_yuv420) {
+                CH_LOG("warn",
+                       "chapter image is not 4:2:0 (yuvj420p); Apple players may ignore "
+                       "thumbnails. Re-encode with -pix_fmt yuvj420p.");
+            } else {
+                CH_LOG("debug", "chapter image subsampling OK (yuv420)");
+            }
         }
     }
 
