@@ -142,20 +142,16 @@ if(CLANG_FORMAT_EXE)
     )
 endif()
 
-#clang - tidy helper(braces around statements, etc.)
+# clang-tidy helper (honors compile_commands.json in build dir).
 find_program(CLANG_TIDY_EXE clang-tidy)
 if(CLANG_TIDY_EXE)
-    file(GLOB_RECURSE TIDY_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
-    )
-    add_custom_target(lint
+    add_custom_target(tidy
         COMMAND ${CLANG_TIDY_EXE}
-            -checks=-*,readability-braces-around-statements
             -p ${CMAKE_BINARY_DIR}
-            ${TIDY_FILES}
+            -checks=modernize-*,bugprone-*,readability-braces-around-statements
+            ${CHAPTERFORGE_CORE_SOURCES} src/main.cpp tests/*.cpp
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        COMMENT "Running clang-tidy (braces-around-statements check)"
+        COMMENT "Running clang-tidy (modernize/bugprone/readability checks)"
     )
 endif()
 
