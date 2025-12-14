@@ -190,17 +190,28 @@ jobs:
           if [[ -n "${{ matrix.arch || '' }}" ]]; then
             suffix="-${{ matrix.arch }}"
           fi
+          ver="${GITHUB_REF##*/}"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            ver="dev-${{ github.run_number }}"
+          fi
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            "/c/Program Files/7-Zip/7z.exe" a -tzip dist/chapterforge${suffix}.zip build/Release/chapterforge_cli.exe build/Release/chapterforge.lib LICENSE README.md
-            # include headers
-            (cd "${{ github.workspace }}" && "/c/Program Files/7-Zip/7z.exe" a -tzip ../dist/chapterforge${suffix}.zip include)
+            mkdir -p dist/payload/chapterforge
+            cp build/Release/chapterforge_cli.exe build/Release/chapterforge.lib LICENSE README.md dist/payload/chapterforge/
+            (cd "${{ github.workspace }}" && cp -r include "${{ github.workspace }}/dist/payload/chapterforge/")
+            (cd dist && "/c/Program Files/7-Zip/7z.exe" a -tzip chapterforge-${ver}${suffix}.zip chapterforge)
+            rm -rf dist/payload
           elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-            tar czf dist/chapterforge${suffix}.tar.gz \
-              -C build chapterforge_cli libchapterforge.a \
-              -C "${{ github.workspace }}" LICENSE README.md include
+            mkdir -p dist/payload/chapterforge
+            cp build/chapterforge_cli build/libchapterforge.a LICENSE README.md dist/payload/chapterforge/
+            (cd "${{ github.workspace }}" && cp -r include "${{ github.workspace }}/dist/payload/chapterforge/")
+            (cd dist/payload && tar czf "../chapterforge-${ver}${suffix}.tar.gz" chapterforge)
+            rm -rf dist/payload
           else
-            zip -j dist/chapterforge${suffix}.zip build/chapterforge_cli build/libchapterforge.a LICENSE README.md
-            (cd "${{ github.workspace }}" && zip -r dist/chapterforge${suffix}.zip include)
+            mkdir -p dist/payload/chapterforge
+            cp build/chapterforge_cli build/libchapterforge.a LICENSE README.md dist/payload/chapterforge/
+            (cd "${{ github.workspace }}" && cp -r include "${{ github.workspace }}/dist/payload/chapterforge/")
+            (cd dist/payload && zip -r "../chapterforge-${ver}${suffix}.zip" chapterforge)
+            rm -rf dist/payload
           fi
 
       - name: Upload artifact
