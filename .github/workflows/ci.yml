@@ -71,7 +71,7 @@ jobs:
           choco install -y gpac
           choco install -y vim || true
           choco install -y nlohmann-json || true
-          choco install -y zip || true
+          choco install -y 7zip || true
           # Bento4: download prebuilt SDK and expose mp4info/mp4dump
           B4_VER="1-6-0-640"
           curl -L -o /tmp/bento4.zip https://www.bok.net/Bento4/binaries/Bento4-SDK-${B4_VER}.x86_64-microsoft-win32.zip
@@ -105,6 +105,7 @@ jobs:
     if: >-
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
       || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+    environment: release
     needs: build
     strategy:
       fail-fast: false
@@ -190,9 +191,9 @@ jobs:
             suffix="-${{ matrix.arch }}"
           fi
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            zip -j dist/chapterforge${suffix}.zip build/Release/chapterforge_cli.exe build/Release/chapterforge.lib LICENSE README.md
+            "/c/Program Files/7-Zip/7z.exe" a -tzip dist/chapterforge${suffix}.zip build/Release/chapterforge_cli.exe build/Release/chapterforge.lib LICENSE README.md
             # include headers
-            (cd "${{ github.workspace }}" && zip -r dist/chapterforge${suffix}.zip include)
+            (cd "${{ github.workspace }}" && "/c/Program Files/7-Zip/7z.exe" a -tzip ../dist/chapterforge${suffix}.zip include)
           elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             tar czf dist/chapterforge${suffix}.tar.gz \
               -C build chapterforge_cli libchapterforge.a \
@@ -208,10 +209,27 @@ jobs:
           name: chapterforge-${{ matrix.os }}${{ matrix.arch && format('-{0}', matrix.arch) || '' }}
           path: dist/*
 
+  publish:
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/'))
+      || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
+    environment: release
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts from release matrix
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: List packaged artifacts
+        run: ls -l dist && find dist -type f -maxdepth 2 -print
+
       - name: Create GitHub Release
-        if: matrix.os == 'ubuntu-latest' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          files: dist/**/*
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
