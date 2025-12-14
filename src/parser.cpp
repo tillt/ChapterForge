@@ -18,6 +18,15 @@
 #include "logging.hpp"
 #include "mp4_atoms.hpp"
 
+namespace {
+
+constexpr uint64_t kAtomHeaderSize = 8;
+constexpr uint64_t kFullBoxBaseHeader = 12;  // size+type+version/flags
+constexpr uint64_t kMetaReservedBytes = 4;
+constexpr uint64_t kHdlrMinPayload = 20;
+
+}  // namespace
+
 static void skip(std::istream &in, uint64_t n) { in.seekg(n, std::ios::cur); }
 
 uint32_t read_u32(std::istream &in) {
@@ -145,18 +154,18 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
     auto parse_children = [&](bool consume_reserved) {
         // Expect caller to be positioned right after version+flags.
         uint64_t remain = size - 4;
-        if (consume_reserved && remain >= 4) {
+        if (consume_reserved && remain >= kMetaReservedBytes) {
             read_u32(in);
-            remain -= 4;
+            remain -= kMetaReservedBytes;
         }
-        while (remain > 8) {
+        while (remain > kAtomHeaderSize) {
             auto child = read_atom_header(in);
-            if (!in || child.size < 8 || child.size > remain) {
+            if (!in || child.size < kAtomHeaderSize || child.size > remain) {
                 CH_LOG("debug", "meta child invalid size=" << child.size << " remain=" << remain);
                 break;
             }
-            uint64_t payload_size = child.size - 8;
-            if (payload_size > remain - 8) {
+            uint64_t payload_size = child.size - kAtomHeaderSize;
+            if (payload_size > remain - kAtomHeaderSize) {
                 CH_LOG("debug", "meta child payload exceeds remain; breaking");
                 break;
             }
@@ -193,7 +202,7 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
 
 // Parse hdlr to retrieve handler type. Expects payload size (box size minus 8).
 static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
-    if (payload_size < 20) {  // too small to contain required fields
+    if (payload_size < kHdlrMinPayload) {  // too small to contain required fields
         skip(in, payload_size);
         return 0;
     }

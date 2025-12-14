@@ -29,6 +29,18 @@
 #include "trak_builder.hpp"
 #include "udta_builder.hpp"
 
+namespace {
+
+constexpr uint32_t kAacSamplesPerFrame = 1024;     // AAC LC = 1024 PCM samples/frame
+constexpr uint32_t kChapterTimescale = 1000;       // ms resolution for text/image tracks
+constexpr uint16_t kDefaultImageWidth = 1280;      // fallback when JPEG lacks size
+constexpr uint16_t kDefaultImageHeight = 720;      // fallback when JPEG lacks size
+constexpr uint32_t kDefaultAudioChunk = 21;        // chunk size used for derived plans
+constexpr uint32_t kStscHeaderSize = 8;
+constexpr uint32_t kStscEntrySize = 12;
+
+}  // namespace
+
 // Build an audio chunking plan. We previously mirrored the golden sample’s.
 // 22/21 pattern; this version uses a consistent chunk size to see if Apple.
 // players remain happy without the quirky first-chunk bump.
@@ -38,11 +50,10 @@ static std::vector<uint32_t> build_audio_chunk_plan(uint32_t sample_count) {
         return chunks;
     }
 
-    const uint32_t chunk = 21;
     uint32_t remaining = sample_count;
-    while (remaining > chunk) {
-        chunks.push_back(chunk);
-        remaining -= chunk;
+    while (remaining > kDefaultAudioChunk) {
+        chunks.push_back(kDefaultAudioChunk);
+        remaining -= kDefaultAudioChunk;
     }
     if (remaining > 0) {
         chunks.push_back(remaining);
@@ -54,15 +65,15 @@ static std::vector<uint32_t> build_audio_chunk_plan(uint32_t sample_count) {
 static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_payload,
                                                uint32_t sample_count) {
     std::vector<uint32_t> plan;
-    if (stsc_payload.size() < 16) {
+    if (stsc_payload.size() < kStscHeaderSize + kStscEntrySize) {
         return plan;
     }
     uint32_t entry_count = (stsc_payload[4] << 24) | (stsc_payload[5] << 16) |
                            (stsc_payload[6] << 8) | stsc_payload[7];
-    size_t pos = 8;
+    size_t pos = kStscHeaderSize;
     uint32_t consumed = 0;
     for (uint32_t i = 0; i < entry_count; ++i) {
-        if (pos + 12 > stsc_payload.size()) {
+        if (pos + kStscEntrySize > stsc_payload.size()) {
             break;
         }
         uint32_t first_chunk = (stsc_payload[pos] << 24) | (stsc_payload[pos + 1] << 16) |
@@ -70,7 +81,7 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
         uint32_t samples_per_chunk = (stsc_payload[pos + 4] << 24) | (stsc_payload[pos + 5] << 16) |
                                      (stsc_payload[pos + 6] << 8) | stsc_payload[pos + 7];
         uint32_t next_first = 0;
-        if (i + 1 < entry_count && pos + 12 <= stsc_payload.size() - 4) {
+        if (i + 1 < entry_count && pos + kStscEntrySize <= stsc_payload.size() - 4) {
             next_first = (stsc_payload[pos + 12] << 24) | (stsc_payload[pos + 13] << 16) |
                          (stsc_payload[pos + 14] << 8) | (stsc_payload[pos + 15]);
         }
@@ -281,7 +292,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
 
     const uint32_t audio_timescale = audio_cfg.sample_rate;  // typically 44100
     const uint64_t audio_duration_ts =
-        (uint64_t)audio_sample_count * 1024;  // AAC LC = 1024 PCM samples/frame
+        static_cast<uint64_t>(audio_sample_count) * kAacSamplesPerFrame;
     CH_LOG("debug", "audio cfg sr=" << audio_cfg.sample_rate
                                     << " ch=" << audio_cfg.channel_count
                                     << " obj=" << audio_cfg.audio_object_type
@@ -290,7 +301,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         static_cast<uint32_t>((audio_duration_ts * 1000 + audio_timescale - 1) / audio_timescale);
 
     // For text + image tracks we use 1000 Hz timescale (ms resolution).
-    const uint32_t chapter_timescale = 1000;
+    const uint32_t chapter_timescale = kChapterTimescale;
     auto text_durations = derive_durations_ms_from_starts(text_chapters, audio_duration_ms);
     auto image_durations = derive_durations_ms_from_starts(image_chapters, audio_duration_ms);
     uint64_t text_duration_ts = 0;
@@ -339,8 +350,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
 
     // Compute image width/height from the first JPEG when available to match.
     // encoded size.
-    uint16_t image_width = 1280;
-    uint16_t image_height = 720;
+    uint16_t image_width = kDefaultImageWidth;
+    uint16_t image_height = kDefaultImageHeight;
     bool has_image_track = !image_samples.empty();
     if (has_image_track) {
         uint16_t w = 0, h = 0;

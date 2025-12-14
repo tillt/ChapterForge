@@ -18,12 +18,27 @@
 #include "mp4a_builder.hpp"
 #include "parser.hpp"
 
+namespace {
+
+constexpr uint8_t kAdtsSyncByte = 0xFF;
+constexpr uint8_t kAdtsSyncMask = 0xF0;
+constexpr uint8_t kAdtsSyncPattern = 0xF0;
+constexpr size_t kAdtsHeaderNoCrc = 7;
+constexpr size_t kAdtsHeaderWithCrc = 9;
+constexpr size_t kEsdsVersionFlagsSize = 4;
+constexpr size_t kStszHeaderSize = 12;
+constexpr size_t kStscHeaderSize = 8;
+constexpr size_t kStscEntrySize = 12;
+constexpr size_t kEsdsTagLengthFieldMaxBytes = 4;
+
+}  // namespace
+
 AacExtractResult extract_adts_frames(const std::vector<uint8_t> &data) {
     AacExtractResult out;
 
     size_t i = 0;
     while (i + 7 < data.size()) {
-        if (data[i] == 0xFF && (data[i + 1] & 0xF0) == 0xF0) {
+        if (data[i] == kAdtsSyncByte && (data[i + 1] & kAdtsSyncMask) == kAdtsSyncPattern) {
             uint32_t len =
                 ((data[i + 3] & 0x03) << 11) | (data[i + 4] << 3) | ((data[i + 5] & 0xE0) >> 5);
 
@@ -47,7 +62,7 @@ AacExtractResult extract_adts_frames(const std::vector<uint8_t> &data) {
 
             // strip ADTS header (7 or 9 bytes depending on CRC)
             bool protection_absent = (data[i + 1] & 0x01);
-            size_t header_size = protection_absent ? 7 : 9;
+            size_t header_size = protection_absent ? kAdtsHeaderNoCrc : kAdtsHeaderWithCrc;
             if (len <= header_size) {
                 i++;
                 continue;
@@ -72,7 +87,7 @@ AacExtractResult extract_adts_frames(const std::vector<uint8_t> &data) {
 // Helpers for MP4 extraction (from container)
 static std::optional<std::vector<uint32_t>> parse_stsz_sizes(
     const std::vector<uint8_t> &stsz_payload) {
-    if (stsz_payload.size() < 12) {
+    if (stsz_payload.size() < kStszHeaderSize) {
         return std::nullopt;
     }
     const uint8_t *p = stsz_payload.data();
@@ -83,11 +98,11 @@ static std::optional<std::vector<uint32_t>> parse_stsz_sizes(
         sizes.assign(sample_count, sample_size);
         return sizes;
     }
-    if (stsz_payload.size() < 12 + sample_count * 4) {
+    if (stsz_payload.size() < kStszHeaderSize + sample_count * 4) {
         return std::nullopt;
     }
     sizes.reserve(sample_count);
-    size_t pos = 12;
+    size_t pos = kStszHeaderSize;
     for (uint32_t i = 0; i < sample_count; ++i) {
         uint32_t s = (p[pos] << 24) | (p[pos + 1] << 16) | (p[pos + 2] << 8) | p[pos + 3];
         sizes.push_back(s);
@@ -106,11 +121,13 @@ static void parse_esds_audio_cfg(const std::vector<uint8_t> &stsd_payload, Mp4aC
             break;
         }
         if (type == fourcc("esds")) {
-            size_t pos = i + 8 + 4;  // skip version/flags
+            size_t pos = i + 8 + kEsdsVersionFlagsSize;  // skip version/flags
             while (pos + 2 < stsd_payload.size()) {
                 uint8_t tag = stsd_payload[pos++];
                 uint32_t len = 0;
-                for (int j = 0; j < 4 && pos < stsd_payload.size(); ++j) {
+                for (int j = 0; j < static_cast<int>(kEsdsTagLengthFieldMaxBytes) &&
+                                pos < stsd_payload.size();
+                     ++j) {
                     uint8_t b = stsd_payload[pos++];
                     len = (len << 7) | (b & 0x7F);
                     if ((b & 0x80) == 0) {
@@ -145,15 +162,15 @@ static void parse_esds_audio_cfg(const std::vector<uint8_t> &stsd_payload, Mp4aC
 static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_payload,
                                                uint32_t sample_count) {
     std::vector<uint32_t> plan;
-    if (stsc_payload.size() < 16) {
+    if (stsc_payload.size() < kStscHeaderSize + kStscEntrySize) {
         return plan;
     }
     uint32_t entry_count = (stsc_payload[4] << 24) | (stsc_payload[5] << 16) |
                            (stsc_payload[6] << 8) | stsc_payload[7];
-    size_t pos = 8;
+    size_t pos = kStscHeaderSize;
     uint32_t consumed = 0;
     for (uint32_t i = 0; i < entry_count; ++i) {
-        if (pos + 12 > stsc_payload.size()) {
+        if (pos + kStscEntrySize > stsc_payload.size()) {
             break;
         }
         uint32_t first_chunk = (stsc_payload[pos] << 24) | (stsc_payload[pos + 1] << 16) |
@@ -161,7 +178,7 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
         uint32_t samples_per_chunk = (stsc_payload[pos + 4] << 24) | (stsc_payload[pos + 5] << 16) |
                                      (stsc_payload[pos + 6] << 8) | stsc_payload[pos + 7];
         uint32_t next_first = 0;
-        if (i + 1 < entry_count && pos + 12 <= stsc_payload.size() - 4) {
+        if (i + 1 < entry_count && pos + kStscEntrySize <= stsc_payload.size() - 4) {
             next_first = (stsc_payload[pos + 12] << 24) | (stsc_payload[pos + 13] << 16) |
                          (stsc_payload[pos + 14] << 8) | (stsc_payload[pos + 15]);
         }
