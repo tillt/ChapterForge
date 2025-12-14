@@ -328,6 +328,14 @@ set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         COMMENT "Generate test assets then run ctest"
     )
+
+    # Convenience: build everything then run the test suite.
+    add_custom_target(check
+        DEPENDS chapterforge chapterforge_cli
+        COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Build targets then run ctest"
+    )
 endif()
 
 if(ENABLE_STRICT_VALIDATION)
