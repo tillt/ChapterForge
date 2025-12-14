@@ -228,19 +228,18 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterTextSample> &url_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
-					 const std::string &output_path,
-					 bool fast_start) {
-                     const MetadataSet metadata = {};
-						return mux_file_to_m4a(output_path, text_chapters, url_chapters, image_chapters, metadata, output_path, fast_start);
+                     const std::string &output_path, bool fast_start) {
+    const MetadataSet metadata{};
+    return mux_file_to_m4a(input_audio_path, text_chapters, url_chapters, image_chapters,
+                           metadata, output_path, fast_start);
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterTextSample> &url_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
-                     const MetadataSet &metadata, 
-					 const std::string &output_path, 
-					 bool fast_start) {
+                     const MetadataSet &metadata, const std::string &output_path,
+                     bool fast_start) {
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     auto aac = load_audio(input_audio_path);
     if (!aac) {
