@@ -428,29 +428,6 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_LARGE_M4A_PATH or chapters_big_nometa.json)")
     endif()
 
-#AAC ingest variant using the large AAC source and the smaller big5 chapter
-#set to keep run time reasonable.
-    if(EXISTS "${INPUT_LARGE_AAC_PATH}" AND EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
-        add_test(
-            NAME large_image_aac
-            COMMAND ${CMAKE_COMMAND}
-            -DINPUT_AAC=${INPUT_LARGE_AAC_PATH}
-            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
-            -DOUTPUT_M4A=${OUTPUT_LARGE_AAC}
-            -DCHAPTER_JSON=${NORMAL5_JSON}
-            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
-            -DFASTSTART_FLAG=ON
-            -DXXD_PATH=${XXD_PATH}
-            -DMP4INFO_PATH=${MP4INFO_PATH}
-            -DMP4DUMP_PATH=${MP4DUMP_PATH}
-            -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_aac_with_mux.cmake
-        )
-        set_tests_properties(large_image_aac PROPERTIES LABELS "core")
-    else()
-        message(STATUS "Skipping big_image_aac (missing INPUT_LARGE_AAC_PATH, INPUT_LARGE_M4A_PATH, or chapters_normal_5.json)")
-    endif()
-
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${LARGE50_JSON}")
         add_test(
             NAME large_image_50

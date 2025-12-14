@@ -118,6 +118,9 @@ And then another file with more chapters, for fans: [ChapterForge Bonus Track M4
 
 - If the input already has metadata (`ilst`), it is reused by default.
 - Fast-start is on by default.
+- Logging: defaults to version + warnings/errors. Set verbosity when embedding via
+  `chapterforge::set_log_verbosity(LogVerbosity::Warn|Info|Debug)` or pass `--log-level warn|info|debug`
+  to the CLI. Debug-only logs stay hidden unless you raise the level.
 
 
 ## Chapters JSON format
