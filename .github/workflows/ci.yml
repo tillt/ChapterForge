@@ -186,9 +186,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          suffix=""
+          suffix="-${{ matrix.os }}"
           if [[ -n "${{ matrix.arch || '' }}" ]]; then
-            suffix="-${{ matrix.arch }}"
+            suffix="${suffix}-${{ matrix.arch }}"
           fi
           ver="${GITHUB_REF##*/}"
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.dry_run }}" == "true" ]]; then
