@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <utility>
+#include <chrono>
 
 #include "logging.hpp"
 #include "parser.hpp"
@@ -184,9 +185,9 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const std::vector<ChapterImageSample> &image_chapters,
-                     const MetadataSet &metadata,
-					 const std::string &output_path,
-					 bool fast_start) {
+                     const MetadataSet &metadata, const std::string &output_path,
+                     bool fast_start) {
+    const auto t0 = std::chrono::steady_clock::now();
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     CH_LOG("debug", "mux_file_to_m4a(titles+images) input=" << input_audio_path
                                                             << " output=" << output_path
@@ -209,14 +210,18 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
         CH_LOG("debug", "Using metadata provided by caller");
     }
     std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
-    return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                     extra_text_tracks, ilst_ptr);
+    bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
+                        extra_text_tracks, ilst_ptr);
+    const auto t1 = std::chrono::steady_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    CH_LOG("debug", "mux_file_to_m4a(titles+images) completed in " << ms << " ms");
+    return ok;
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterTextSample> &text_chapters,
                      const MetadataSet &metadata,
-					 const std::string &output_path,
+                     const std::string &output_path,
                      bool fast_start) {
     std::vector<ChapterImageSample> empty_images;
     return mux_file_to_m4a(input_audio_path, text_chapters, empty_images, metadata, output_path,
@@ -256,6 +261,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const MetadataSet &metadata, const std::string &output_path,
                      bool fast_start) {
+    const auto t0 = std::chrono::steady_clock::now();
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) input=" << input_audio_path
                                                                       << " output=" << output_path
@@ -286,8 +292,12 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     if (!url_chapters.empty()) {
         extra_text_tracks.push_back({"Chapter URLs", url_chapters});
     }
-    return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                     extra_text_tracks, ilst_ptr);
+    bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
+                        extra_text_tracks, ilst_ptr);
+    const auto t1 = std::chrono::steady_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) completed in " << ms << " ms");
+    return ok;
 }
 
 }  // namespace chapterforge

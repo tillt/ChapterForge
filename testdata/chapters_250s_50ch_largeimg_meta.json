@@ -300,11 +300,6 @@
       "image": "images/large49.jpg",
       "url": "https://chapterforge.test/ch49"
     },
-    {
-      "start_ms": 245000,
-      "title": "Chapter 50",
-      "image": "images/large50.jpg",
-      "url": "https://chapterforge.test/ch50"
-    }
+    { "start_ms": 245000, "title": "Chapter 50", "image": "images/large50.jpg", "url": "https://chapterforge.test/ch50" }
   ]
 }

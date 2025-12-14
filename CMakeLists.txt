@@ -384,9 +384,9 @@ endif()
 
 if(ENABLE_LARGE_IMAGE_TESTS)
 #Paths to chapter JSONs with normal/large images; guarded by file existence
-    set(NORMAL5_JSON "${TESTDATA_DIR}/chapters_normal_5.json")
-    set(NORMAL_NOMETA_JSON "${TESTDATA_DIR}/chapters_normal_nometa_5.json")
-    set(LARGE50_JSON "${TESTDATA_DIR}/chapters_large_50.json")
+    set(NORMAL5_JSON "${TESTDATA_DIR}/chapters_10s_2ch_normalimg_meta.json")
+    set(NORMAL_NOMETA_JSON "${TESTDATA_DIR}/chapters_10s_2ch_normalimg_nometa.json")
+    set(LARGE50_JSON "${TESTDATA_DIR}/chapters_250s_50ch_largeimg_meta.json")
     set(OUTPUT_NORMAL5 "${TEST_OUTPUT_DIR}/output_normal5.m4a" CACHE STRING "Normal 5-chapter output" FORCE)
     set(OUTPUT_LARGE50 "${TEST_OUTPUT_DIR}/output_large50.m4a" CACHE STRING "Large 50-chapter output" FORCE)
     set(OUTPUT_LARGE_AAC "${TEST_OUTPUT_DIR}/output_large_from_aac.m4a" CACHE STRING "Large AAC ingest output" FORCE)
@@ -403,7 +403,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         )
         set_tests_properties(large_image_5 PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping large_image_5 (missing INPUT_M4A_PATH or chapters_normal_5.json)")
+        message(STATUS "Skipping large_image_5 (missing INPUT_M4A_PATH or chapters_10s_2ch_normalimg_meta.json)")
     endif()
 
 #Metadata preservation on large input : leave JSON metadata empty so ilst is
@@ -440,7 +440,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         )
         set_tests_properties(large_image_50 PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_large_50.json)")
+        message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_250s_50ch_largeimg_meta.json)")
     endif()
 
     # 50 chapters with small (400x400) art over the long input.

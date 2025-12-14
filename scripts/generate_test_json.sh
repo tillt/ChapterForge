@@ -100,46 +100,43 @@ emit_chapters() {
   done
 }
 
-# Normal profile JSON (5 chapters, 800px images)
-{
-  cat <<'EOF'
+# Normal profile JSON (5 chapters, 800px images) sized to 10s input: 0/2/4/6/8s.
+cat > "${OUTDIR}/chapters_10s_2ch_normalimg_meta.json" <<'EOF'
 {
   "title": "ChapterForge Longform – Five Tangents",
   "artist": "The Pad Sprites",
   "album": "Extended Neon Stories",
   "genre": "Test Audio",
   "year": "2025",
-  "comment": "Five uneven stops on a 60s pad ride.",
+  "comment": "Five quick stops on a 10s clip.",
   "cover": "images/cover_normal.jpg",
   "chapters": [
-EOF
-  imgs=(images/normal1.jpg images/normal2.jpg images/normal3.jpg images/normal4.jpg images/normal5.jpg)
-  emit_chapters 5 "${imgs[@]}"
-  cat <<'EOF'
+    { "start_ms": 0,    "title": "Chapter 1", "image": "images/normal1.jpg", "url": "https://chapterforge.test/ch1" },
+    { "start_ms": 2000, "title": "Chapter 2", "image": "images/normal2.jpg", "url": "https://chapterforge.test/ch2" },
+    { "start_ms": 4000, "title": "Chapter 3", "image": "images/normal3.jpg", "url": "https://chapterforge.test/ch3" },
+    { "start_ms": 6000, "title": "Chapter 4", "image": "images/normal4.jpg", "url": "https://chapterforge.test/ch4" },
+    { "start_ms": 8000, "title": "Chapter 5", "image": "images/normal5.jpg", "url": "https://chapterforge.test/ch5" }
   ]
 }
 EOF
-} > "${OUTDIR}/chapters_normal_5.json"
-echo "Wrote ${OUTDIR}/chapters_normal_5.json"
+echo "Wrote ${OUTDIR}/chapters_10s_2ch_normalimg_meta.json"
 
-# Normal profile without metadata (5 chapters)
-{
-  cat <<'EOF'
+# Normal profile without metadata (5 chapters), same timing as above.
+cat > "${OUTDIR}/chapters_10s_2ch_normalimg_nometa.json" <<'EOF'
 {
   "chapters": [
-EOF
-  imgs=(images/normal1.jpg images/normal2.jpg images/normal3.jpg images/normal4.jpg images/normal5.jpg)
-  emit_chapters 5 "${imgs[@]}"
-  cat <<'EOF'
+    { "start_ms": 0,    "title": "Chapter 1", "image": "images/normal1.jpg", "url": "https://chapterforge.test/ch1" },
+    { "start_ms": 2000, "title": "Chapter 2", "image": "images/normal2.jpg", "url": "https://chapterforge.test/ch2" },
+    { "start_ms": 4000, "title": "Chapter 3", "image": "images/normal3.jpg", "url": "https://chapterforge.test/ch3" },
+    { "start_ms": 6000, "title": "Chapter 4", "image": "images/normal4.jpg", "url": "https://chapterforge.test/ch4" },
+    { "start_ms": 8000, "title": "Chapter 5", "image": "images/normal5.jpg", "url": "https://chapterforge.test/ch5" }
   ]
 }
 EOF
-} > "${OUTDIR}/chapters_normal_nometa_5.json"
-echo "Wrote ${OUTDIR}/chapters_normal_nometa_5.json"
+echo "Wrote ${OUTDIR}/chapters_10s_2ch_normalimg_nometa.json"
 
-# Large profile: 50 chapters, cycling 2000px images large1..large50.
-{
-  cat <<'EOF'
+# Large profile: 50 chapters, 5s spacing, fits 250s input.
+cat > "${OUTDIR}/chapters_250s_50ch_largeimg_meta.json" <<'EOF'
 {
   "title": "ChapterForge Large50",
   "artist": "The Pad Sprites",
@@ -149,12 +146,24 @@ echo "Wrote ${OUTDIR}/chapters_normal_nometa_5.json"
   "cover": "images/cover_large.jpg",
   "chapters": [
 EOF
+{
   imgs=()
   for i in $(seq 1 50); do imgs+=("images/large${i}.jpg"); done
-  emit_chapters 50 "${imgs[@]}"
-  cat <<'EOF'
+  start=0
+  for i in $(seq 1 50); do
+    img=${imgs[$((i-1))]}
+    printf '    { "start_ms": %d, "title": "Chapter %d", "image": "%s", "url": "https://chapterforge.test/ch%d" }' \
+      "${start}" "${i}" "${img}" "${i}"
+    if [[ $i -lt 50 ]]; then
+      echo ","
+    else
+      echo
+    fi
+    start=$((start + 5000))
+  done
+}
+cat <<'EOF'
   ]
 }
 EOF
-} > "${OUTDIR}/chapters_large_50.json"
-echo "Wrote ${OUTDIR}/chapters_large_50.json"
+echo "Wrote ${OUTDIR}/chapters_250s_50ch_largeimg_meta.json"

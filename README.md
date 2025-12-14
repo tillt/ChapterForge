@@ -92,22 +92,22 @@ Notes:
 
 ### Example output to validate players
 
-We ship a small reference file you can open in your favorite player to sanity-check chapter handling:
+We ship two reference files you can open in your favorite player to sanity-check chapter handling:
 
-- Input JSON: `testdata/chapters_normal_5.json`
-  - 2 chapters at 0 and 5 seconds
+- Input JSON: `testdata/chapters_10s_2ch_normalimg_meta.json`
+  - 2 chapters at 0 and 5 seconds (fits the 10s input)
   - Cover: `images/cover_normal.jpg`
-  - Per-chapter images: `images/normal1.jpg` and `normal2.jpg`
-  - URL track: `https://chapterforge.test/ch1` and `/ch2`
+  - Per-chapter images: `images/normal*.jpg`
+  - URL track with per-chapter HREFs
 - Built example: [ChapterForge Example M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output.m4a)
 
 What to expect:
-- Chapter list shows all 2 entries with titles and thumbnails (any player should).
-- Jumps land at the correct 5s offsets (any player should).
-- A video screen showing the chapter images in (QuickTime does this).
-- URLs are displayed together with the chapter titles (no player does this, yet).
+- Chapter list shows the 2 entries with titles and thumbnails.
+- Jumps land at the correct 5s offsets.
+- QuickTime shows the video track for chapter images; Music.app shows thumbnails.
+- URLs are present in the dedicated URL track (AVFoundation surfaces them via `extraAttributes[HREF]`), but players generally do not display them.
 
-And then another file with more chapters, for fans: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a)
+Bonus: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a) — 50 chapters, small images, and per-chapter URLs to stress-test players.
 
 ## CLI Usage
 
