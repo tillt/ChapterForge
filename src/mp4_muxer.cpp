@@ -158,11 +158,17 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
                    &extra_text_tracks,
                const std::vector<uint8_t> *ilst_payload) {
+    CH_LOG("debug", "write_mp4 begin output=" << output_path << " audio_frames=" << aac.frames.size()
+                                              << " titles=" << text_chapters.size()
+                                              << " images=" << image_chapters.size()
+                                              << " extra_text_tracks=" << extra_text_tracks.size()
+                                              << " fast_start=" << fast_start);
     //
     // 0) open file.
     //
     std::ofstream out(output_path, std::ios::binary);
     if (!out.is_open()) {
+        CH_LOG("error", "Failed to open output for write: " << output_path);
         return false;
     }
 
@@ -180,6 +186,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     if (audio_sample_count == 0) {
         throw std::runtime_error("No AAC frames extracted.");
     }
+    CH_LOG("debug", "audio sample count=" << audio_sample_count);
 
     //
     // Build audio samples for mdat.
@@ -242,6 +249,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     for (auto &im : image_chapters) {
         image_samples.push_back(im.data);
     }
+    CH_LOG("debug", "text samples=" << text_samples.size()
+                                    << " image samples=" << image_samples.size());
 
     //
     //
@@ -257,6 +266,10 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     const uint32_t audio_timescale = audio_cfg.sample_rate;  // typically 44100
     const uint64_t audio_duration_ts =
         (uint64_t)audio_sample_count * 1024;  // AAC LC = 1024 PCM samples/frame
+    CH_LOG("debug", "audio cfg sr=" << audio_cfg.sample_rate
+                                    << " ch=" << audio_cfg.channel_count
+                                    << " obj=" << audio_cfg.audio_object_type
+                                    << " duration_ts=" << audio_duration_ts);
     const uint32_t audio_duration_ms =
         static_cast<uint32_t>((audio_duration_ts * 1000 + audio_timescale - 1) / audio_timescale);
 
@@ -276,6 +289,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     CH_LOG("info", "[durations] text_ts=" << text_duration_ts << " image_ts=" << image_duration_ts
                                           << " audio_ts=" << audio_duration_ts
                                           << " (audio_timescale=" << audio_timescale << ")");
+    CH_LOG("debug", "derived text durations=" << text_durations.size()
+                                              << " image durations=" << image_durations.size());
 
     //
     // 4) Build STBL for each track.
@@ -302,6 +317,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     all_text_chunk_plans.push_back(text_chunk_plan);
     all_text_chunk_plans.insert(all_text_chunk_plans.end(), extra_text_chunk_plans.begin(),
                                 extra_text_chunk_plans.end());
+    CH_LOG("debug", "chunk plans: audio=" << audio_chunk_plan.size()
+                                           << " text=" << all_text_chunk_plans.size()
+                                           << " image=" << image_chunk_plan.size());
 
     // Compute image width/height from the first JPEG when available to match.
     // encoded size.
@@ -365,6 +383,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     if (has_image_track) {
         chapter_refs.push_back(IMAGE_TRACK_ID);
     }
+    CH_LOG("debug", "tref chap refs count=" << chapter_refs.size());
 
     auto trak_audio = build_trak_audio(AUDIO_TRACK_ID, audio_timescale, audio_duration_ts,
                                        std::move(stbl_audio), chapter_refs, tkhd_audio_duration);
@@ -408,6 +427,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     auto moov = build_moov(mvhd_timescale, mvhd_duration, std::move(trak_audio),
                            std::move(text_traks), std::move(trak_image), std::move(udta));
     moov->fix_size_recursive();
+    CH_LOG("debug", "moov size=" << moov->size() << " mvhd_duration=" << mvhd_duration);
 
     if (fast_start) {
         // moov before mdat: compute offsets assuming mdat follows immediately.

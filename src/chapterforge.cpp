@@ -144,6 +144,10 @@ namespace chapterforge {
 bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &chapter_json_path,
                      const std::string &output_path, bool fast_start) {
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
+    CH_LOG("debug", "mux_file_to_m4a(json) input=" << input_audio_path
+                                                   << " chapters=" << chapter_json_path
+                                                   << " output=" << output_path
+                                                   << " fast_start=" << fast_start);
     auto aac = load_audio(input_audio_path);
     if (!aac) {
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
@@ -159,6 +163,9 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
         CH_LOG("error", "Failed to load chapters JSON: " << chapter_json_path);
         return false;
     }
+    CH_LOG("debug", "chapters: titles=" << text_chapters.size()
+                                        << " urls=" << extra_text_tracks.size()
+                                        << " images=" << image_chapters.size());
 
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
@@ -183,6 +190,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
 					 const std::string &output_path,
 					 bool fast_start) {
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
+    CH_LOG("debug", "mux_file_to_m4a(titles+images) input=" << input_audio_path
+                                                            << " output=" << output_path
+                                                            << " fast_start=" << fast_start
+                                                            << " titles=" << text_chapters.size()
+                                                            << " images=" << image_chapters.size());
     auto aac = load_audio(input_audio_path);
     if (!aac) {
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
@@ -230,6 +242,14 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const std::vector<ChapterImageSample> &image_chapters,
                      const std::string &output_path, bool fast_start) {
     const MetadataSet metadata{};
+    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images,no meta) input=" << input_audio_path
+                                                                         << " output=" << output_path
+                                                                         << " titles="
+                                                                         << text_chapters.size()
+                                                                         << " urls="
+                                                                         << url_chapters.size()
+                                                                         << " images="
+                                                                         << image_chapters.size());
     return mux_file_to_m4a(input_audio_path, text_chapters, url_chapters, image_chapters,
                            metadata, output_path, fast_start);
 }
@@ -241,6 +261,15 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                      const MetadataSet &metadata, const std::string &output_path,
                      bool fast_start) {
     CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
+    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) input=" << input_audio_path
+                                                                      << " output=" << output_path
+                                                                      << " fast_start=" << fast_start
+                                                                      << " titles="
+                                                                      << text_chapters.size()
+                                                                      << " urls="
+                                                                      << url_chapters.size()
+                                                                      << " images="
+                                                                      << image_chapters.size());
     auto aac = load_audio(input_audio_path);
     if (!aac) {
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
