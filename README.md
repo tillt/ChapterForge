@@ -26,12 +26,16 @@ The player I am tinkering with needs support for storing a track-list / set-list
 
 ChapterForge uses the audio track from the input. It then combines that with a text track for the description, an optional text track for per-chapter URLs, and a video track for optional chapter images. All of that information gets bundled in the resulting output M4A file. With that M4A file you can now see chapter marks in your player.
 
-### Notes on Apple-style chapter URL handling
+### Notes on Apple-style chapter URL handling & artwork
 
 - A second `tx3g` track is created only when at least one chapter provides a `url`. Its samples carry an `href` modifier box; AVFoundation surfaces this as `extraAttributes[HREF]`.
 - URL samples may have empty text; the `href` drives the URL display.
 - Text tracks are padded with two extra samples (like the golden files) to satisfy Apple players: sample_count = chapter_count + 2, stts/stsz/stsc entries match that.
 - Images remain separate (MJPEG track) and are unaffected by the URL/text pairing.
+- **Artwork requirement:** encode chapter images as baseline JPEG in **4:2:0 (yuvj420p)**. QuickTime/AVFoundation can ignore or blank thumbnails if they are 4:4:4. Our generators force `-pix_fmt yuvj420p`; if you supply your own art, re-encode with:
+  ```bash
+  ffmpeg -y -i your_art.jpg -pix_fmt yuvj420p your_art_420.jpg
+  ```
 
 
 ## Platforms
@@ -88,7 +92,6 @@ Notes:
 - Core tests (label `core`) require only the compiler/runtime.
 - Tooling tests are optional and run only when deps are present; skip by leaving `ENABLE_OUTPUT_TOOL_TESTS=OFF`.
 - CI installs these per-platform; local runs can be minimal.
-
 
 ## CLI Usage
 

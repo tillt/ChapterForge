@@ -29,8 +29,8 @@ ARP_SCALE=(1.0 1.12246 1.18921 1.33484 1.49830 1.68179 1.88775 2.0)
 
 # Number chains: both voices at the same pace; whisper carries a reverse-style cascaded echo.
 WHISPER_CHAIN="atempo=0.85,areverse,aecho=0.7:0.6:650:0.4,aecho=0.6:0.5:2200|3200:0.35|0.25,areverse,volume=3.0[wout]"
-# Deep voice: pitched down ~1.5 octaves, slowed more (~3x), dry (no echo).
-DEEP_CHAIN="asetrate=44100/3,aresample=44100,atempo=0.9,volume=1.0[dout]"
+# Deep voice: pitched down ~1.5 octaves, slowed more (~3x), with a long, slow-decaying stereo echo.
+DEEP_CHAIN="asetrate=44100/3,aresample=44100,atempo=0.9,aecho=0.7:0.6:1200|2400:0.6|0.5,volume=1.0[dout]"
 mkdir -p "${OUTDIR}" "${STEMS_DIR}"
 TMP=$(mktemp -d)
 trap 'rm -rf "${TMP}"' EXIT

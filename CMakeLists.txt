@@ -215,7 +215,7 @@ add_executable(overload_variants tests/overload_variants.cpp)
 target_link_libraries(overload_variants PRIVATE chapterforge)
 target_include_directories(overload_variants PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_test(NAME overload_variants
-    COMMAND overload_variants "${INPUT_M4A_PATH}" "${TESTDATA_DIR}/cover.jpg" "${CMAKE_BINARY_DIR}/overload_outputs")
+    COMMAND overload_variants "${INPUT_M4A_PATH}" "${TESTDATA_DIR}/images/cover.jpg" "${TEST_OUTPUT_DIR}")
 set_tests_properties(overload_variants PROPERTIES FIXTURES_REQUIRED assets)
 set_tests_properties(overload_variants PROPERTIES LABELS "core")
 
@@ -243,6 +243,7 @@ endif()
 option(ENABLE_OUTPUT_TOOL_TESTS "Run tooling checks on an existing output.m4a" OFF)
 option(ENABLE_STRICT_VALIDATION "Run stricter validation with multiple parsers (mp4info/mp4dump/ffprobe/MP4Box)" OFF)
 option(ENABLE_LARGE_IMAGE_TESTS "Run heavy chapter-image tests (requires large input_large.m4a and large JPEGs)" OFF)
+option(ENABLE_VIDEO_DEBUG_COMPARE "Run optional video debug against a golden file (requires GOLDEN_M4A_PATH, mp4dump, ffprobe)" OFF)
 option(ENABLE_AVFOUNDATION_SMOKE "Run AVFoundation smoke test (macOS only, requires swift)" OFF)
 option(ENABLE_DOCS "Generate Doxygen HTML documentation" ON)
 
@@ -258,6 +259,7 @@ add_executable(audio_reuse_check
 )
 target_link_libraries(audio_reuse_check PRIVATE chapterforge)
 target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_test(
     NAME audio_reuse_check
     COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
@@ -285,7 +287,7 @@ set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
         NAME metadata_preserve_small
         COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}
-            -DOUTPUT_M4A=${CMAKE_BINARY_DIR}/output_meta_preserve.m4a
+            -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_meta_preserve.m4a
             -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_nometa.json
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -DFASTSTART_FLAG=ON
@@ -297,7 +299,7 @@ set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
     )
     set_tests_properties(metadata_preserve_small PROPERTIES FIXTURES_REQUIRED assets LABELS "core")
 #AAC input ingest->MP4, validated against the original input M4A for metadata / audio consistency.
-    set(OUTPUT_AAC_M4A_PATH "${CMAKE_BINARY_DIR}/output_from_aac.m4a")
+    set(OUTPUT_AAC_M4A_PATH "${TEST_OUTPUT_DIR}/output_from_aac.m4a")
     if(EXISTS "${INPUT_AAC_PATH}")
         add_test(
             NAME output_tool_checks_aac
@@ -358,7 +360,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
     set(LARGE50_JSON "${TESTDATA_DIR}/chapters_large_50.json")
     set(OUTPUT_NORMAL5 "${TEST_OUTPUT_DIR}/output_normal5.m4a" CACHE STRING "Normal 5-chapter output" FORCE)
     set(OUTPUT_LARGE50 "${TEST_OUTPUT_DIR}/output_large50.m4a" CACHE STRING "Large 50-chapter output" FORCE)
-    set(OUTPUT_LARGE_AAC "${CMAKE_BINARY_DIR}/output_large_from_aac.m4a" CACHE STRING "Large AAC ingest output" FORCE)
+    set(OUTPUT_LARGE_AAC "${TEST_OUTPUT_DIR}/output_large_from_aac.m4a" CACHE STRING "Large AAC ingest output" FORCE)
 
     if(EXISTS "${INPUT_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
         add_test(
@@ -378,7 +380,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
 #Metadata preservation on large input : leave JSON metadata empty so ilst is
 #copied through verbatim from the source M4A.
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL_NOMETA_JSON}")
-        set(OUTPUT_LARGE_NOMETA "${CMAKE_BINARY_DIR}/output_large_nometa.m4a")
+        set(OUTPUT_LARGE_NOMETA "${TEST_OUTPUT_DIR}/output_large_nometa.m4a")
         add_test(
             NAME large_image_metadata_preserve
             COMMAND ${CMAKE_COMMAND}
@@ -433,6 +435,43 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         set_tests_properties(large_image_50 PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_large_50.json)")
+    endif()
+
+    # Golden2-inspired structure: 8 chapters, URL+image tracks to mirror the layout.
+    set(GOLDEN2_LIKE_JSON "${TESTDATA_DIR}/golden/chapters_golden2_like.json")
+    set(OUTPUT_GOLDEN2_LIKE "${TEST_OUTPUT_DIR}/output_golden2_like.m4a" CACHE STRING "Golden2-like output" FORCE)
+    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${GOLDEN2_LIKE_JSON}")
+        add_test(
+            NAME golden2_like
+            COMMAND ${CMAKE_COMMAND}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DCHAPTER_JSON=${GOLDEN2_LIKE_JSON}
+            -DOUTPUT_M4A=${OUTPUT_GOLDEN2_LIKE}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
+        )
+        set_tests_properties(golden2_like PROPERTIES LABELS "core")
+    else()
+        message(STATUS "Skipping golden2_like (missing INPUT_LARGE_M4A_PATH or chapters_golden2_like.json)")
+    endif()
+endif()
+
+if(ENABLE_VIDEO_DEBUG_COMPARE AND EXISTS "${GOLDEN_M4A_PATH}")
+    find_program(FFPROBE_PATH ffprobe)
+    find_program(MP4DUMP_PATH mp4dump)
+    if(FFPROBE_PATH AND MP4DUMP_PATH)
+        add_test(
+            NAME video_debug_compare
+            COMMAND ${CMAKE_COMMAND}
+                -DGOLDEN_M4A=${GOLDEN_M4A_PATH}
+                -DOUTPUT_M4A=${OUTPUT_M4A_PATH}
+                -DFFPROBE_PATH=${FFPROBE_PATH}
+                -DMP4DUMP_PATH=${MP4DUMP_PATH}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/video_debug_compare.cmake
+        )
+        set_tests_properties(video_debug_compare PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+    else()
+        message(STATUS "Skipping video_debug_compare (ffprobe or mp4dump not found)")
     endif()
 endif()
 
