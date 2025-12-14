@@ -6,6 +6,28 @@
 
 ChapterForge is a library and CLI to mux chapters (text and optional images) into AAC/M4A files while preserving metadata and handling Apple-compatible chapter tracks.
 
+## Table of Contents
+- [Motivation and Backstory](#motivation-and-backstory)
+- [Features](#features)
+  - [Notes on Apple-style chapter URL handling & artwork](#notes-on-apple-style-chapter-url-handling--artwork)
+- [Platforms](#platforms)
+- [Building](#building)
+- [Tests & Dependencies](#tests--dependencies)
+  - [Example output to validate players](#example-output-to-validate-players)
+- Usage
+  - [CLI Usage](#cli-usage)
+  - [Chapters JSON format](#chapters-json-format)
+  - [Embedding API (C++)](#embedding-api-c)
+  - [Minimal C++ usage (CLI equivalent)](#minimal-c-usage-cli-equivalent)
+- Internals
+  - [Atom flow (input → output)](#atom-flow-input--output)
+    - [Chapter track reference (titles, URLs, images)](#chapter-track-reference-titles-urls-images)
+    - [tx3g sample entry and samples (what we emit)](#tx3g-sample-entry-and-samples-what-we-emit)
+- [Advanced Usage](#advanced-usage)
+  - [Objective-C++ Example](#objective-c-example)
+- [Contributing](#contributing)
+- [Disclaimer](#disclaimer)
+
 
 ## Motivation and Backstory
 
@@ -31,6 +53,7 @@ ChapterForge uses the audio track from the input. It then combines that with a t
 - A second `tx3g` track is created only when at least one chapter provides a `url`. Its samples carry an `href` modifier box; AVFoundation surfaces this as `extraAttributes[HREF]`.
 - URL samples may have empty text; the `href` drives the URL display.
 - Text tracks are padded with two extra samples (like the golden files) to satisfy Apple players: sample_count = chapter_count + 2, stts/stsz/stsc entries match that.
+- `tref/chap` from the audio track points only to the title text track and (if present) the image track; the URL `tx3g` is intentionally omitted. This keeps QuickTime showing titles while Music.app still shows thumbnails. **When extending ChapterForge or adding fixtures, keep this `chap` reference pattern intact so all builds behave identically across players.**
 - Images remain separate (MJPEG track) and are unaffected by the URL/text pairing.
 - **Artwork requirement:** encode chapter images as baseline JPEG in **4:2:0 (yuvj420p)**. QuickTime/AVFoundation can ignore or blank thumbnails if they are 4:4:4. Our generators force `-pix_fmt yuvj420p`; if you supply your own art, re-encode with:
   ```bash
@@ -109,6 +132,8 @@ What to expect:
 - Jumps land at the correct 5s offsets (any player should).
 - A video screen showing the chapter images in (QuickTime does this).
 - URLs are displayed together with the chapter titles (no player does this, yet).
+
+And then another file with more chapters, for fans: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a)
 
 ## CLI Usage
 

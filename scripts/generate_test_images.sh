@@ -116,10 +116,11 @@ EOF
 }
 
 echo "Generating 400x400 small chapter images..."
-for i in $(seq 1 5); do
-    echo "  small ${i}/5"
-    make_image "chapter${i}.jpg" 400 400 "${i}" $((i-1)) ""
+for i in $(seq 1 50); do
+    printf "  small %02d/50\r" "${i}"
+    make_image "small${i}.jpg" 400 400 "${i}" $((i-1)) ""
 done
+printf "\n"
 # Generate distinct cover assets for each profile size (output and input variants).
 make_image "cover.jpg" 400 400 "cover" 99 "OUTPUT"
 make_image "cover_input.jpg" 400 400 "cover" 199 "INPUT"

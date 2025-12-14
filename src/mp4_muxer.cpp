@@ -359,13 +359,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         has_image_track ? std::max({tkhd_audio_duration, tkhd_chapter_duration, tkhd_image_duration})
                         : std::max(tkhd_audio_duration, tkhd_chapter_duration);
 
-    // Reference all chapter text tracks (title + extras) and optional image in tref/chap.
+    // Reference title text track (and image if present) in tref/chap; omit URL track to keep QT happy.
     std::vector<uint32_t> chapter_refs;
-    // Match golden ordering: primary title track first, then additional text (URLs), then image.
     chapter_refs.push_back(TEXT_TRACK_ID);
-    for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
-        chapter_refs.push_back(TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i));
-    }
     if (has_image_track) {
         chapter_refs.push_back(IMAGE_TRACK_ID);
     }
@@ -374,10 +370,10 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                                        std::move(stbl_audio), chapter_refs, tkhd_audio_duration);
 
     std::vector<std::unique_ptr<Atom>> text_traks;
-    // Mirror golden sample: title track not default-enabled, URL track enabled.
+    // Make title track enabled/visible (QuickTime shows titles when chap -> enabled text track).
     text_traks.push_back(build_trak_text(TEXT_TRACK_ID, chapter_timescale, text_duration_ts,
                                          std::move(stbl_text), tkhd_chapter_duration,
-                                         "Chapter Titles", false));
+                                         "Chapter Titles", true));
 
     for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
         uint32_t tid = TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i);

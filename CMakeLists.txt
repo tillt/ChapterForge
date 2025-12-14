@@ -437,6 +437,24 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_large_50.json)")
     endif()
 
+    # 50 chapters with small (400x400) art over the long input.
+    set(SMALL50_JSON "${TESTDATA_DIR}/chapters_small_50.json")
+    set(OUTPUT_SMALL50 "${TEST_OUTPUT_DIR}/output_small50.m4a" CACHE STRING "Small art 50-chapter output" FORCE)
+    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${SMALL50_JSON}")
+        add_test(
+            NAME small_image_50
+            COMMAND ${CMAKE_COMMAND}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DCHAPTER_JSON=${SMALL50_JSON}
+            -DOUTPUT_M4A=${OUTPUT_SMALL50}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
+        )
+        set_tests_properties(small_image_50 PROPERTIES LABELS "core")
+    else()
+        message(STATUS "Skipping small_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_small_50.json)")
+    endif()
+
     # Golden2-inspired structure: 8 chapters, URL+image tracks to mirror the layout.
     set(GOLDEN2_LIKE_JSON "${TESTDATA_DIR}/golden/chapters_golden2_like.json")
     set(OUTPUT_GOLDEN2_LIKE "${TEST_OUTPUT_DIR}/output_golden2_like.m4a" CACHE STRING "Golden2-like output" FORCE)
