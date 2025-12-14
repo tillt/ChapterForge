@@ -26,6 +26,8 @@ int main(int argc, char **argv) {
     std::string input = argv[1];
     std::string cover = argv[2];
     std::string out_dir = argv[3];
+    // For image-bearing overloads we reuse the small test image next to the cover.
+    std::string image_path = (std::filesystem::path(cover).parent_path() / "small1.jpg").string();
 
     if (!std::filesystem::exists(input)) {
         std::cout << "[overload_variants] skipping: missing input fixture " << input << "\n";
@@ -33,6 +35,10 @@ int main(int argc, char **argv) {
     }
     if (!cover.empty() && !std::filesystem::exists(cover)) {
         std::cout << "[overload_variants] skipping: missing cover fixture " << cover << "\n";
+        return 0;
+    }
+    if (!std::filesystem::exists(image_path)) {
+        std::cout << "[overload_variants] skipping: missing image fixture " << image_path << "\n";
         return 0;
     }
 
@@ -80,6 +86,51 @@ int main(int argc, char **argv) {
     }
     if (!std::filesystem::exists(out_url) || std::filesystem::file_size(out_url) == 0) {
         std::cerr << "output missing or empty: " << out_url << "\n";
+        return 1;
+    }
+
+    // 3) Titles + images (no URL track).
+    std::vector<uint8_t> img_bytes = load_file(image_path);
+    std::vector<ChapterImageSample> images = {
+        {.data = img_bytes, .start_ms = 0},
+        {.data = img_bytes, .start_ms = 5000},
+    };
+    std::string out_img = (std::filesystem::path(out_dir) / "overload_img.m4a").string();
+    ok = mux_file_to_m4a(input, titles, images, meta, out_img, true);
+    if (!ok) {
+        std::cerr << "mux (titles+images) failed\n";
+        return 1;
+    }
+    if (!std::filesystem::exists(out_img) || std::filesystem::file_size(out_img) == 0) {
+        std::cerr << "output missing or empty: " << out_img << "\n";
+        return 1;
+    }
+
+    // 4) Titles + URLs + images, metadata empty (ilst reuse).
+    std::string out_url_img =
+        (std::filesystem::path(out_dir) / "overload_url_img.m4a").string();
+    ok = mux_file_to_m4a(input, titles, urls, images, MetadataSet{}, out_url_img, true);
+    if (!ok) {
+        std::cerr << "mux (titles+urls+images) failed\n";
+        return 1;
+    }
+    if (!std::filesystem::exists(out_url_img) ||
+        std::filesystem::file_size(out_url_img) == 0) {
+        std::cerr << "output missing or empty: " << out_url_img << "\n";
+        return 1;
+    }
+
+    // 5) Titles + URLs + images via the 5-arg overload (metadata reuse).
+    std::string out_url_img_nometa =
+        (std::filesystem::path(out_dir) / "overload_url_img_nometa.m4a").string();
+    ok = mux_file_to_m4a(input, titles, urls, images, out_url_img_nometa, true);
+    if (!ok) {
+        std::cerr << "mux (titles+urls+images 5-arg) failed\n";
+        return 1;
+    }
+    if (!std::filesystem::exists(out_url_img_nometa) ||
+        std::filesystem::file_size(out_url_img_nometa) == 0) {
+        std::cerr << "output missing or empty: " << out_url_img_nometa << "\n";
         return 1;
     }
 
