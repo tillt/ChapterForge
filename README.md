@@ -93,6 +93,23 @@ Notes:
 - Tooling tests are optional and run only when deps are present; skip by leaving `ENABLE_OUTPUT_TOOL_TESTS=OFF`.
 - CI installs these per-platform; local runs can be minimal.
 
+### Example output to validate players
+
+We ship a small reference file you can open in your favorite player to sanity-check chapter handling:
+
+- Input JSON: `testdata/chapters_normal_5.json`
+  - 5 chapters at 0/5/10/15/20 seconds
+  - Cover: `images/cover_normal.jpg`
+  - Per-chapter images: `images/normal1.jpg` … `normal5.jpg`
+  - URL track: `https://chapterforge.test/ch1` … `/ch5`
+- Built example: `docs/example/output.m4a`
+
+What to expect:
+- Chapter list shows all 5 entries with titles and thumbnails (any player should).
+- Jumps land at the correct 5s offsets (any player should).
+- A video screen showing the chapter images in (QuickTime does this).
+- URLs are displayed together with the chapter titles (no player does this, yet).
+
 ## CLI Usage
 
 ```bash
