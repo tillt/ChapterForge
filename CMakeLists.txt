@@ -156,6 +156,30 @@ if(CLANG_TIDY_EXE)
     )
 endif()
 
+# README TOC helper
+find_package(Python3 COMPONENTS Interpreter QUIET)
+if(Python3_Interpreter_FOUND)
+    add_custom_target(toc
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/update_readme_toc.py
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Regenerate README.md Table of Contents"
+    )
+
+    # Fails if README.md would change (useful in CI/lint).
+    add_custom_target(toc_check
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${CMAKE_CURRENT_SOURCE_DIR}/README.md
+                ${CMAKE_CURRENT_BINARY_DIR}/README.md.toc_check
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/update_readme_toc.py
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+                ${CMAKE_CURRENT_SOURCE_DIR}/README.md
+                ${CMAKE_CURRENT_BINARY_DIR}/README.md.toc_check
+        COMMAND ${CMAKE_COMMAND} -E rm -f ${CMAKE_CURRENT_BINARY_DIR}/README.md.toc_check
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Regenerate README.md TOC (fails if outdated)"
+    )
+endif()
+
 set(TEST_INPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/testdata" CACHE PATH "Directory containing sample input/output media")
 # Backward-compatible alias; prefer TEST_INPUT_DIR going forward.
 set(TESTDATA_DIR "${TEST_INPUT_DIR}" CACHE PATH "Alias for TEST_INPUT_DIR")
