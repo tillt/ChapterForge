@@ -1,5 +1,11 @@
 name: CI
 
+# Required for creating releases and uploading artifacts.
+permissions:
+  contents: write
+  actions: read
+  packages: read
+
 on:
   push:
   pull_request:
