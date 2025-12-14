@@ -382,11 +382,11 @@ while (in.peek() != EOF) {
                     // Clamp malformed child atoms that spill past moov. Some files report sizes
                     // that overrun the parent atom; we log and clamp instead of bailing out early.
                     if (child.offset + child.size > end) {
-                        CH_LOG("error", "parse_mp4: child overflow type=" << std::hex << child.type
-                                                                          << std::dec
-                                                                          << " size=" << child.size
-                                                                          << " end=" << end);
-                        child.size = end - child.offset;
+                CH_LOG("error", "parse_mp4: child overflow type=" << std::hex << child.type
+                                                                      << std::dec
+                                                                      << " size=" << child.size
+                                                                      << " end=" << end);
+                child.size = end - child.offset;
                         if (child.size < 8) {
                             break;
                         }
@@ -444,7 +444,8 @@ while (in.peek() != EOF) {
                                 }
                                 uint64_t tpay = tchild.size - 8;
                                 CH_LOG("debug", " trak child=" << std::hex << tchild.type
-                                                                << std::dec << " size=" << tchild.size);
+                                                                << std::dec << " size="
+                                                                << tchild.size);
 
                                 if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
                                     CH_LOG("debug", "trak: entering mdia");
