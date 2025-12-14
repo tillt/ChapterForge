@@ -33,6 +33,10 @@ std::unique_ptr<Atom> build_stts(const std::vector<uint32_t> &timestamps,
         } else {
             dur = total_duration_ts - timestamps[i];
         }
+        // sample_delta must be > 0; clamp to 1 tick to avoid invalid stts.
+        if (dur == 0) {
+            dur = 1;
+        }
 
         write_u32(p, 1);    // sample_count (one sample per chapter)
         write_u32(p, dur);  // sample_delta

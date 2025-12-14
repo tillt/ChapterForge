@@ -257,11 +257,13 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     const uint32_t audio_timescale = audio_cfg.sample_rate;  // typically 44100
     const uint64_t audio_duration_ts =
         (uint64_t)audio_sample_count * 1024;  // AAC LC = 1024 PCM samples/frame
+    const uint32_t audio_duration_ms =
+        static_cast<uint32_t>((audio_duration_ts * 1000 + audio_timescale - 1) / audio_timescale);
 
     // For text + image tracks we use 1000 Hz timescale (ms resolution).
     const uint32_t chapter_timescale = 1000;
-    auto text_durations = derive_durations_ms_from_starts(text_chapters);
-    auto image_durations = derive_durations_ms_from_starts(image_chapters);
+    auto text_durations = derive_durations_ms_from_starts(text_chapters, audio_duration_ms);
+    auto image_durations = derive_durations_ms_from_starts(image_chapters, audio_duration_ms);
     uint64_t text_duration_ts = 0;
     uint64_t image_duration_ts = 0;
     for (auto dur_ms : text_durations) {
@@ -287,21 +289,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     for (const auto &samples : extra_text_samples) {
         extra_text_chunk_plans.emplace_back(samples.size(), 1);
     }
-    std::vector<uint32_t> image_chunk_plan = [](size_t count) {
-        std::vector<uint32_t> plan;
-        if (count == 0) {
-            return plan;
-        }
-        if (count >= 2) {
-            plan.push_back(2);
-            count -= 2;
-        }
-        while (count > 0) {
-            plan.push_back(1);
-            --count;
-        }
-        return plan;
-    }(image_samples.size());
+    // Keep image chunks simple: 1 sample per chunk to avoid stsc/stco
+    // inconsistencies seen by QuickTime/ffmpeg.
+    std::vector<uint32_t> image_chunk_plan(image_samples.size(), 1);
 
     // Aggregate text tracks (primary + extras) for mdat/offset handling.
     std::vector<std::vector<std::vector<uint8_t>>> all_text_samples;
@@ -343,12 +333,13 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
             build_audio_stbl(audio_cfg, aac.sizes, audio_chunk_plan, audio_sample_count, nullptr);
     }
 
-    auto stbl_text = build_text_stbl(text_chapters, chapter_timescale);
+    auto stbl_text = build_text_stbl(text_chapters, chapter_timescale, text_chunk_plan,
+                                     audio_duration_ms);
 
     std::unique_ptr<Atom> stbl_image;
     if (has_image_track) {
         stbl_image = build_image_stbl(image_chapters, chapter_timescale, image_width, image_height,
-                                      image_chunk_plan);
+                                      image_chunk_plan, audio_duration_ms);
     }
 
     //
@@ -390,7 +381,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
 
     for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
         uint32_t tid = TEXT_TRACK_ID + 1 + static_cast<uint32_t>(i);
-        auto stbl_extra = build_text_stbl(extra_text_tracks[i].second, chapter_timescale);
+        auto stbl_extra = build_text_stbl(extra_text_tracks[i].second, chapter_timescale,
+                                          extra_text_chunk_plans[i], audio_duration_ms);
         text_traks.push_back(build_trak_text(tid, chapter_timescale, text_duration_ts,
                                              std::move(stbl_extra), tkhd_chapter_duration,
                                              extra_text_tracks[i].first, true));

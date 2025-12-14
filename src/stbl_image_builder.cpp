@@ -15,32 +15,19 @@
 // stts (same logic as text track)
 // -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stts_img(const std::vector<ChapterImageSample> &samples,
-                                            uint32_t timescale) {
+                                            uint32_t timescale, uint32_t total_ms) {
     auto stts = Atom::create("stts");
     auto &p = stts->payload;
 
     write_u8(p, 0);
     write_u24(p, 0);
-    // Run-length encode identical durations to mirror golden structure.
-    struct Entry {
-        uint32_t count;
-        uint32_t dur;
-    };
-    std::vector<Entry> entries;
-    auto durations = derive_durations_ms_from_starts(samples);
+    auto durations = derive_durations_ms_from_starts(samples, total_ms);
+    // Emit one entry per sample (avoids RLE collapsing; closer to golden files).
+    write_u32(p, durations.size());
     for (auto dur_ms : durations) {
         uint32_t dur = (uint64_t)dur_ms * timescale / 1000;
-        if (!entries.empty() && entries.back().dur == dur) {
-            entries.back().count += 1;
-        } else {
-            entries.push_back({1, dur});
-        }
-    }
-
-    write_u32(p, static_cast<uint32_t>(entries.size()));
-    for (auto &e : entries) {
-        write_u32(p, e.count);
-        write_u32(p, e.dur);
+        write_u32(p, 1);    // sample count
+        write_u32(p, dur);  // sample duration
     }
 
     return stts;
@@ -148,11 +135,12 @@ static std::unique_ptr<Atom> build_stco_img(uint32_t count) {
 // -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_image_stbl(const std::vector<ChapterImageSample> &samples,
                                        uint32_t track_timescale, uint16_t width, uint16_t height,
-                                       const std::vector<uint32_t> &chunk_plan) {
+                                       const std::vector<uint32_t> &chunk_plan,
+                                       uint32_t total_ms) {
     auto stbl = Atom::create("stbl");
 
     stbl->add(build_stsd_jpeg(width, height));  // sample entry with display size
-    stbl->add(build_stts_img(samples, track_timescale));
+    stbl->add(build_stts_img(samples, track_timescale, total_ms));
     stbl->add(build_stss_img(static_cast<uint32_t>(samples.size())));
     stbl->add(build_stsc_img(chunk_plan));
     stbl->add(build_stsz_img(samples));

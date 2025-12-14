@@ -11,17 +11,24 @@
 #include <cstdint>
 #include <vector>
 
+// Derive durations (ms) from sorted start times. If total_ms > 0, the final
+// duration is clamped to fill the remaining time up to total_ms (min 1).
 template <typename Sample>
-inline std::vector<uint32_t> derive_durations_ms_from_starts(const std::vector<Sample> &samples) {
+inline std::vector<uint32_t> derive_durations_ms_from_starts(const std::vector<Sample> &samples,
+                                                             uint32_t total_ms = 0) {
     std::vector<uint32_t> durations;
     durations.reserve(samples.size());
     for (size_t i = 0; i < samples.size(); ++i) {
         if (i + 1 < samples.size()) {
             uint32_t cur = samples[i].start_ms;
             uint32_t next = samples[i + 1].start_ms;
-            durations.push_back(next > cur ? (next - cur) : 0);
+            durations.push_back(next > cur ? (next - cur) : 1);
         } else {
-            durations.push_back(0);
+            if (total_ms > 0 && samples[i].start_ms < total_ms) {
+                durations.push_back(std::max<uint32_t>(1, total_ms - samples[i].start_ms));
+            } else {
+                durations.push_back(1);  // pad final sample with minimum duration
+            }
         }
     }
     return durations;

@@ -24,4 +24,6 @@ struct ChapterTextSample {
 };
 
 std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samples,
-                                      uint32_t track_timescale);
+                                      uint32_t track_timescale,
+                                      const std::vector<uint32_t> &chunk_plan,
+                                      uint32_t total_ms = 0);

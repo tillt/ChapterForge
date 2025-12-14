@@ -23,4 +23,5 @@ struct ChapterImageSample {
 
 std::unique_ptr<Atom> build_image_stbl(const std::vector<ChapterImageSample> &samples,
                                        uint32_t track_timescale, uint16_t width, uint16_t height,
-                                       const std::vector<uint32_t> &chunk_plan);
+                                       const std::vector<uint32_t> &chunk_plan,
+                                       uint32_t total_ms = 0);

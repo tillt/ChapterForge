@@ -67,7 +67,6 @@ std::unique_ptr<Atom> build_tkhd_text(uint32_t track_id, uint64_t duration, bool
 
 std::unique_ptr<Atom> build_tkhd_image(uint32_t track_id, uint64_t duration, uint16_t width,
                                        uint16_t height) {
-    // Mark as enabled/in-movie/in-preview (flags=7) so players like QuickTime.
-    // consider it for display as the visual track.
-    return build_tkhd_common(track_id, duration, 7, 0x0000, 0, 0, (float)width, (float)height);
+    // Use full enable/in-movie/in-preview flags; keep layer=1 for overlay ordering.
+    return build_tkhd_common(track_id, duration, 7, 0x0000, 1, 0, (float)width, (float)height);
 }

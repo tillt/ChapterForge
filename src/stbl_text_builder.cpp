@@ -45,14 +45,14 @@ static std::vector<uint8_t> encode_tx3g_sample(const ChapterTextSample &s) {
 // stts: durations converted to track timescale.
 // -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stts_text(const std::vector<ChapterTextSample> &samples,
-                                             uint32_t timescale) {
+                                             uint32_t timescale, uint32_t total_ms) {
     auto stts = Atom::create("stts");
     auto &p = stts->payload;
 
     write_u8(p, 0);
     write_u24(p, 0);
 
-    auto durations = derive_durations_ms_from_starts(samples);
+    auto durations = derive_durations_ms_from_starts(samples, total_ms);
     // Emit one entry per sample (mirrors the golden chapter files).
     write_u32(p, durations.size());
 
@@ -66,28 +66,43 @@ static std::unique_ptr<Atom> build_stts_text(const std::vector<ChapterTextSample
 }
 
 // -----------------------------------------------------------------------------
-// stsc: 1 sample per chunk.
+// stsc: 1 sample per chunk (dynamic to match chunk plan).
 // -----------------------------------------------------------------------------
-static std::unique_ptr<Atom> build_stsc_text() {
+static std::unique_ptr<Atom> build_stsc_text(const std::vector<uint32_t> &chunk_plan) {
     auto stsc = Atom::create("stsc");
     auto &p = stsc->payload;
 
     write_u8(p, 0);
     write_u24(p, 0);
-    write_u32(p, 3);  // entry_count
 
-    // Mirror golden: three entries, each 1 sample per chunk.
-    write_u32(p, 1);  // first_chunk
-    write_u32(p, 1);  // samples_per_chunk
-    write_u32(p, 1);  // sample description index
+    if (chunk_plan.empty()) {
+        write_u32(p, 1);
+        write_u32(p, 1);
+        write_u32(p, 1);
+        write_u32(p, 1);
+        return stsc;
+    }
 
-    write_u32(p, 2);  // first_chunk
-    write_u32(p, 1);  // samples_per_chunk
-    write_u32(p, 1);
+    struct Entry {
+        uint32_t first_chunk;
+        uint32_t samples_per_chunk;
+    };
+    std::vector<Entry> entries;
+    uint32_t current = chunk_plan.front();
+    entries.push_back({1, current});
+    for (size_t i = 1; i < chunk_plan.size(); ++i) {
+        if (chunk_plan[i] != current) {
+            current = chunk_plan[i];
+            entries.push_back({static_cast<uint32_t>(i + 1), current});
+        }
+    }
 
-    write_u32(p, 3);  // first_chunk
-    write_u32(p, 1);  // samples_per_chunk
-    write_u32(p, 1);
+    write_u32(p, static_cast<uint32_t>(entries.size()));
+    for (auto &e : entries) {
+        write_u32(p, e.first_chunk);
+        write_u32(p, e.samples_per_chunk);
+        write_u32(p, 1);  // sample description index
+    }
 
     return stsc;
 }
@@ -143,15 +158,8 @@ static std::unique_ptr<Atom> build_stco_text(uint32_t count) {
 // Build text chapter stbl.
 // -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samples,
-                                      uint32_t track_timescale) {
-    // Apple-authored files carry extra trailing text samples (title/URL) after the last chapter.
-    // Pad by duplicating the final sample twice so sample_count == chapter_count + 2.
-    std::vector<ChapterTextSample> padded = samples;
-    if (!padded.empty()) {
-        padded.push_back(padded.back());
-        padded.push_back(padded.back());
-    }
-
+                                      uint32_t track_timescale,
+                                      const std::vector<uint32_t> &chunk_plan, uint32_t total_ms) {
     auto stbl = Atom::create("stbl");
 
     // stsd wrapper with a single tx3g sample entry.
@@ -167,10 +175,10 @@ std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samp
         stbl->add(std::move(stsd));
     }
 
-    stbl->add(build_stts_text(padded, track_timescale));
-    stbl->add(build_stsc_text());
-    stbl->add(build_stsz_text(padded));
-    stbl->add(build_stco_text(padded.size()));
+    stbl->add(build_stts_text(samples, track_timescale, total_ms));
+    stbl->add(build_stsc_text(chunk_plan));
+    stbl->add(build_stsz_text(samples));
+    stbl->add(build_stco_text(samples.size()));
 
     // Encode samples into an stsd sibling? (mdat payload handled elsewhere)
 
