@@ -8,6 +8,7 @@
 set -euo pipefail
 
 OUTDIR="testdata"
+STEMS_DIR="${OUTDIR}/stems"
 # Skip if outputs already exist.
 if ls "${OUTDIR}"/input*.m4a "${OUTDIR}"/input*.aac >/dev/null 2>&1; then
   echo "[generate_test_audio] audio fixtures already present, skipping generation."
@@ -20,16 +21,17 @@ fi
 # Explicit voices to avoid platform defaults (number voice must be male).
 # Numbers: layered Whisper + deep male (Bruce/Fred/Alex). Comments: female.
 NUMBER_WHISPER_CAND=("Whisper" "Alex")
-NUMBER_DEEP_CAND=("Bruce" "Fred" "Alex")
+NUMBER_DEEP_CAND=("Grandpa" "Bruce" "Fred" "Alex")
 CB_VOICE_CAND=("Samantha" "Victoria")
 
 # Arpeggiator scale ratios (quasi minor-ish) to sweep harmonies across chapters.
 ARP_SCALE=(1.0 1.12246 1.18921 1.33484 1.49830 1.68179 1.88775 2.0)
 
-# Number chains: both voices at the same pace; whisper carries its own spacey echo.
-WHISPER_CHAIN="atempo=0.85,aecho=0.6:0.6:500:0.45,volume=3.0[wout]"
-DEEP_CHAIN="atempo=0.85,volume=0.6[dout]"
-mkdir -p "${OUTDIR}"
+# Number chains: both voices at the same pace; whisper carries a reverse-style cascaded echo.
+WHISPER_CHAIN="atempo=0.85,areverse,aecho=0.7:0.6:650:0.4,aecho=0.6:0.5:2200|3200:0.35|0.25,areverse,volume=3.0[wout]"
+# Deep voice: pitched down ~1.5 octaves, slowed more (~3x), dry (no echo).
+DEEP_CHAIN="asetrate=44100/3,aresample=44100,atempo=0.9,volume=1.0[dout]"
+mkdir -p "${OUTDIR}" "${STEMS_DIR}"
 TMP=$(mktemp -d)
 trap 'rm -rf "${TMP}"' EXIT
 
@@ -58,68 +60,35 @@ say_seg() {
   say -v "${voice}" -o "${out}" "${text}"
 }
 
-# Build a pad: detuned sines + Shepard-ish layered octaves + filtered noise + light echo.
-# Effects vary gently per segment to keep things quirky without harsh jumps.
-VIB_DEPTH=(0.25 0.30 0.35 0.40 0.45 0.50)
-LOWPASS=(900 980 1060 1140 1220 1300)
-NOISE_VOL=(0.05 0.06 0.07 0.08 0.09 0.10)
-CHORUS_MOD=(42 48 54 60 66 72)
-# Voice/lead echo tuned longer (~500ms) to meet request.
 ECHO_DELAY_MS=500
 ECHO_DECAY=0.45
 
 make_seg() {
   local basefreq=$1 number_whisper_aiff=$2 number_deep_aiff=$3 comment_aiff=$4 out=$5 idx=$6
-  local vib=${VIB_DEPTH[$((idx % ${#VIB_DEPTH[@]}))]}
-  local lp=${LOWPASS[$((idx % ${#LOWPASS[@]}))]}
-  local nv=${NOISE_VOL[$((idx % ${#NOISE_VOL[@]}))]}
-  local chor=${CHORUS_MOD[$((idx % ${#CHORUS_MOD[@]}))]}
-  local arp=${ARP_SCALE[$((idx % ${#ARP_SCALE[@]}))]}
+  local lp_expr=20000
   ffmpeg -y -loglevel error \
-    -f lavfi -i "sine=frequency=${basefreq}:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*0.5:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*2:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*4:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*1.005:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*0.25:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*${arp}:duration=8" \
-    -f lavfi -i "sine=frequency=${basefreq}*${arp}*2:duration=8" \
-    -f lavfi -i "anoisesrc=d=8:c=pink" \
+    -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100:d=8" \
     -i "${number_whisper_aiff}" \
     -i "${number_deep_aiff}" \
     -i "${comment_aiff}" \
-    -f lavfi -i "anoisesrc=d=8:c=brown" \
     -filter_complex "\
-[0:a]volume=0.9[a0];\
-[1:a]volume=0.7[a1];\
-[2:a]volume=0.8[a2];\
-[3:a]volume=0.5[a3];\
-[4:a]volume=0.9[a4];\
-[5:a]volume=0.6[a5];\
-[6:a]volume=0.7[a6];\
-[7:a]volume=0.5[a7];\
-[a0][a1][a2][a3][a4][a5][a6][a7]amix=inputs=8:normalize=0[tone];\
-[tone]asplit=2[t_det][t_main];\
-[t_det]asetrate=44100*1.01,aresample=44100,afade=t=out:st=0:d=4[detune];\
-[t_main]afade=t=in:ss=0:d=4[steady];\
-[detune][steady]amix=inputs=2:normalize=0[tone_hybrid];\
-[tone_hybrid]lowpass=f=${lp},highpass=f=120,asetrate=44100*0.995,aresample=44100,chorus=0.5:0.7:${chor}:0.3:0.18:1.8,flanger=delay=0.4:depth=0.9:regen=0:width=6:speed=0.18[pad];\
-[8:a]lowpass=f=820,highpass=f=180,volume=${nv},tremolo=f=4:d=0.4[tex];\
-[pad][tex]amix=inputs=2:normalize=0,acompressor=threshold=-14dB:ratio=2.2:attack=10:release=80,alimiter=limit=0.8[padmix];\
-[9:a]${WHISPER_CHAIN};\
-[10:a]${DEEP_CHAIN};\
-[wout][dout]amix=inputs=2:normalize=0,aecho=0.6:0.6:900|1400|1900|2400|2900:0.6|0.5|0.4|0.3|0.2[number];\
-[11:a]highpass=f=1200,lowpass=f=3800,acompressor=threshold=-18dB:ratio=2:attack=5:release=60,volume=0.6[comcore];\
-[12:a]highpass=f=1000,lowpass=f=3200,volume=0.03,tremolo=f=6:d=0.7[comnoise];\
-[comcore][comnoise]amix=inputs=2:normalize=0[com];\
-[padmix]pan=stereo|c0=c0|c1=c0[padst];\
+[0:a]anull[padmix];\
+[1:a]${WHISPER_CHAIN};\
+[2:a]${DEEP_CHAIN};\
+[wout][dout]amix=inputs=2:normalize=0[number];\
+[3:a]adelay=2000|2000,highpass=f=1200,lowpass=f=3800,acompressor=threshold=-18dB:ratio=2:attack=5:release=60,volume=0.6[com];\
+[padmix]pan=stereo|c0=c0|c1=c0[pad_for_mix];\
 [com]pan=stereo|c0=c0|c1=c0[comst];\
 [number]asplit=2[nl][nr];\
 [nl]adelay=0|0,pan=stereo|c0=c0|c1=0*c0[nl_st];\
 [nr]adelay=320|320,pan=stereo|c0=0*c0|c1=c0[nr_st];\
 [nl_st][nr_st]amix=inputs=2:normalize=0,alimiter=limit=0.9,afade=t=out:st=0:d=12[number_st];\
-[padst][number_st][comst]amix=inputs=3:normalize=0,afade=t=in:ss=0:d=0.25,afade=t=out:st=6.5:d=1.5" \
-    -ac 2 "${out}"
+[number_st]asplit=2[vox_for_mix][vox_for_out];\
+[comst]asplit=2[cb_for_mix][cb_for_out];\
+[pad_for_mix][vox_for_mix][cb_for_mix]amix=inputs=3:normalize=1,afade=t=in:ss=0:d=0.25,afade=t=out:st=7.6:d=0.4[mix]" \
+    -map "[mix]" -ac 2 "${out}" \
+    -map "[vox_for_out]" -ac 2 "${STEMS_DIR}/vox_${idx}.wav" \
+    -map "[cb_for_out]" -ac 2 "${STEMS_DIR}/cb_${idx}.wav"
 }
 
 # 50 fun voice lines to rotate through (female CB-ish)
@@ -176,12 +145,11 @@ VOICE_LINES=(
   "Glitch in style."
 )
 
-# Helper to pick a voice line by index (looping) and prepend chapter number.
+# Helper to pick a voice line by index (looping) without announcing the number.
 voice_line() {
   local idx=$1
-  local num=$((idx + 1))
   local base="${VOICE_LINES[$((idx % ${#VOICE_LINES[@]}))]}"
-  echo "Chapter ${num}. ${base}"
+  echo "${base}"
 }
 
 # 10s sample (two overlapping 5s-offset chapters)
@@ -194,23 +162,23 @@ say_seg "${CB_VOICE}" "$(voice_line 1)" "${TMP}/cb2.aiff"
 make_seg 220 "${TMP}/numw1.aiff" "${TMP}/numd1.aiff" "${TMP}/cb1.aiff" "${TMP}/seg1.wav" 0
 make_seg 330 "${TMP}/numw2.aiff" "${TMP}/numd2.aiff" "${TMP}/cb2.aiff" "${TMP}/seg2.wav" 1
 
-ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" \
-  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,alimiter=limit=0.95" \
+ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" -i "${OUTDIR}/images/cover_input_normal.jpg" \
+  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,highpass=f=60,volume=15dB,alimiter=limit=0.95,atrim=duration=10,afade=t=out:st=9.8:d=0.2[mix]" \
   -metadata title="ChapterForge Sample 10s (Pads)" \
   -metadata artist="ChapterForge Bot" \
   -metadata album="Synthetic Pad Chapters" \
   -metadata genre="Test Audio" \
   -metadata comment="Synthetic pads with voiceover chapters" \
-  -c:a aac -b:a 128k "${OUTDIR}/input.m4a"
+  -map "[mix]" -map 2:v -c:a aac -b:a 128k -c:v mjpeg -disposition:v attached_pic "${OUTDIR}/input.m4a"
 
 ffmpeg -y -loglevel error -i "${TMP}/seg1.wav" -i "${TMP}/seg2.wav" \
-  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,alimiter=limit=0.95" \
+  -filter_complex "[0:a]adelay=0|0[a0];[1:a]adelay=5000|5000[a1];[a0][a1]amix=inputs=2:normalize=0,highpass=f=60,volume=15dB,alimiter=limit=0.95,atrim=duration=10,afade=t=out:st=9.8:d=0.2[mix]" \
   -metadata title="ChapterForge Sample 10s (Pads)" \
   -metadata artist="ChapterForge Bot" \
   -metadata album="Synthetic Pad Chapters" \
   -metadata genre="Test Audio" \
   -metadata comment="Synthetic pads with voiceover chapters" \
-  -c:a aac -b:a 128k -f adts "${OUTDIR}/input.aac"
+  -map "[mix]" -c:a aac -b:a 128k -f adts "${OUTDIR}/input.aac"
 
 # 250s sample (fifty 5s chapters) for large tests
 pad_freqs=(220 240 260 280 300 320 340 360 380 400 230 250 270 290 310 330 350 370 390 410 225 245 265 285 305 325 345 365 385 405 235 255 275 295 315 335 355 375 395 415 210 230 250 270 290 310 330 350 370 390)
@@ -231,7 +199,19 @@ for idx in $(seq 0 49); do
   mix_filter+="[${idx}:a]adelay=${delay}|${delay}[d${idx}];"
   mix_inputs+="[d${idx}]"
 done
-mix_filter+="${mix_inputs}amix=inputs=50:normalize=0,alimiter=limit=0.95"
+mix_filter+="${mix_inputs}amix=inputs=50:normalize=0,highpass=f=60,volume=15dB,alimiter=limit=0.95,atrim=duration=250,afade=t=out:st=248:d=2[mix]"
+
+ffmpeg -y -loglevel error "${inputs[@]}" -i "${OUTDIR}/images/cover_input_large.jpg" \
+  -filter_complex "${mix_filter}" \
+  -metadata title="ChapterForge Galactic Tour (Pads)" \
+  -metadata artist="Sega Nebulae" \
+  -metadata album="Interstellar Cartridge Deluxe" \
+  -metadata genre="Chiptune Padwave" \
+  -metadata comment="250s of faux-8bit cosmic pads with dramatic whispers" \
+  -metadata composer="Lagrange Point Crew" \
+  -metadata publisher="ChapterForge Labs" \
+  -metadata encoder="ChapterForge RetroSynth" \
+  -map "[mix]" -map 50:v -c:a aac -b:a 128k -c:v mjpeg -disposition:v attached_pic "${OUTDIR}/input_large.m4a"
 
 ffmpeg -y -loglevel error "${inputs[@]}" \
   -filter_complex "${mix_filter}" \
@@ -243,19 +223,7 @@ ffmpeg -y -loglevel error "${inputs[@]}" \
   -metadata composer="Lagrange Point Crew" \
   -metadata publisher="ChapterForge Labs" \
   -metadata encoder="ChapterForge RetroSynth" \
-  -c:a aac -b:a 128k "${OUTDIR}/input_large.m4a"
-
-ffmpeg -y -loglevel error "${inputs[@]}" \
-  -filter_complex "${mix_filter}" \
-  -metadata title="ChapterForge Galactic Tour (Pads)" \
-  -metadata artist="Sega Nebulae" \
-  -metadata album="Interstellar Cartridge Deluxe" \
-  -metadata genre="Chiptune Padwave" \
-  -metadata comment="250s of faux-8bit cosmic pads with dramatic whispers" \
-  -metadata composer="Lagrange Point Crew" \
-  -metadata publisher="ChapterForge Labs" \
-  -metadata encoder="ChapterForge RetroSynth" \
-  -c:a aac -b:a 128k -f adts "${OUTDIR}/input_large.aac"
+  -map "[mix]" -c:a aac -b:a 128k -f adts "${OUTDIR}/input_large.aac"
 
 # Preview: numbers 1-5 with dual voices (whisper + deep) only (no pads) for quick listening.
 for i in $(seq 1 5); do

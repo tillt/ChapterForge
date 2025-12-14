@@ -10,25 +10,58 @@ if ls "${OUTDIR}"/chapters*.json >/dev/null 2>&1; then
     exit 0
 fi
 
-cat > "${OUTDIR}/chapters.json" <<'EOF'
+# Helper to query duration (ms) via ffprobe; fall back to a default if missing.
+probe_duration_ms() {
+    local file=$1 default_ms=$2
+    if command -v ffprobe >/dev/null 2>&1 && [[ -f "${file}" ]]; then
+        local dur
+        dur=$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${file}" 2>/dev/null | awk '{printf("%.0f",$1*1000)}')
+        if [[ -n "${dur}" && "${dur}" -gt 0 ]]; then
+            echo "${dur}"
+            return
+        fi
+    fi
+    echo "${default_ms}"
+}
+
+INPUT_SMALL="${OUTDIR}/input.m4a"
+DUR_SMALL_MS=$(probe_duration_ms "${INPUT_SMALL}" 10000)
+CHAPTER_LEN_MS=5000
+CH_COUNT_SMALL=$(( DUR_SMALL_MS / CHAPTER_LEN_MS ))
+if [[ ${CH_COUNT_SMALL} -lt 1 ]]; then CH_COUNT_SMALL=1; fi
+
+cat > "${OUTDIR}/chapters.json" <<EOF
 {
-  "title": "ChapterForge Sample (Five)",
+  "title": "ChapterForge Sample (Auto)",
   "artist": "DJ Unexpected",
   "album": "Uneven Pads",
   "genre": "Test Audio",
   "year": "2025",
-  "comment": "Five bumpy jumps with synth pads and bad jokes.",
-  "cover": "images/cover.jpg",
+  "comment": "Auto-sized chapters based on input length.",
+  "cover": "images/cover_normal.jpg",
   "chapters": [
-    { "start_ms": 0,     "title": "Wobble Warmup", "url": "https://chapterforge.test/wobble", "image": "images/chapter1.jpg" },
-    { "start_ms": 1200,  "title": "Left Shoe Disco", "url": "https://chapterforge.test/shoe", "image": "images/chapter2.jpg" },
-    { "start_ms": 3200,  "title": "Snack Break", "url": "https://chapterforge.test/snack", "image": "images/chapter1.jpg" },
-    { "start_ms": 5800,  "title": "Sudden Cliffhanger", "url": "https://chapterforge.test/cliff", "image": "images/chapter2.jpg" },
-    { "start_ms": 8400,  "title": "Okay Bye", "url": "https://chapterforge.test/bye", "image": "images/chapter1.jpg" }
+EOF
+for i in $(seq 1 ${CH_COUNT_SMALL}); do
+  start_ms=$(( (i-1) * CHAPTER_LEN_MS ))
+  title_list=("Wobble Warmup" "Left Shoe Disco" "Snack Break" "Sudden Cliffhanger" "Okay Bye")
+  url_list=("wobble" "shoe" "snack" "cliff" "bye")
+  idx=$(( (i-1) % ${#title_list[@]} ))
+  title=${title_list[$idx]}
+  url=${url_list[$idx]}
+  img="images/chapter${i}.jpg"
+  printf '    { "start_ms": %d, "title": "%s", "url": "https://chapterforge.test/%s", "image": "%s" }' \
+    "${start_ms}" "${title}" "${url}" "${img}" >> "${OUTDIR}/chapters.json"
+  if [[ $i -lt ${CH_COUNT_SMALL} ]]; then
+    echo "," >> "${OUTDIR}/chapters.json"
+  else
+    echo >> "${OUTDIR}/chapters.json"
+  fi
+done
+cat >> "${OUTDIR}/chapters.json" <<'EOF'
   ]
 }
 EOF
-echo "Wrote ${OUTDIR}/chapters.json"
+echo "Wrote ${OUTDIR}/chapters.json (chapters based on input duration)"
 
 cat > "${OUTDIR}/chapters_nometa.json" <<'EOF'
 {
@@ -77,7 +110,7 @@ emit_chapters() {
   "genre": "Test Audio",
   "year": "2025",
   "comment": "Five uneven stops on a 60s pad ride.",
-  "cover": "images/normal1.jpg",
+  "cover": "images/cover_normal.jpg",
   "chapters": [
 EOF
   imgs=(images/normal1.jpg images/normal2.jpg images/normal3.jpg images/normal4.jpg images/normal5.jpg)
@@ -113,7 +146,7 @@ echo "Wrote ${OUTDIR}/chapters_normal_nometa_5.json"
   "album": "Lots of Motifs",
   "genre": "Test Audio",
   "year": "2025",
-  "cover": "images/large1.jpg",
+  "cover": "images/cover_large.jpg",
   "chapters": [
 EOF
   imgs=()
