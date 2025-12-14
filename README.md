@@ -102,7 +102,7 @@ We ship a small reference file you can open in your favorite player to sanity-ch
   - Cover: `images/cover_normal.jpg`
   - Per-chapter images: `images/normal1.jpg` … `normal5.jpg`
   - URL track: `https://chapterforge.test/ch1` … `/ch5`
-- Built example: `docs/example/output.m4a`
+- Built example: [ChapterForge Example M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output.m4a)
 
 What to expect:
 - Chapter list shows all 5 entries with titles and thumbnails (any player should).
