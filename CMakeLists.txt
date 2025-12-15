@@ -192,6 +192,10 @@ set(GOLDEN_M4A_PATH "${TEST_INPUT_DIR}/golden_chapters.m4a" CACHE STRING "Path t
 set(CHAPTER_JSON_PATH "${TEST_INPUT_DIR}/chapters.json" CACHE STRING "Path to the primary chapters JSON")
 set(INPUT_LARGE_M4A_PATH "${TEST_INPUT_DIR}/input_large.m4a" CACHE STRING "Path to the large input M4A for large image tests")
 set(INPUT_LARGE_AAC_PATH "${TEST_INPUT_DIR}/input_large.aac" CACHE STRING "Path to the large input AAC (ADTS) for large image AAC ingest tests")
+# Common tooling defaults for tests; can be overridden by the user.
+if(NOT DEFINED XXD_PATH OR NOT XXD_PATH)
+    find_program(XXD_PATH xxd)
+endif()
 
 enable_testing()
 
@@ -393,7 +397,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
 
     if(EXISTS "${INPUT_M4A_PATH}" AND EXISTS "${NORMAL5_JSON}")
         add_test(
-            NAME large_image_5
+            NAME long_audio_largeimg_5
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}
             -DCHAPTER_JSON=${NORMAL5_JSON}
@@ -401,17 +405,17 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
-        set_tests_properties(large_image_5 PROPERTIES LABELS "core")
+        set_tests_properties(long_audio_largeimg_5 PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping large_image_5 (missing INPUT_M4A_PATH or chapters_10s_2ch_normalimg_meta.json)")
+        message(STATUS "Skipping long_audio_largeimg_5 (missing INPUT_M4A_PATH or chapters_10s_2ch_normalimg_meta.json)")
     endif()
 
-#Metadata preservation on large input : leave JSON metadata empty so ilst is
+#Metadata preservation on long input : leave JSON metadata empty so ilst is
 #copied through verbatim from the source M4A.
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL_NOMETA_JSON}")
         set(OUTPUT_LARGE_NOMETA "${TEST_OUTPUT_DIR}/output_large_nometa.m4a")
         add_test(
-            NAME large_image_metadata_preserve
+            NAME long_audio_meta_preserve
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
             -DCHAPTER_JSON=${NORMAL_NOMETA_JSON}
@@ -423,14 +427,14 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
         )
-        set_tests_properties(large_image_metadata_preserve PROPERTIES LABELS "core")
+        set_tests_properties(long_audio_meta_preserve PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping big_image_metadata_preserve (missing INPUT_LARGE_M4A_PATH or chapters_big_nometa.json)")
+        message(STATUS "Skipping long_audio_meta_preserve (missing INPUT_LARGE_M4A_PATH or chapters_10s_2ch_normalimg_nometa.json)")
     endif()
 
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${LARGE50_JSON}")
         add_test(
-            NAME large_image_50
+            NAME long_audio_largeimg_50
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
             -DCHAPTER_JSON=${LARGE50_JSON}
@@ -438,9 +442,9 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
-        set_tests_properties(large_image_50 PROPERTIES LABELS "core")
+        set_tests_properties(long_audio_largeimg_50 PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping large_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_250s_50ch_largeimg_meta.json)")
+        message(STATUS "Skipping long_audio_largeimg_50 (missing INPUT_LARGE_M4A_PATH or chapters_250s_50ch_largeimg_meta.json)")
     endif()
 
     # 50 chapters with small (400x400) art over the long input.
@@ -448,7 +452,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
     set(OUTPUT_SMALL50 "${TEST_OUTPUT_DIR}/output_small50.m4a" CACHE STRING "Small art 50-chapter output" FORCE)
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${SMALL50_JSON}")
         add_test(
-            NAME small_image_50
+            NAME long_audio_smallimg_50
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
             -DCHAPTER_JSON=${SMALL50_JSON}
@@ -456,9 +460,9 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
-        set_tests_properties(small_image_50 PROPERTIES LABELS "core")
+        set_tests_properties(long_audio_smallimg_50 PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping small_image_50 (missing INPUT_LARGE_M4A_PATH or chapters_small_50.json)")
+        message(STATUS "Skipping long_audio_smallimg_50 (missing INPUT_LARGE_M4A_PATH or chapters_small_50.json)")
     endif()
 
     # Golden2-inspired structure: 8 chapters, URL+image tracks to mirror the layout.
@@ -466,7 +470,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
     set(OUTPUT_GOLDEN2_LIKE "${TEST_OUTPUT_DIR}/output_golden2_like.m4a" CACHE STRING "Golden2-like output" FORCE)
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${GOLDEN2_LIKE_JSON}")
         add_test(
-            NAME golden2_like
+            NAME long_audio_golden2_like
             COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
             -DCHAPTER_JSON=${GOLDEN2_LIKE_JSON}
@@ -474,9 +478,9 @@ if(ENABLE_LARGE_IMAGE_TESTS)
             -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
             -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
         )
-        set_tests_properties(golden2_like PROPERTIES LABELS "core")
+        set_tests_properties(long_audio_golden2_like PROPERTIES LABELS "core")
     else()
-        message(STATUS "Skipping golden2_like (missing INPUT_LARGE_M4A_PATH or chapters_golden2_like.json)")
+        message(STATUS "Skipping long_audio_golden2_like (missing INPUT_LARGE_M4A_PATH or chapters_golden2_like.json)")
     endif()
 endif()
 
