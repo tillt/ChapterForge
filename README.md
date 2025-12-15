@@ -221,7 +221,7 @@ trak (titles)
     hdlr text
     minf/nmhd
       stbl
-        stsd -> tx3g sample entry (see (title and url as tx3g sample)[title_and_url_as_tx3g_sample_entry] )
+        stsd -> tx3g sample entry (see "title and url as tx3g sample")
         stts: one entry per sample, sample_count = chapter_count + 2 (padded)
         stsc: 3 entries, 1 sample per chunk
         stsz: per-sample sizes (chapter_count + 2)
@@ -278,36 +278,54 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
-// JSON helper
+// JSON helper (titles/images/urls/metadata pulled from JSON)
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::string& chapter_json_path,
                      const std::string& output_path,
                      bool fast_start = true);
 
-// Titles + images + metadata
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::string& chapter_json_path,
-                     const std::string& output_path);
-
+// Titles + images, metadata provided
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::vector<ChapterTextSample>& text_chapters,
                      const std::vector<ChapterImageSample>& image_chapters,
                      const MetadataSet& metadata,
-                     const std::string& output_path);
+                     const std::string& output_path,
+                     bool fast_start = true);
 
-// Titles + metadata (no images)
+// Titles + images, metadata reused from source (or empty)
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::vector<ChapterTextSample>& text_chapters,
+                     const std::vector<ChapterImageSample>& image_chapters,
+                     const std::string& output_path,
+                     bool fast_start = true);
+
+// Titles only, metadata provided (no image track)
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::vector<ChapterTextSample>& text_chapters,
                      const MetadataSet& metadata,
                      const std::string& output_path,
                      bool fast_start = true);
 
-// Titles + URLs + images + metadata (URL track optional)
+// Titles only, metadata reused from source (no image track)
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::vector<ChapterTextSample>& text_chapters,
+                     const std::string& output_path,
+                     bool fast_start = true);
+
+// Titles + URLs + images, metadata provided (URL track optional)
 bool mux_file_to_m4a(const std::string& input_audio_path,
                      const std::vector<ChapterTextSample>& text_chapters,
                      const std::vector<ChapterTextSample>& url_chapters,
                      const std::vector<ChapterImageSample>& image_chapters,
                      const MetadataSet& metadata,
+                     const std::string& output_path,
+                     bool fast_start = true);
+
+// Titles + URLs + images, metadata reused from source (URL track optional)
+bool mux_file_to_m4a(const std::string& input_audio_path,
+                     const std::vector<ChapterTextSample>& text_chapters,
+                     const std::vector<ChapterTextSample>& url_chapters,
+                     const std::vector<ChapterImageSample>& image_chapters,
                      const std::string& output_path,
                      bool fast_start = true);
 ```
