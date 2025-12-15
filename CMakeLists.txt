@@ -272,6 +272,17 @@ option(ENABLE_VIDEO_DEBUG_COMPARE "Run optional video debug against a golden fil
 option(ENABLE_AVFOUNDATION_SMOKE "Run AVFoundation smoke test (macOS only, requires swift)" OFF)
 option(ENABLE_DOCS "Generate Doxygen HTML documentation" ON)
 
+add_executable(chapter_start_rules
+    tests/chapter_start_rules.cpp
+)
+target_link_libraries(chapter_start_rules PRIVATE chapterforge)
+target_include_directories(chapter_start_rules PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(
+    NAME chapter_start_rules
+    COMMAND chapter_start_rules
+)
+set_tests_properties(chapter_start_rules PROPERTIES LABELS "unit")
+
 if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(XXD_PATH xxd)
     find_program(MP4INFO_PATH mp4info)
@@ -279,18 +290,18 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(ATOMIC_PARSLEY_PATH AtomicParsley)
     find_program(FFPROBE_PATH ffprobe)
 
-add_executable(audio_reuse_check
-    tests/audio_reuse_check.cpp
-)
-target_link_libraries(audio_reuse_check PRIVATE chapterforge)
-target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-add_test(
-    NAME audio_reuse_check
-    COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
-)
-set_tests_properties(audio_reuse_check PROPERTIES FIXTURES_REQUIRED assets DEPENDS output_tool_checks)
-set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
+    add_executable(audio_reuse_check
+        tests/audio_reuse_check.cpp
+    )
+    target_link_libraries(audio_reuse_check PRIVATE chapterforge)
+    target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_include_directories(audio_reuse_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+    add_test(
+        NAME audio_reuse_check
+        COMMAND audio_reuse_check "${INPUT_M4A_PATH}" "${OUTPUT_M4A_PATH}"
+    )
+    set_tests_properties(audio_reuse_check PROPERTIES FIXTURES_REQUIRED assets DEPENDS output_tool_checks)
+    set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
 
     add_test(
         NAME output_tool_checks

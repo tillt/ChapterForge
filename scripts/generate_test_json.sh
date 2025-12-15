@@ -135,6 +135,23 @@ cat > "${OUTDIR}/chapters_10s_2ch_normalimg_nometa.json" <<'EOF'
 EOF
 echo "Wrote ${OUTDIR}/chapters_10s_2ch_normalimg_nometa.json"
 
+# Offset-first-chapter profile (first chapter intentionally starts after 0ms).
+cat > "${OUTDIR}/chapters_10s_offset_first.json" <<'EOF'
+{
+  "title": "Offset Start Chapters",
+  "artist": "Latency Lovers",
+  "album": "Delayed Entry",
+  "comment": "First chapter does not start at t=0 to exercise warning path.",
+  "cover": "images/cover_normal.jpg",
+  "chapters": [
+    { "start_ms": 1500, "title": "Late Arrival", "image": "images/normal1.jpg", "url": "https://chapterforge.test/late" },
+    { "start_ms": 4500, "title": "Settling In", "image": "images/normal2.jpg", "url": "https://chapterforge.test/settle" },
+    { "start_ms": 8000, "title": "Exit Soon",   "image": "images/normal3.jpg", "url": "https://chapterforge.test/exit" }
+  ]
+}
+EOF
+echo "Wrote ${OUTDIR}/chapters_10s_offset_first.json"
+
 # Large profile: 50 chapters, 5s spacing, fits 250s input.
 cat > "${OUTDIR}/chapters_250s_50ch_largeimg_meta.json" <<'EOF'
 {
