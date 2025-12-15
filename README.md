@@ -58,13 +58,19 @@ Supported players (just a selection of known goods):
 
 |               | text  | image | url   | url-text |
 | :---:         | :---: | :---: | :---: | :---:    |
-| QuickTime.app | X     | X     |       |          |
-| Music.app     | X     | X     |       |          |
-| Books.app     | X     | X     |       |          |
-| VLC           | X     |       |       |          |
+| QuickTime.app | X     | X     | o     | o        |
+| Music.app     | X     | X     | o     | o        |
+| Books.app     | X     | X     | o     | o        |
+| VLC           | X     | o     | o     | o        |
+
+(X = full support and display, o = not displayed, all other functions remain)
+
+Text commonly is displayed as the chapter title.
+Image commonly is displayed as a thumbnail. In QuickTime we additionally get a "movie" presented - a very nice experience.
+URL commonly is displayed nowhere.
+URL text commonly is displayed nowhere.
 
 Note that AVFoundation supports all of those attributes for parsing and extraction - on macOS and iOS it is therefor trivial to support them.
-
 
 ## Building
 
@@ -100,6 +106,8 @@ What to expect:
 - URLs are present in the dedicated URL track (AVFoundation surfaces them via `extraAttributes[HREF]`), but players generally do not display them.
 
 Bonus: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a) — 50 chapters, small images, and per-chapter URLs to stress-test players.
+
+![QuickTime displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/quicktime_shows_chapters.png)
 
 ## CLI Usage
 
