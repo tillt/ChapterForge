@@ -38,7 +38,12 @@ static std::optional<std::vector<uint8_t>> extract_audio_bytes(const std::string
               << " chunk_plan=" << chunk_plan.size() << "\n";
 
     std::vector<uint8_t> out;
-    out.reserve(parsed.mdat_size ? parsed.mdat_size : sizes.size() * 200);
+    uint64_t total_est = 0;
+    for (auto s : sizes) {
+        total_est += s;
+    }
+    out.reserve(static_cast<size_t>(
+        std::min<uint64_t>(total_est, std::numeric_limits<size_t>::max())));
 
     const uint8_t *pco = parsed.stco.data();
     uint32_t stco_count = (pco[4] << 24) | (pco[5] << 16) | (pco[6] << 8) | pco[7];
