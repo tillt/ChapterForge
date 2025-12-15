@@ -330,17 +330,21 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
         message(WARNING "mp4dump not found; skipping mp4dump-dependent tests (offset_first_chapter_bento, url_text_payload)")
     endif()
 
-    add_test(
-        NAME url_text_avfoundation
-        COMMAND ${CMAKE_COMMAND}
-            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
-            -DINPUT_M4A=${INPUT_M4A_PATH}
-            -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_urltext.json
-            -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_urltext_avf.m4a
-            -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_avfoundation_urltext.cmake
-    )
-    set_tests_properties(url_text_avfoundation PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+    if(APPLE)
+        add_test(
+            NAME url_text_avfoundation
+            COMMAND ${CMAKE_COMMAND}
+                -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+                -DINPUT_M4A=${INPUT_M4A_PATH}
+                -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_urltext.json
+                -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_urltext_avf.m4a
+                -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_avfoundation_urltext.cmake
+        )
+        set_tests_properties(url_text_avfoundation PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+    else()
+        message(STATUS "Skipping AVFoundation url_text test on non-Apple platform")
+    endif()
 
     add_test(
         NAME output_tool_checks

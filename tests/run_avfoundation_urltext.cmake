@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT APPLE)
+  message(STATUS "run_avfoundation_urltext skipped: requires macOS/AVFoundation")
+  return()
+endif()
+
 set(INPUT_M4A "" CACHE FILEPATH "Input M4A")
 set(CHAPTER_JSON "" CACHE FILEPATH "Chapter JSON")
 set(OUTPUT_M4A "" CACHE FILEPATH "Output M4A")
