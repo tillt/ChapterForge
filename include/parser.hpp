@@ -23,10 +23,6 @@ struct Mp4AtomInfo {
 
 // Minimal parsed MP4 data for our authoring needs.
 struct ParsedMp4 {
-    // Raw audio data from mdat.
-    std::vector<uint8_t> mdat_data;
-    uint64_t mdat_size = 0;
-
     bool used_fallback_stbl = false;  // true if stbl atoms were recovered via flat scan.
 
     // ilst metadata atom payload (optional)

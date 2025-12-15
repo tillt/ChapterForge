@@ -9,6 +9,7 @@
 #include "mp4_muxer.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
@@ -190,6 +191,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                                               << " images=" << image_chapters.size()
                                               << " extra_text_tracks=" << extra_text_tracks.size()
                                               << " fast_start=" << fast_start);
+    auto now = [] { return std::chrono::steady_clock::now(); };
+    auto t_start = now();
     //
     // 0) open file.
     //
@@ -218,7 +221,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     //
     // Build audio samples for mdat.
     //
-    std::vector<std::vector<uint8_t>> audio_samples = aac.frames;
+    const auto &audio_samples = aac.frames;  // reuse extracted buffers without copying
 
     //
     // Text samples: just raw UTF-8 data.
@@ -367,6 +370,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
             }
         }
     }
+    auto t_prep_end = now();
 
     // Pre-build stbls (needed for both fast-start and normal paths)
     std::unique_ptr<Atom> stbl_audio;
@@ -393,6 +397,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         stbl_image = build_image_stbl(image_chapters, chapter_timescale, image_width, image_height,
                                       image_chunk_plan, audio_duration_ms);
     }
+    auto t_stbl_end = now();
 
     //
     // 6) Build tracks.
@@ -443,6 +448,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
             build_trak_image(IMAGE_TRACK_ID, chapter_timescale, image_duration_ts,
                              std::move(stbl_image), image_width, image_height, tkhd_image_duration);
     }
+    auto t_tracks_end = now();
 
     //
     // 7) Build udta/meta/ilst block for cover art, metadata, and chpl.
@@ -462,6 +468,10 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                            std::move(text_traks), std::move(trak_image), std::move(udta));
     moov->fix_size_recursive();
     CH_LOG("debug", "moov size=" << moov->size() << " mvhd_duration=" << mvhd_duration);
+    auto t_moov_end = now();
+
+    auto t_layout_end = t_moov_end;
+    auto t_write_end = t_moov_end;
 
     if (fast_start) {
         // moov before mdat: compute offsets assuming mdat follows immediately.
@@ -474,11 +484,13 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
             compute_mdat_offsets(payload_start, audio_samples, all_text_samples, image_samples,
                                  audio_chunk_plan, all_text_chunk_plans, image_chunk_plan);
         patch_all_stco(moov.get(), mdat_offs, true);
+        t_layout_end = now();
 
         // write moov, then mdat.
         moov->write(out);
         write_mdat(out, audio_samples, all_text_samples, image_samples, audio_chunk_plan,
                    all_text_chunk_plans, image_chunk_plan);
+        t_write_end = now();
     } else {
         // Write mdat first and capture offsets.
         MdatOffsets mdat_offs = write_mdat(out, audio_samples, all_text_samples, image_samples,
@@ -488,6 +500,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         // Patch STCO in moov using the actual offsets from written mdat.
         // If we reused the source audio stco, skip patching it.
         patch_all_stco(moov.get(), mdat_offs, true);
+        t_layout_end = now();
 
         // Optional leading free box before moov (padding). Size/placement.
         // mirrors the golden sample to avoid surprising atom ordering.
@@ -502,7 +515,19 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         // Write moov at end of file.
         moov->fix_size_recursive();
         moov->write(out);
+        t_write_end = now();
     }
 
+    auto ms = [](auto a, auto b) {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(b - a).count();
+    };
+    CH_LOG("debug",
+           "write_mp4 timings ms: prep=" << ms(t_start, t_prep_end)
+                                         << " stbl=" << ms(t_prep_end, t_stbl_end)
+                                         << " trak=" << ms(t_stbl_end, t_tracks_end)
+                                         << " moov=" << ms(t_tracks_end, t_moov_end)
+                                         << " layout=" << ms(t_moov_end, t_layout_end)
+                                         << " write=" << ms(t_layout_end, t_write_end)
+                                         << " total=" << ms(t_start, t_write_end));
     return true;
 }

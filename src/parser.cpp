@@ -354,13 +354,10 @@ while (in.peek() != EOF) {
 
     switch (atom.type) {
         case ('m' << 24 | 'd' << 16 | 'a' << 8 | 't'): {  // mdat
-            auto data = read_bytes(in, payload_size);
-                if (data.size() > out.mdat_data.size()) {
-                    out.mdat_data = std::move(data);
-                    out.mdat_size = payload_size;
-                }
-                break;
-            }
+            // Skip mdat payload; we only need sample tables for reuse.
+            skip(in, payload_size);
+            break;
+        }
 
             case ('m' << 24 | 'o' << 16 | 'o' << 8 | 'v'): {  // moov
                 uint64_t end = atom.offset + atom.size;

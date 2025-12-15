@@ -390,8 +390,10 @@ if(ENABLE_LARGE_IMAGE_TESTS)
 #Paths to chapter JSONs with normal/large images; guarded by file existence
     set(NORMAL5_JSON "${TESTDATA_DIR}/chapters_10s_2ch_normalimg_meta.json")
     set(NORMAL_NOMETA_JSON "${TESTDATA_DIR}/chapters_10s_2ch_normalimg_nometa.json")
+    set(NORMAL50_JSON "${TESTDATA_DIR}/chapters_250s_50ch_normalimg_meta.json")
     set(LARGE50_JSON "${TESTDATA_DIR}/chapters_250s_50ch_largeimg_meta.json")
     set(OUTPUT_NORMAL5 "${TEST_OUTPUT_DIR}/output_normal5.m4a" CACHE STRING "Normal 5-chapter output" FORCE)
+    set(OUTPUT_NORMAL50 "${TEST_OUTPUT_DIR}/output_normal50.m4a" CACHE STRING "Normal 50-chapter output (800px art)" FORCE)
     set(OUTPUT_LARGE50 "${TEST_OUTPUT_DIR}/output_large50.m4a" CACHE STRING "Large 50-chapter output" FORCE)
     set(OUTPUT_LARGE_AAC "${TEST_OUTPUT_DIR}/output_large_from_aac.m4a" CACHE STRING "Large AAC ingest output" FORCE)
 
@@ -463,6 +465,22 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         set_tests_properties(long_audio_smallimg_50 PROPERTIES LABELS "core")
     else()
         message(STATUS "Skipping long_audio_smallimg_50 (missing INPUT_LARGE_M4A_PATH or chapters_small_50.json)")
+    endif()
+
+    # 50 chapters with normal (800x800) art over the long input.
+    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL50_JSON}")
+        add_test(
+            NAME long_audio_normalimg_50
+            COMMAND ${CMAKE_COMMAND}
+            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
+            -DCHAPTER_JSON=${NORMAL50_JSON}
+            -DOUTPUT_M4A=${OUTPUT_NORMAL50}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_big_image_test.cmake
+        )
+        set_tests_properties(long_audio_normalimg_50 PROPERTIES LABELS "core")
+    else()
+        message(STATUS "Skipping long_audio_normalimg_50 (missing INPUT_LARGE_M4A_PATH or chapters_250s_50ch_normalimg_meta.json)")
     endif()
 
     # Golden2-inspired structure: 8 chapters, URL+image tracks to mirror the layout.

@@ -25,7 +25,7 @@ endif()
 
 # Run the muxer
 execute_process(
-    COMMAND "${CHAPTERFORGE_BIN}" "${INPUT_M4A}" "${CHAPTER_JSON}" "${OUTPUT_M4A}"
+    COMMAND "${CHAPTERFORGE_BIN}" "${INPUT_M4A}" "${CHAPTER_JSON}" "${OUTPUT_M4A}" --log-level debug
     RESULT_VARIABLE rv
     OUTPUT_VARIABLE out
     ERROR_VARIABLE err
@@ -35,6 +35,7 @@ execute_process(
 if(NOT rv EQUAL 0)
     message(FATAL_ERROR "ChapterForge failed (${rv}):\n${err}\n${out}")
 endif()
+message(STATUS "ChapterForge log:\n${out}\n${err}")
 message(STATUS "ChapterForge OK for ${CHAPTER_JSON}")
 
 # Inspect resulting file with mp4info to ensure it is well-formed
