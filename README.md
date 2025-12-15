@@ -145,7 +145,9 @@ ChapterForge consumes a simple JSON document:
 ```
 
 Notes:
-- Chapters are positioned by absolute start times (`start_ms`).
+- Chapters are positioned by absolute start times (`start_ms`). The first chapter must start at 0 ms
+  for Apple players (QuickTime/Music/AVFoundation) to show titles/thumbnails immediately; a non-zero
+  first start triggers a warning and may hide chapter info until playback reaches that time.
 - Chapter images are optional; omit `image` to create a text-only chapter.
 - Chapter URLs are optional; omit `url` to skip the URL track entirely.
 - If top-level metadata fields are omitted and the input file already contains metadata (`ilst`), that metadata is preserved automatically.
@@ -207,12 +209,7 @@ trak (titles)
     hdlr text
     minf/nmhd
       stbl
-        stsd -> tx3g sample entry
-          displayFlags=0x00000000
-          justification=0x01ff (horizontal: center, vertical: baseline)
-          bgColor=0x1f1f1f00 (RGBA: dark gray, fully transparent)
-          default style: start=0 end=0 fontID=1 face=1 size=0x12 color=000000FF (RGBA: black, opaque)
-          ftab: 1 font, "Sans-Serif"
+        stsd -> tx3g sample entry (see (title and url as tx3g sample)[title_and_url_as_tx3g_sample_entry] )
         stts: one entry per sample, sample_count = chapter_count + 2 (padded)
         stsc: 3 entries, 1 sample per chunk
         stsz: per-sample sizes (chapter_count + 2)
