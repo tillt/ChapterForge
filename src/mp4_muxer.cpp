@@ -247,26 +247,25 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         return out;
     };
 
-    std::vector<std::vector<uint8_t>> text_samples;
-    text_samples.reserve(text_chapters.size() + 1);
-    for (auto &tx : text_chapters) {
-        text_samples.emplace_back(encode_tx3g(tx));
-    }
-    if (!text_chapters.empty()) {
-        text_samples.emplace_back(encode_tx3g(text_chapters.back()));  // pad trailing sample
-    }
+    auto pad_tx3g = [&](const std::vector<ChapterTextSample> &chapters) {
+        std::vector<std::vector<uint8_t>> samples;
+        samples.reserve(chapters.size() + 2);
+        for (const auto &tx : chapters) {
+            samples.emplace_back(encode_tx3g(tx));
+        }
+        if (!chapters.empty()) {
+            // Apple-compatible padding: duplicate the final sample twice.
+            samples.emplace_back(encode_tx3g(chapters.back()));
+            samples.emplace_back(encode_tx3g(chapters.back()));
+        }
+        return samples;
+    };
+
+    std::vector<std::vector<uint8_t>> text_samples = pad_tx3g(text_chapters);
     std::vector<std::vector<std::vector<uint8_t>>> extra_text_samples;
     extra_text_samples.reserve(extra_text_tracks.size());
     for (const auto &track : extra_text_tracks) {
-        std::vector<std::vector<uint8_t>> samples;
-        samples.reserve(track.second.size() + 1);
-        for (const auto &tx : track.second) {
-            samples.emplace_back(encode_tx3g(tx));
-        }
-        if (!track.second.empty()) {
-            samples.emplace_back(encode_tx3g(track.second.back()));  // pad trailing sample
-        }
-        extra_text_samples.push_back(std::move(samples));
+        extra_text_samples.push_back(pad_tx3g(track.second));
     }
 
     //

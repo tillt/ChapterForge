@@ -200,6 +200,7 @@ static std::vector<uint32_t> derive_chunk_plan(const std::vector<uint8_t> &stsc_
 }
 
 std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
+    const auto t0 = std::chrono::steady_clock::now();
     CH_LOG("debug", "mp4 reuse start: " << path);
     std::ifstream f(path, std::ios::binary);
     if (!f.is_open()) {
@@ -216,7 +217,7 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
         CH_LOG("error", "Empty or unreadable MP4: " << path);
         return std::nullopt;
     }
-
+    const auto t_open = std::chrono::steady_clock::now();
     CH_LOG("debug", "calling parse_mp4 size=" << file_size << " path=" << path);
     auto parsed_opt = parse_mp4(path);
     if (!parsed_opt) {
@@ -291,6 +292,8 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     CH_LOG("debug", "mp4 reuse: stco_count=" << stco_count << " stsc_entries=" << stsc_entries
                                              << " chunk_plan=" << chunk_plan.size());
 
+    const auto t_parse = std::chrono::steady_clock::now();
+
     size_t stco_pos = 8;
     for (uint32_t chunk_idx = 0; chunk_idx < stco_count && chunk_idx < chunk_plan.size() &&
                                  sample_idx < sizes.size();
@@ -337,6 +340,7 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
             offset += s;
         }
     }
+    const auto t_samples = std::chrono::steady_clock::now();
 
     if (frames.size() != sizes.size()) {
         return std::nullopt;
@@ -361,5 +365,17 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     out.stsz_payload = parsed.stsz;
     out.stco_payload = parsed.stco;
     out.ilst_payload = parsed.ilst_payload;
+    const auto t_done = std::chrono::steady_clock::now();
+    const auto open_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_open - t0).count();
+    const auto parse_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_parse - t_open).count();
+    const auto samples_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_samples - t_parse).count();
+    const auto total_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_done - t0).count();
+    CH_LOG("debug", "mp4 reuse timings ms: open=" << open_ms << " parse=" << parse_ms
+                                                  << " samples=" << samples_ms
+                                                  << " total=" << total_ms);
     return out;
 }

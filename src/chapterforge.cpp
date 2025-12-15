@@ -199,6 +199,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
         return false;
     }
+    const auto t_load = std::chrono::steady_clock::now();
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
     if (!aac->ilst_payload.empty()) {
@@ -213,8 +214,15 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
                         extra_text_tracks, ilst_ptr);
     const auto t1 = std::chrono::steady_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-    CH_LOG("debug", "mux_file_to_m4a(titles+images) completed in " << ms << " ms");
+    const auto load_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();
+    const auto mux_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t_load).count();
+    const auto total_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    CH_LOG("debug", "mux_file_to_m4a(titles+images) timings ms: load=" << load_ms
+                                                                       << " mux=" << mux_ms
+                                                                       << " total=" << total_ms);
     return ok;
 }
 
@@ -277,6 +285,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
         CH_LOG("error", "Failed to load audio from " << input_audio_path);
         return false;
     }
+    const auto t_load = std::chrono::steady_clock::now();
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
     if (!aac->ilst_payload.empty()) {
@@ -295,8 +304,16 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
                         extra_text_tracks, ilst_ptr);
     const auto t1 = std::chrono::steady_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) completed in " << ms << " ms");
+    const auto load_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();
+    const auto mux_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t_load).count();
+    const auto total_ms =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) timings ms: load=" << load_ms
+                                                                                << " mux=" << mux_ms
+                                                                                << " total="
+                                                                                << total_ms);
     return ok;
 }
 
