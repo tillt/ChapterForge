@@ -18,7 +18,8 @@ if(NOT DEFINED CHAPTERFORGE_BIN)
   message(FATAL_ERROR "CHAPTERFORGE_BIN not set")
 endif()
 if(NOT MP4DUMP_PATH OR NOT EXISTS "${MP4DUMP_PATH}")
-  message(FATAL_ERROR "mp4dump (Bento4) not found; set MP4DUMP_PATH")
+  message(STATUS "Skipping offset test: mp4dump (Bento4) not available")
+  return()
 endif()
 
 execute_process(
