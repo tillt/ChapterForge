@@ -145,13 +145,20 @@ ChapterForge consumes a simple JSON document:
 ```
 
 Notes:
-- Chapters are positioned by absolute start times (`start_ms`). The first chapter must start at 0 ms
-  for Apple players (QuickTime/Music/AVFoundation) to show titles/thumbnails immediately; a non-zero
-  first start triggers a warning and may hide chapter info until playback reaches that time.
+- Chapters are positioned by absolute start times (`start_ms`). Apple family players (QuickTime,
+  Music.app, AVFoundation) and VLC snap the first chapter to 0 even if you author a non-zero
+  `start_ms`. We warn on non-zero first starts; if you truly need a gap, add an explicit
+  leading “blank” chapter covering 0–gap_ms.
 - Chapter images are optional; omit `image` to create a text-only chapter.
 - Chapter URLs are optional; omit `url` to skip the URL track entirely.
 - If top-level metadata fields are omitted and the input file already contains metadata (`ilst`), that metadata is preserved automatically.
 - Paths for `cover` and per-chapter `image` are resolved relative to the JSON file location.
+
+> **First chapter behavior (Apple/VLC)**  
+> The chapter tracks are duration-based (`stts`), but most players force the first sample to start
+> at t=0. A non-zero first `start_ms` will be snapped to 0 in QuickTime, Music.app, AVFoundation,
+> and VLC. If you need silence/blank time before your “real” first chapter, add a leading placeholder
+> chapter that covers 0..gap_ms and then start your first “real” chapter after that.
 
 
 ## Output

@@ -1,6 +1,9 @@
 {
   "chapters": [
     { "start_ms": 0,    "title": "Chapter 1", "image": "images/normal1.jpg", "url": "https://chapterforge.test/ch1" },
-    { "start_ms": 5000, "title": "Chapter 2", "image": "images/normal2.jpg", "url": "https://chapterforge.test/ch2" }
+    { "start_ms": 2000, "title": "Chapter 2", "image": "images/normal2.jpg", "url": "https://chapterforge.test/ch2" },
+    { "start_ms": 4000, "title": "Chapter 3", "image": "images/normal3.jpg", "url": "https://chapterforge.test/ch3" },
+    { "start_ms": 6000, "title": "Chapter 4", "image": "images/normal4.jpg", "url": "https://chapterforge.test/ch4" },
+    { "start_ms": 8000, "title": "Chapter 5", "image": "images/normal5.jpg", "url": "https://chapterforge.test/ch5" }
   ]
 }

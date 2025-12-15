@@ -304,6 +304,18 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     set_tests_properties(audio_reuse_check PROPERTIES LABELS "core")
 
     add_test(
+        NAME offset_first_chapter_bento
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_M4A=${INPUT_M4A_PATH}
+            -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_offset_first.json
+            -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_offset_bento.m4a
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DMP4DUMP_PATH=${MP4DUMP_PATH}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_offset_with_bento.cmake
+    )
+    set_tests_properties(offset_first_chapter_bento PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+
+    add_test(
         NAME output_tool_checks
         COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}

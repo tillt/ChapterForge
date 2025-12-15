@@ -1,23 +1,16 @@
 {
-  "title": "ChapterForge Longform \u2013 Five Tangents",
+  "title": "ChapterForge Longform – Five Tangents",
   "artist": "The Pad Sprites",
   "album": "Extended Neon Stories",
   "genre": "Test Audio",
   "year": "2025",
-  "comment": "Two stops on a 10s clip.",
+  "comment": "Five quick stops on a 10s clip.",
   "cover": "images/cover_normal.jpg",
   "chapters": [
-    {
-      "start_ms": 0,
-      "title": "Chapter 1",
-      "image": "images/normal1.jpg",
-      "url": "https://chapterforge.test/ch1"
-    },
-    {
-      "start_ms": 5000,
-      "title": "Chapter 2",
-      "image": "images/normal2.jpg",
-      "url": "https://chapterforge.test/ch2"
-    }
+    { "start_ms": 0,    "title": "Chapter 1", "image": "images/normal1.jpg", "url": "https://chapterforge.test/ch1" },
+    { "start_ms": 2000, "title": "Chapter 2", "image": "images/normal2.jpg", "url": "https://chapterforge.test/ch2" },
+    { "start_ms": 4000, "title": "Chapter 3", "image": "images/normal3.jpg", "url": "https://chapterforge.test/ch3" },
+    { "start_ms": 6000, "title": "Chapter 4", "image": "images/normal4.jpg", "url": "https://chapterforge.test/ch4" },
+    { "start_ms": 8000, "title": "Chapter 5", "image": "images/normal5.jpg", "url": "https://chapterforge.test/ch5" }
   ]
 }
