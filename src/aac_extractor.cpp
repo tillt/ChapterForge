@@ -9,6 +9,7 @@
 #include "aac_extractor.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <optional>
 #include <cstring>
