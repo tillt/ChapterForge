@@ -62,6 +62,7 @@ struct PendingChapter {
     uint32_t start_ms = 0;
     std::string image_path;
     std::string url;
+    std::string url_text;
 };
 
 static bool load_chapters_json(
@@ -89,6 +90,7 @@ static bool load_chapters_json(
             p.start_ms = c.value("start_ms", 0);
             p.image_path = c.value("image", "");
             p.url = c.value("url", "");
+            p.url_text = c.value("url_text", "");
             pending.emplace_back(std::move(p));
         }
     }
@@ -101,8 +103,8 @@ static bool load_chapters_json(
         t.start_ms = p.start_ms;
         ChapterTextSample url_sample{};
         url_sample.start_ms = p.start_ms;
-        // Keep URL track text empty; golden URL tracks can carry minimal/empty text.
-        url_sample.text = "";
+        // Default to empty URL text (Apple “golden” behavior); JSON may supply `url_text`.
+        url_sample.text = p.url_text;
         if (!p.url.empty()) {
             any_url = true;
             url_sample.href = p.url;

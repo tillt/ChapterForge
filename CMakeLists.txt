@@ -316,6 +316,30 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
     set_tests_properties(offset_first_chapter_bento PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
 
     add_test(
+        NAME url_text_payload
+        COMMAND ${CMAKE_COMMAND}
+            -DINPUT_M4A=${INPUT_M4A_PATH}
+            -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_urltext.json
+            -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_urltext_payload.m4a
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DMP4DUMP_PATH=${MP4DUMP_PATH}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_url_text.cmake
+    )
+    set_tests_properties(url_text_payload PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+
+    add_test(
+        NAME url_text_avfoundation
+        COMMAND ${CMAKE_COMMAND}
+            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+            -DINPUT_M4A=${INPUT_M4A_PATH}
+            -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_urltext.json
+            -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_urltext_avf.m4a
+            -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_avfoundation_urltext.cmake
+    )
+    set_tests_properties(url_text_avfoundation PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+
+    add_test(
         NAME output_tool_checks
         COMMAND ${CMAKE_COMMAND}
             -DINPUT_M4A=${INPUT_M4A_PATH}

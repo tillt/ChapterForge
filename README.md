@@ -56,12 +56,14 @@ ChapterForge uses the audio track from the input. It then combines that with a t
 
 Supported players (just a selection of known goods):
 
-|               | text  | image |
-| :---:         | :---: | :---: |
-| QuickTime.app | X     | X     |
-| Music.app     | X     | X     |
-| Books.app     | X     | X     |
-| VLC           | X     |       |
+|               | text  | image | url   | url-text |
+| :---:         | :---: | :---: | :---: | :---:    |
+| QuickTime.app | X     | X     |       |          |
+| Music.app     | X     | X     |       |          |
+| Books.app     | X     | X     |       |          |
+| VLC           | X     |       |       |          |
+
+Note that AVFoundation supports all of those attributes for parsing and extraction - on macOS and iOS it is therefor trivial to support them.
 
 
 ## Building
@@ -132,7 +134,8 @@ ChapterForge consumes a simple JSON document:
       "title": "Introduction",           // required
       "start_ms": 0,                     // required: chapter start time in milliseconds
       "image": "chapter1.jpg",           // optional; path relative to the JSON file
-      "url": "https://example.com"       // optional; creates a URL text track with HREF
+      "url": "https://example.com",      // optional; creates a URL text track with HREF
+      "url_text": "Intro link label"     // optional; text payload for the URL track (defaults empty)
     },
     {
       "title": "Main Discussion",
@@ -150,11 +153,13 @@ Notes:
   `start_ms`. We warn on non-zero first starts; if you truly need a gap, add an explicit
   leading “blank” chapter covering 0–gap_ms.
 - Chapter images are optional; omit `image` to create a text-only chapter.
+- URL track text: `url_text` is optional and defaults to empty (Apple-authored behavior). If set,
+  it travels in the URL tx3g samples; some players may surface it as visible text.
 - Chapter URLs are optional; omit `url` to skip the URL track entirely.
 - If top-level metadata fields are omitted and the input file already contains metadata (`ilst`), that metadata is preserved automatically.
 - Paths for `cover` and per-chapter `image` are resolved relative to the JSON file location.
 
-> **First chapter behavior (Apple/VLC)**  
+> **First chapter behavior (Apple/VLC)**
 > The chapter tracks are duration-based (`stts`), but most players force the first sample to start
 > at t=0. A non-zero first `start_ms` will be snapped to 0 in QuickTime, Music.app, AVFoundation,
 > and VLC. If you need silence/blank time before your “real” first chapter, add a leading placeholder

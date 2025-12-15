@@ -13,8 +13,8 @@
 
 #include "mp4_atoms.hpp"
 
-/// Represents a chapter title sample.
-/// - `text`: UTF-8 chapter title.
+/// Represents a chapter title/URL sample.
+/// - `text`: UTF-8 chapter title (or URL text, if used on a URL track).
 /// - `href`: Optional hyperlink URL (tx3g modifier). Leave empty for plain title.
 /// - `start_ms`: Absolute start time in milliseconds.
 struct ChapterTextSample {

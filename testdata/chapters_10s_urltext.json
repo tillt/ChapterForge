@@ -1,0 +1,21 @@
+{
+  "title": "URL Text Experiment",
+  "artist": "Debug Duo",
+  "album": "URL Texts",
+  "genre": "Test Audio",
+  "year": "2025",
+  "chapters": [
+    {
+      "title": "URLText One",
+      "start_ms": 0,
+      "url": "https://urltext.test/one",
+      "url_text": "custom-url-text-one"
+    },
+    {
+      "title": "URLText Two",
+      "start_ms": 5000,
+      "url": "https://urltext.test/two",
+      "url_text": "custom-url-text-two"
+    }
+  ]
+}

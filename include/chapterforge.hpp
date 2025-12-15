@@ -88,8 +88,8 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
 /// - Parameters:
 ///   - input_audio_path: Path to AAC (ADTS) or MP4/M4A containing AAC.
 ///   - text_chapters: Chapter titles (`text`/`start_ms`; `href` unused here).
-///   - url_chapters: Optional URL track; set `href` per sample, `text` may be empty. Leave empty to
-///     skip the URL track.
+///   - url_chapters: Optional URL track; set `href` per sample; `text` (or `url_text` in JSON) is
+///     optional and defaults to empty to match Apple-authored files. Leave empty to skip the URL track.
 ///   - image_chapters: Optional JPEG data per chapter; leave empty to omit the image track.
 ///   - output_path: Destination .m4a file.
 ///   - fast_start: When true, places `moov` ahead of `mdat`.
@@ -107,8 +107,8 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
 /// - Parameters:
 ///   - input_audio_path: Path to AAC (ADTS) or MP4/M4A containing AAC.
 ///   - text_chapters: Chapter titles (`text`/`start_ms`; `href` unused here).
-///   - url_chapters: Optional URL track; set `href` per sample, `text` may be empty. Leave empty to
-///     skip the URL track.
+///   - url_chapters: Optional URL track; set `href` per sample; `text` (or `url_text` in JSON) is
+///     optional and defaults to empty to match Apple-authored files. Leave empty to skip the URL track.
 ///   - image_chapters: Optional JPEG data per chapter; leave empty to omit the image track.
 ///   - metadata: Top-level metadata; reused from input `ilst` if empty.
 ///   - output_path: Destination .m4a file.
