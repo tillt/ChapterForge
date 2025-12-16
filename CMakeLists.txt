@@ -283,6 +283,35 @@ add_test(
 )
 set_tests_properties(chapter_start_rules PROPERTIES LABELS "unit")
 
+add_test(
+    NAME image_missing_first
+    COMMAND $<TARGET_FILE:chapterforge_cli>
+        ${INPUT_M4A_PATH}
+        ${TESTDATA_DIR}/chapters_10s_mixedimg.json
+        ${TEST_OUTPUT_DIR}/output_mixedimg.m4a
+)
+set_tests_properties(image_missing_first PROPERTIES FIXTURES_REQUIRED assets LABELS "core")
+
+add_test(
+    NAME image_mixed_sizes
+    COMMAND $<TARGET_FILE:chapterforge_cli>
+        ${INPUT_M4A_PATH}
+        ${TESTDATA_DIR}/chapters_10s_mixed_sizes.json
+        ${TEST_OUTPUT_DIR}/output_mixed_sizes.m4a
+)
+set_tests_properties(image_mixed_sizes PROPERTIES FIXTURES_REQUIRED assets LABELS "core")
+
+add_test(
+    NAME image_mixed_sizes_warn
+    COMMAND ${CMAKE_COMMAND}
+        -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+        -DINPUT_M4A=${INPUT_M4A_PATH}
+        -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_mixed_sizes.json
+        -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_mixed_sizes_warn.m4a
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/check_image_mismatch_warn.cmake
+)
+set_tests_properties(image_mixed_sizes_warn PROPERTIES FIXTURES_REQUIRED assets LABELS "core")
+
 if(ENABLE_OUTPUT_TOOL_TESTS)
     find_program(XXD_PATH xxd)
     find_program(MP4INFO_PATH mp4info)

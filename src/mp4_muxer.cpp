@@ -350,8 +350,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                                            << " text=" << all_text_chunk_plans.size()
                                            << " image=" << image_chunk_plan.size());
 
-    // Compute image width/height from the first JPEG when available to match.
-    // encoded size.
+    // Compute image width/height from the first JPEG when available to match encoded size.
     uint16_t image_width = kDefaultImageWidth;
     uint16_t image_height = kDefaultImageHeight;
     bool has_image_track = !image_samples.empty();
@@ -367,6 +366,22 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                        "thumbnails. Re-encode with -pix_fmt yuvj420p.");
             } else {
                 CH_LOG("debug", "chapter image subsampling OK (yuv420)");
+            }
+            // Check subsequent images for dimension mismatches (QuickTime uses the first size).
+            for (size_t i = 1; i < image_samples.size(); ++i) {
+                uint16_t wi = 0, hi = 0;
+                bool dummy_yuv = false;
+                if (parse_jpeg_info(image_samples[i], wi, hi, dummy_yuv) && wi > 0 && hi > 0) {
+                    if (wi != image_width || hi != image_height) {
+                        CH_LOG("warn",
+                               "chapter image " << i
+                                                << " has dimensions " << wi << "x" << hi
+                                                << " differing from first image "
+                                                << image_width << "x" << image_height
+                                                << "; Apple players may only display the first");
+                        break;  // warn once
+                    }
+                }
             }
         }
     }
