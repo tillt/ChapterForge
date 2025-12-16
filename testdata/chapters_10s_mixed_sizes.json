@@ -1,0 +1,19 @@
+{
+  "title": "Mixed Size Chapters",
+  "comment": "Two chapters on 10s input; chapter 1 uses small art, chapter 2 uses large art.",
+  "cover": "images/cover_normal.jpg",
+  "chapters": [
+    {
+      "start_ms": 0,
+      "title": "Small Art Kickoff",
+      "image": "images/small1.jpg",
+      "url": "https://chapterforge.test/mixed-small"
+    },
+    {
+      "start_ms": 5000,
+      "title": "Large Art Finale",
+      "image": "images/large2.jpg",
+      "url": "https://chapterforge.test/mixed-large"
+    }
+  ]
+}

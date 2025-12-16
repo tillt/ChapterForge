@@ -1,0 +1,12 @@
+{
+  "comment": "2 chapters on 10s input; first has no image, second has an image.",
+  "chapters": [
+    { "start_ms": 0, "title": "No Art Intro", "url": "https://chapterforge.test/noart" },
+    {
+      "start_ms": 5000,
+      "title": "Artful Followup",
+      "image": "images/normal2.jpg",
+      "url": "https://chapterforge.test/withart"
+    }
+  ]
+}
