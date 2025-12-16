@@ -87,6 +87,7 @@ Notes:
 - Requires a compiler with C++20 support.
 - Fast-start is on by default.
 - Tests and docs are optional targets (see below).
+- To make AVFoundation surface `extraAttributes[HREF]` consistently, ChapterForge mirrors each URL into both the URL track and the title track sample text; players still show the title normally, while AVFoundation exposes the HREF.
 
 ### Example output to validate players
 
@@ -200,7 +201,7 @@ Output (ChapterForge)
 │  ├─ trak (audio, reused stbl when input is MP4/M4A)
 │  ├─ trak (chapter titles, tx3g)
 │  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco (padded samples)
-│  ├─ trak (chapter URLs, tx3g with href) [only if any chapter has `url`]
+│  ├─ trak (chapter URLs, tx3g with href) [only if any chapter has `url` or `url_text`]
 │  │  └─ same structure as titles; text may be empty, href carries the URL
 │  ├─ trak (chapter images, jpeg)
 │  │  └─ stbl with stsd(jpeg) + stts/stsc/stsz/stco/stss
@@ -210,12 +211,12 @@ Output (ChapterForge)
 
 Fast-start repacks `moov` ahead of `mdat` when requested.
 
-
-These settings mirror Apple-authored “golden” files so that QuickTime, Music.app, and AVFoundation surface titles, URLs (`extraAttributes[HREF]`), and thumbnails reliably.
+These settings mirror Apple-authored “golden” files so that QuickTime, Music.app, and AVFoundation surface titles, URLs, and thumbnails reliably.
 
 ### Technical Breakdown
 
 - Track references (`tref/chap`): audio track points only to the title text track and the image track (when present); the URL track is deliberately **not** referenced. This matches Apple-authored files and keeps QuickTime showing titles while Music.app shows thumbnails.
+- HREF propagation: every chapter URL is mirrored into the title track payload as well, which makes AVFoundation expose it in `extraAttributes[HREF]`.
 - Timescales: text/url/image tracks use 1000 Hz; audio timescale is preserved from the source. Track IDs may differ; structure/flags/handlers remain.
 
 #### Chapter track reference (titles, URLs, images)
@@ -277,8 +278,9 @@ Public header: `chapterforge.hpp`
 
 ```c++
 struct ChapterTextSample {
-  std::string text;       // UTF-8 chapter title
-  uint32_t start_ms = 0;  // absolute start time in milliseconds
+    std::string text;       // UTF-8 text
+    std::string href;       // optional hyperlink URL (tx3g modifier)
+    uint32_t start_ms = 0;  // absolute start time in ms
 };
 
 struct ChapterImageSample {
