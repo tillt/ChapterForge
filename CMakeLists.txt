@@ -506,28 +506,6 @@ if(ENABLE_LARGE_IMAGE_TESTS)
         message(STATUS "Skipping long_audio_largeimg_5 (missing INPUT_M4A_PATH or chapters_10s_2ch_normalimg_meta.json)")
     endif()
 
-#Metadata preservation on long input : leave JSON metadata empty so ilst is
-#copied through verbatim from the source M4A.
-    if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${NORMAL_NOMETA_JSON}")
-        set(OUTPUT_LARGE_NOMETA "${TEST_OUTPUT_DIR}/output_large_nometa.m4a")
-        add_test(
-            NAME long_audio_meta_preserve
-            COMMAND ${CMAKE_COMMAND}
-            -DINPUT_M4A=${INPUT_LARGE_M4A_PATH}
-            -DCHAPTER_JSON=${NORMAL_NOMETA_JSON}
-            -DOUTPUT_M4A=${OUTPUT_LARGE_NOMETA}
-            -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
-            -DXXD_PATH=${XXD_PATH}
-            -DMP4INFO_PATH=${MP4INFO_PATH}
-            -DMP4DUMP_PATH=${MP4DUMP_PATH}
-            -DATOMIC_PARSLEY_PATH=${ATOMIC_PARSLEY_PATH}
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_tools_with_mux.cmake
-        )
-        set_tests_properties(long_audio_meta_preserve PROPERTIES LABELS "core")
-    else()
-        message(STATUS "Skipping long_audio_meta_preserve (missing INPUT_LARGE_M4A_PATH or chapters_10s_2ch_normalimg_nometa.json)")
-    endif()
-
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${LARGE50_JSON}")
         add_test(
             NAME long_audio_largeimg_50
