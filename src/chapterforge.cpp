@@ -96,18 +96,23 @@ static bool load_chapters_json(
     }
 
     std::vector<ChapterTextSample> url_chapters;
-    bool any_url = false;
+    bool has_url_track = false;
     for (const auto &p : pending) {
         ChapterTextSample t{};
         t.text = p.title;
         t.start_ms = p.start_ms;
+        // Mirror href onto the title track so AVFoundation surfaces it as an HREF extraAttribute.
+        t.href = p.url;
         ChapterTextSample url_sample{};
         url_sample.start_ms = p.start_ms;
         // Default to empty URL text (Apple “golden” behavior); JSON may supply `url_text`.
         url_sample.text = p.url_text;
         if (!p.url.empty()) {
-            any_url = true;
+            has_url_track = true;
             url_sample.href = p.url;
+        }
+        if (!p.url_text.empty()) {
+            has_url_track = true;
         }
         texts.push_back(t);
         url_chapters.emplace_back(std::move(url_sample));
@@ -119,7 +124,7 @@ static bool load_chapters_json(
             images.emplace_back(std::move(im));
         }
     }
-    if (any_url) {
+    if (has_url_track) {
         extra_text_tracks.emplace_back("Chapter URLs", std::move(url_chapters));
     }
     meta.title = j.value("title", "");
