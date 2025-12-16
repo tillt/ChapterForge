@@ -556,7 +556,7 @@ if(ENABLE_LARGE_IMAGE_TESTS)
     endif()
 
     # Golden2-inspired structure: 8 chapters, URL+image tracks to mirror the layout.
-    set(GOLDEN2_LIKE_JSON "${TESTDATA_DIR}/golden/chapters_golden2_like.json")
+    set(GOLDEN2_LIKE_JSON "${TESTDATA_DIR}/chapters_golden2_like.json")
     set(OUTPUT_GOLDEN2_LIKE "${TEST_OUTPUT_DIR}/output_golden2_like.m4a" CACHE STRING "Golden2-like output" FORCE)
     if(EXISTS "${INPUT_LARGE_M4A_PATH}" AND EXISTS "${GOLDEN2_LIKE_JSON}")
         add_test(

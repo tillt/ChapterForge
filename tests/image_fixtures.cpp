@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     for (const auto &entry :
         {"chapters.json", "chapters_10s_2ch_normalimg_meta.json",
          "chapters_10s_2ch_normalimg_nometa.json", "chapters_250s_50ch_largeimg_meta.json",
-         "golden/chapters_golden2_like.json"}) {
+         "chapters_golden2_like.json"}) {
         json j;
         if (!load_json((root / entry).string(), j)) {
             ok = false;

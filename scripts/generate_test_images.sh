@@ -4,8 +4,7 @@
 set -euo pipefail
 
 OUTDIR="testdata/images"
-GOLDEN_OUTDIR="testdata/golden/images"
-mkdir -p "${OUTDIR}" "${GOLDEN_OUTDIR}"
+mkdir -p "${OUTDIR}"
 
 # QuickTime is picky about JPEG chroma: force 4:2:0 (yuvj420p) on all renders.
 PIX_FMT="yuvj420p"
@@ -144,12 +143,12 @@ printf "\n"
 make_image_dir "${OUTDIR}" "cover_large.jpg" 2000 2000 "cover" 499 "OUTPUT"
 make_image_dir "${OUTDIR}" "cover_input_large.jpg" 2000 2000 "cover" 599 "INPUT"
 
-echo "Generating golden2-like 1280x720 images..."
+echo "Generating screen (golden2-like) 1280x720 images..."
 for i in $(seq 1 50); do
-    printf "  golden large %02d/50\r" "${i}"
-    make_image_dir "${GOLDEN_OUTDIR}" "large${i}.jpg" 1280 720 "${i}" $((i-1)) ""
+    printf "  screen %02d/50\r" "${i}"
+    make_image_dir "${OUTDIR}" "screen${i}.jpg" 1280 720 "${i}" $((i-1)) ""
 done
 printf "\n"
-make_image_dir "${GOLDEN_OUTDIR}" "cover_large.jpg" 1280 720 "cover" 699 "OUTPUT"
+make_image_dir "${OUTDIR}" "cover_screen.jpg" 1280 720 "cover" 699 "OUTPUT"
 
 echo "Images written to ${OUTDIR}"
