@@ -218,6 +218,7 @@ These settings mirror Apple-authored “golden” files so that QuickTime, Music
 - Track references (`tref/chap`): audio track points only to the title text track and the image track (when present); the URL track is deliberately **not** referenced. This matches Apple-authored files and keeps QuickTime showing titles while Music.app shows thumbnails.
 - HREF propagation: every chapter URL is mirrored into the title track payload as well, which makes AVFoundation expose it in `extraAttributes[HREF]`.
 - Timescales: text/url/image tracks use 1000 Hz; audio timescale is preserved from the source. Track IDs may differ; structure/flags/handlers remain.
+- Chapter images: the video track dimensions come from the first JPEG; keep all chapter images the same size (and yuvj420p) so every frame displays in QuickTime/Music. Dimension mismatches emit a mux-time warning and may hide later frames.
 
 #### Chapter track reference (titles, URLs, images)
 
