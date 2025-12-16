@@ -342,6 +342,17 @@ if(ENABLE_OUTPUT_TOOL_TESTS)
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_avfoundation_urltext.cmake
         )
         set_tests_properties(url_text_avfoundation PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
+        add_test(
+            NAME url_text_nohref_avfoundation
+            COMMAND ${CMAKE_COMMAND}
+                -DCHAPTERFORGE_BIN=$<TARGET_FILE:chapterforge_cli>
+                -DINPUT_M4A=${INPUT_M4A_PATH}
+                -DCHAPTER_JSON=${TESTDATA_DIR}/chapters_10s_urltext_nohref.json
+                -DOUTPUT_M4A=${TEST_OUTPUT_DIR}/output_urltext_nohref_avf.m4a
+                -DPROJECT_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_avfoundation_urltext.cmake
+        )
+        set_tests_properties(url_text_nohref_avfoundation PROPERTIES FIXTURES_REQUIRED assets LABELS "tooling")
     else()
         message(STATUS "Skipping AVFoundation url_text test on non-Apple platform")
     endif()

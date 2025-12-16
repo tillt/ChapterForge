@@ -42,6 +42,18 @@ for (idx, group) in chapters.enumerated() {
     let start = CMTimeGetSeconds(timeRange.start)
     let dur = CMTimeGetSeconds(timeRange.duration)
     print(String(format: "[%02d] %.3fs dur=%.3fs title=%@", idx, start, dur, title))
+    for item in group.items {
+        let key = item.commonKey?.rawValue ?? (item.key?.description ?? "(no key)")
+        let ident = item.identifier?.rawValue ?? "(no ident)"
+        var val: String = "(non-string)"
+        if let s = item.stringValue {
+            val = s
+        } else if let d = item.dataValue {
+            val = "data len=\(d.count)"
+        }
+        let extra = item.extraAttributes ?? [:]
+        print("  item key=\(key) ident=\(ident) value=\(val) extra=\(extra)")
+    }
 }
 SWIFT
 

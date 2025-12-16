@@ -4,7 +4,8 @@
 set -euo pipefail
 
 OUTDIR="testdata/images"
-mkdir -p "${OUTDIR}"
+GOLDEN_OUTDIR="testdata/golden/images"
+mkdir -p "${OUTDIR}" "${GOLDEN_OUTDIR}"
 
 # QuickTime is picky about JPEG chroma: force 4:2:0 (yuvj420p) on all renders.
 PIX_FMT="yuvj420p"
@@ -41,9 +42,10 @@ SCROLL_STEP=-480
 SAT=1.6
 CTR=1.15
 
-make_image() {
-    local name=$1 width=$2 height=$3 label=$4 idx=$5 label_suffix=$6
-    local outfile="${OUTDIR}/${name}"
+make_image_dir() {
+    local dir=$1
+    local name=$2 width=$3 height=$4 label=$5 idx=$6 label_suffix=$7
+    local outfile="${dir}/${name}"
     if [[ -f "${outfile}" ]]; then
         echo "  skip ${name} (already exists)"
         return
@@ -118,28 +120,36 @@ EOF
 echo "Generating 400x400 small chapter images..."
 for i in $(seq 1 50); do
     printf "  small %02d/50\r" "${i}"
-    make_image "small${i}.jpg" 400 400 "${i}" $((i-1)) ""
+    make_image_dir "${OUTDIR}" "small${i}.jpg" 400 400 "${i}" $((i-1)) ""
 done
 printf "\n"
 # Generate distinct cover assets for each profile size (output and input variants).
-make_image "cover.jpg" 400 400 "cover" 99 "OUTPUT"
-make_image "cover_input.jpg" 400 400 "cover" 199 "INPUT"
+make_image_dir "${OUTDIR}" "cover.jpg" 400 400 "cover" 99 "OUTPUT"
+make_image_dir "${OUTDIR}" "cover_input.jpg" 400 400 "cover" 199 "INPUT"
 
 echo "Generating 800x800 normal images..."
 for i in $(seq 1 12); do
     echo "  normal ${i}/12"
-    make_image "normal${i}.jpg" 800 800 "${i}" $((i-1)) ""
+    make_image_dir "${OUTDIR}" "normal${i}.jpg" 800 800 "${i}" $((i-1)) ""
 done
-make_image "cover_normal.jpg" 800 800 "cover" 299 "OUTPUT"
-make_image "cover_input_normal.jpg" 800 800 "cover" 399 "INPUT"
+make_image_dir "${OUTDIR}" "cover_normal.jpg" 800 800 "cover" 299 "OUTPUT"
+make_image_dir "${OUTDIR}" "cover_input_normal.jpg" 800 800 "cover" 399 "INPUT"
 
 echo "Generating 2000x2000 large images..."
 for i in $(seq 1 50); do
     printf "  large %02d/50\r" "${i}"
-    make_image "large${i}.jpg" 2000 2000 "${i}" $((i-1)) ""
+    make_image_dir "${OUTDIR}" "large${i}.jpg" 2000 2000 "${i}" $((i-1)) ""
 done
 printf "\n"
-make_image "cover_large.jpg" 2000 2000 "cover" 499 "OUTPUT"
-make_image "cover_input_large.jpg" 2000 2000 "cover" 599 "INPUT"
+make_image_dir "${OUTDIR}" "cover_large.jpg" 2000 2000 "cover" 499 "OUTPUT"
+make_image_dir "${OUTDIR}" "cover_input_large.jpg" 2000 2000 "cover" 599 "INPUT"
+
+echo "Generating golden2-like 1280x720 images..."
+for i in $(seq 1 50); do
+    printf "  golden large %02d/50\r" "${i}"
+    make_image_dir "${GOLDEN_OUTDIR}" "large${i}.jpg" 1280 720 "${i}" $((i-1)) ""
+done
+printf "\n"
+make_image_dir "${GOLDEN_OUTDIR}" "cover_large.jpg" 1280 720 "cover" 699 "OUTPUT"
 
 echo "Images written to ${OUTDIR}"

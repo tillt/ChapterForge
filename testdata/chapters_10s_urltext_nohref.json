@@ -1,0 +1,14 @@
+{
+  "chapters": [
+    {
+      "title": "Title One",
+      "start": 0,
+      "url_text": "url-text-one"
+    },
+    {
+      "title": "Title Two",
+      "start": 5000,
+      "url_text": "url-text-two"
+    }
+  ]
+}

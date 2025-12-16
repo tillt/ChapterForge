@@ -1,0 +1,25 @@
+{
+  "title": "ChapterForge URL+Text+Images (Short)",
+  "artist": "Debug Duo",
+  "album": "Short Neon",
+  "genre": "Test Audio",
+  "year": "2025",
+  "comment": "2 chapters on 10s input with url_text, href, small images.",
+  "cover": "images/cover.jpg",
+  "chapters": [
+    {
+      "start_ms": 0,
+      "title": "Small URL Title One",
+      "url": "https://chapterforge.test/url-one",
+      "url_text": "Small URL text one",
+      "image": "images/small1.jpg"
+    },
+    {
+      "start_ms": 5000,
+      "title": "Small URL Title Two",
+      "url": "https://chapterforge.test/url-two",
+      "url_text": "Small URL text two",
+      "image": "images/small2.jpg"
+    }
+  ]
+}
