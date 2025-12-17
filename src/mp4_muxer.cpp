@@ -12,6 +12,7 @@
 #include <chrono>
 #include <cstddef>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -39,8 +40,22 @@ constexpr uint16_t kDefaultImageHeight = 720;      // fallback when JPEG lacks s
 constexpr uint32_t kDefaultAudioChunk = 21;        // chunk size used for derived plans
 constexpr uint32_t kStscHeaderSize = 8;
 constexpr uint32_t kStscEntrySize = 12;
+constexpr size_t kHexPreviewBytes = 8;
 
 }  // namespace
+
+static std::string hex_prefix(const std::vector<uint8_t> &data, size_t max_len = kHexPreviewBytes) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    const size_t limit = std::min(max_len, data.size());
+    for (size_t i = 0; i < limit; ++i) {
+        oss << std::setw(2) << static_cast<unsigned int>(data[i]);
+        if (i + 1 != limit) {
+            oss << ' ';
+        }
+    }
+    return oss.str();
+}
 
 // Build an audio chunking plan. We previously mirrored the golden sample’s.
 // 22/21 pattern; this version uses a consistent chunk size to see if Apple.
@@ -188,11 +203,37 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const std::vector<uint8_t> *ilst_payload) {
     CH_LOG("debug", "write_mp4 begin output=" << output_path << " audio_frames=" << aac.frames.size()
                                               << " titles=" << text_chapters.size()
-                                              << " images=" << image_chapters.size()
-                                              << " extra_text_tracks=" << extra_text_tracks.size()
-                                              << " fast_start=" << fast_start);
+                                             << " images=" << image_chapters.size()
+                                             << " extra_text_tracks=" << extra_text_tracks.size()
+                                             << " fast_start=" << fast_start);
     auto now = [] { return std::chrono::steady_clock::now(); };
     auto t_start = now();
+
+    CH_LOG("debug", "metadata title='" << metadata.title << "' artist='" << metadata.artist
+                                       << "' album='" << metadata.album
+                                       << "' genre='" << metadata.genre << "' year='" << metadata.year
+                                       << "' comment='" << metadata.comment << "' cover_bytes="
+                                       << metadata.cover.size() << " cover_hex="
+                                       << (metadata.cover.empty() ? "<none>"
+                                                                  : hex_prefix(metadata.cover)));
+
+    auto log_text_track = [](const char *label, const std::vector<ChapterTextSample> &samples) {
+        for (size_t i = 0; i < samples.size(); ++i) {
+            const auto &s = samples[i];
+            CH_LOG("debug", label << "[" << i << "] start_ms=" << s.start_ms
+                                  << " text=\"" << s.text << "\" href="
+                                  << (s.href.empty() ? "<none>" : s.href));
+        }
+    };
+    log_text_track("titles", text_chapters);
+    for (size_t i = 0; i < extra_text_tracks.size(); ++i) {
+        log_text_track(extra_text_tracks[i].first.c_str(), extra_text_tracks[i].second);
+    }
+    for (size_t i = 0; i < image_chapters.size(); ++i) {
+        const auto &img = image_chapters[i];
+        CH_LOG("debug", "image[" << i << "] start_ms=" << img.start_ms << " bytes="
+                                 << img.data.size() << " hex=" << hex_prefix(img.data));
+    }
     //
     // 0) open file.
     //
@@ -357,30 +398,35 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     if (has_image_track) {
         uint16_t w = 0, h = 0;
         bool is_yuv420 = false;
-        if (parse_jpeg_info(image_samples.front(), w, h, is_yuv420) && w > 0 && h > 0) {
-            image_width = w;
-            image_height = h;
-            if (!is_yuv420) {
-                CH_LOG("warn",
-                       "chapter image is not 4:2:0 (yuvj420p); Apple players may ignore "
-                       "thumbnails. Re-encode with -pix_fmt yuvj420p.");
-            } else {
-                CH_LOG("debug", "chapter image subsampling OK (yuv420)");
-            }
-            // Check subsequent images for dimension mismatches (QuickTime uses the first size).
-            for (size_t i = 1; i < image_samples.size(); ++i) {
-                uint16_t wi = 0, hi = 0;
-                bool dummy_yuv = false;
-                if (parse_jpeg_info(image_samples[i], wi, hi, dummy_yuv) && wi > 0 && hi > 0) {
-                    if (wi != image_width || hi != image_height) {
-                        CH_LOG("warn",
-                               "chapter image " << i
-                                                << " has dimensions " << wi << "x" << hi
-                                                << " differing from first image "
-                                                << image_width << "x" << image_height
-                                                << "; Apple players may only display the first");
-                        break;  // warn once
-                    }
+        if (!parse_jpeg_info(image_samples.front(), w, h, is_yuv420) || w == 0 || h == 0) {
+            CH_LOG("error", "failed to parse JPEG header for chapter image 0; ensure valid JPEG");
+            return false;
+        }
+        image_width = w;
+        image_height = h;
+        if (!is_yuv420) {
+            CH_LOG("error",
+                   "chapter image is not 4:2:0 (yuvj420p); re-encode with -pix_fmt yuvj420p");
+            return false;
+        }
+        CH_LOG("debug", "chapter image subsampling OK (yuv420)");
+        // Check subsequent images for dimension mismatches (QuickTime uses the first size).
+        for (size_t i = 1; i < image_samples.size(); ++i) {
+            uint16_t wi = 0, hi = 0;
+            bool dummy_yuv = false;
+            if (parse_jpeg_info(image_samples[i], wi, hi, dummy_yuv) && wi > 0 && hi > 0) {
+                if (wi != image_width || hi != image_height) {
+                    CH_LOG("warn", "chapter image " << i << " has dimensions " << wi << "x" << hi
+                                                    << " differing from first image "
+                                                    << image_width << "x" << image_height
+                                                    << "; Apple players may only display the first");
+                    break;  // warn once
+                }
+                if (!dummy_yuv) {
+                    CH_LOG("error",
+                           "chapter image " << i
+                                            << " is not 4:2:0 (yuvj420p); re-encode the JPEGs");
+                    return false;
                 }
             }
         }
