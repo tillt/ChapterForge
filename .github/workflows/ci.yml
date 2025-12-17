@@ -29,9 +29,6 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
           - os: macos-latest
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -85,11 +82,11 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          ARCH_FLAG=""
-          if [[ -n "${{ matrix.arch || '' }}" ]]; then
-            ARCH_FLAG="-DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }}"
+          UNIVERSAL_FLAG=""
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            UNIVERSAL_FLAG="-DCHAPTERFORGE_UNIVERSAL=ON"
           fi
-          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON -DCMAKE_BUILD_TYPE=Release ${ARCH_FLAG}
+          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON -DCMAKE_BUILD_TYPE=Release ${UNIVERSAL_FLAG}
 
       - name: Build
         shell: bash
@@ -114,9 +111,6 @@ jobs:
           - os: ubuntu-latest
           - os: windows-latest
           - os: macos-latest
-            arch: x86_64
-          - os: macos-latest
-            arch: arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -128,11 +122,11 @@ jobs:
       - name: Configure
         shell: bash
         run: |
-          ARCH_FLAG=""
-          if [[ -n "${{ matrix.arch || '' }}" ]]; then
-            ARCH_FLAG="-DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }}"
+          UNIVERSAL_FLAG=""
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            UNIVERSAL_FLAG="-DCHAPTERFORGE_UNIVERSAL=ON"
           fi
-          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ${ARCH_FLAG}
+          cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ${UNIVERSAL_FLAG}
 
       - name: Build
         shell: bash
@@ -187,8 +181,8 @@ jobs:
         run: |
           mkdir -p dist
           suffix="-${{ matrix.os }}"
-          if [[ -n "${{ matrix.arch || '' }}" ]]; then
-            suffix="${suffix}-${{ matrix.arch }}"
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            suffix="${suffix}-universal"
           fi
           ver="${GITHUB_REF##*/}"
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.dry_run }}" == "true" ]]; then
@@ -217,7 +211,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: chapterforge-${{ matrix.os }}${{ matrix.arch && format('-{0}', matrix.arch) || '' }}
+          name: chapterforge-${{ matrix.os }}${{ matrix.os == 'macos-latest' && '-universal' || '' }}
           path: dist/*
 
   publish:

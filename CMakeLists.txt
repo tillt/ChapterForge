@@ -57,6 +57,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# macOS universal helper (opt-in).
+if(APPLE)
+    option(CHAPTERFORGE_UNIVERSAL "Build arm64 + x86_64 universal binaries on macOS" OFF)
+    if(CHAPTERFORGE_UNIVERSAL)
+        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS architectures" FORCE)
+        message(STATUS "CHAPTERFORGE_UNIVERSAL=ON -> CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
+    endif()
+endif()
+
 option(ENABLE_ASAN "Enable AddressSanitizer for ChapterForge" OFF)
 if(ENABLE_ASAN)
     add_compile_options(-fsanitize=address -fno-omit-frame-pointer -fno-common)
