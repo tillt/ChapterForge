@@ -15,7 +15,7 @@
 #include <utility>
 
 #include "aac_extractor.hpp"
-#include "meta_builder.hpp"
+#include "metadata_set.hpp"
 #include "mp4_atoms.hpp"
 #include "mp4a_builder.hpp"
 #include "stbl_image_builder.hpp"

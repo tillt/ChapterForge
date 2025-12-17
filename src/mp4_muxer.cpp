@@ -22,6 +22,7 @@
 #include "chapter_timing.hpp"
 #include "logging.hpp"
 #include "mdat_writer.hpp"
+#include "metadata_set.hpp"
 #include "meta_builder.hpp"
 #include "moov_builder.hpp"
 #include "mp4_atoms.hpp"

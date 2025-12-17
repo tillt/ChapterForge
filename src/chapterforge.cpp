@@ -9,7 +9,13 @@
 #include <utility>
 #include <chrono>
 
+#include "aac_extractor.hpp"
 #include "logging.hpp"
+#include "metadata_set.hpp"
+#include "chapter_text_sample.hpp"
+#include "chapter_image_sample.hpp"
+#include "mp4a_builder.hpp"
+#include "mp4_muxer.hpp"
 #include "parser.hpp"
 
 using json = nlohmann::json;

@@ -281,6 +281,9 @@ option(ENABLE_VIDEO_DEBUG_COMPARE "Run optional video debug against a golden fil
 option(ENABLE_AVFOUNDATION_SMOKE "Run AVFoundation smoke test (macOS only, requires swift)" OFF)
 option(ENABLE_DOCS "Generate Doxygen HTML documentation" ON)
 
+# Optional: produce a macOS Framework wrapping the static library.
+option(ENABLE_MACOS_FRAMEWORK "Build ChapterForge.framework on macOS" OFF)
+
 add_executable(chapter_start_rules
     tests/chapter_start_rules.cpp
 )
@@ -290,6 +293,35 @@ add_test(
     NAME chapter_start_rules
     COMMAND chapter_start_rules
 )
+
+# macOS Framework packaging (uses the existing static lib).
+if(APPLE AND ENABLE_MACOS_FRAMEWORK)
+    # Stage a static framework bundle that wraps the built static library.
+    set(FRAMEWORK_NAME ChapterForge)
+    set(FRAMEWORK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${FRAMEWORK_NAME}.framework)
+    set(FRAMEWORK_VER_DIR ${FRAMEWORK_DIR}/Versions/A)
+    # Ship all public headers (developers can opt into lower-level APIs).
+    file(GLOB FRAMEWORK_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
+
+    add_custom_target(ChapterForgeFramework ALL
+        DEPENDS chapterforge ${FRAMEWORK_HEADERS}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${FRAMEWORK_VER_DIR}/Headers
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${FRAMEWORK_VER_DIR}/Resources
+        # Write a minimal Info.plist carrying our version strings.
+        COMMAND ${CMAKE_COMMAND} -E echo "<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\n<!DOCTYPE plist PUBLIC \\\"-//Apple//DTD PLIST 1.0//EN\\\" \\\"http://www.apple.com/DTDs/PropertyList-1.0.dtd\\\"> \n<plist version=\\\"1.0\\\"> \n<dict> \n    <key>CFBundleIdentifier</key><string>com.chapterforge</string> \n    <key>CFBundleName</key><string>ChapterForge</string> \n    <key>CFBundleVersion</key><string>${CHAPTERFORGE_VERSION_DISPLAY}</string> \n    <key>CFBundleShortVersionString</key><string>${CHAPTERFORGE_VERSION_DISPLAY}</string> \n</dict> \n</plist>" > ${FRAMEWORK_VER_DIR}/Resources/Info.plist
+        # Copy the static lib into the bundle as the framework binary.
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:chapterforge> ${FRAMEWORK_VER_DIR}/${FRAMEWORK_NAME}
+        # Copy public headers.
+        COMMAND ${CMAKE_COMMAND} -E copy ${FRAMEWORK_HEADERS} ${FRAMEWORK_VER_DIR}/Headers
+        # Symlinks to match standard framework layout.
+        COMMAND ${CMAKE_COMMAND} -E create_symlink A ${FRAMEWORK_DIR}/Versions/Current
+        COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Headers ${FRAMEWORK_DIR}/Headers
+        COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/Resources ${FRAMEWORK_DIR}/Resources
+        COMMAND ${CMAKE_COMMAND} -E create_symlink Versions/Current/${FRAMEWORK_NAME} ${FRAMEWORK_DIR}/${FRAMEWORK_NAME}
+        COMMENT "Staging static ${FRAMEWORK_NAME}.framework (universal if CHAPTERFORGE_UNIVERSAL=ON)"
+        VERBATIM
+    )
+endif()
 set_tests_properties(chapter_start_rules PROPERTIES LABELS "unit")
 
 add_test(
