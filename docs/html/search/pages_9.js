@@ -1,5 +1,8 @@
 var searchData=
 [
-  ['minimal_20c_20usage_20cli_20equivalent_0',['Minimal C++ usage (CLI equivalent)',['../index.html#autotoc_md10',1,'']]],
-  ['motivation_20and_20backstory_1',['Motivation and Backstory',['../index.html#autotoc_md1',1,'']]]
+  ['objective_20c_20example_0',['Objective-C++ Example',['../index.html#autotoc_md20',1,'']]],
+  ['of_20contents_1',['Table of Contents',['../index.html#autotoc_md1',1,'']]],
+  ['output_2',['Output',['../index.html#autotoc_md9',1,'']]],
+  ['output_3',['Atom flow (input → output)',['../index.html#autotoc_md10',1,'']]],
+  ['output_20to_20validate_20players_4',['Example output to validate players',['../index.html#autotoc_md6',1,'']]]
 ];

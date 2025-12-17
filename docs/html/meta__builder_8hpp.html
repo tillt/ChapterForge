@@ -94,82 +94,19 @@ $(function(){initNavTree('meta__builder_8hpp.html','',''); });
 <div class="textblock"><code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="metadata__set_8hpp_source.html">metadata_set.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mp4__atoms_8hpp_source.html">mp4_atoms.hpp</a>&quot;</code><br />
 </div>
 <p><a href="meta__builder_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:MetadataSet_5Fstruct_5Fmetadata_5Fset" id="r_MetadataSet_5Fstruct_5Fmetadata_5Fset"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#struct_metadata_set">MetadataSet</a></td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a03709b1c3eb55ac1cc5af3bd696744e0" id="r_a03709b1c3eb55ac1cc5af3bd696744e0"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a03709b1c3eb55ac1cc5af3bd696744e0">build_ilst_item</a> (const std::string &amp;<a class="el" href="mp4__atoms_8hpp.html#a17e34ddc50bd28ddfc4ec9292dcd5aec">fourcc</a>, const std::vector&lt; uint8_t &gt; &amp;data, uint32_t data_type=1)</td></tr>
 <tr class="memitem:aa41f44114fde8c2899ae997772980fa9" id="r_aa41f44114fde8c2899ae997772980fa9"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa41f44114fde8c2899ae997772980fa9">build_ilst</a> (std::vector&lt; std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt; &gt; items)</td></tr>
 <tr class="memitem:a4d9efd0f9059d0c5b773d8032d59ff62" id="r_a4d9efd0f9059d0c5b773d8032d59ff62"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d9efd0f9059d0c5b773d8032d59ff62">build_meta</a> (std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt; ilst)</td></tr>
-<tr class="memitem:ab76e3d8a1fbbba228b96370fbc7d0a4f" id="r_ab76e3d8a1fbbba228b96370fbc7d0a4f"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab76e3d8a1fbbba228b96370fbc7d0a4f">build_meta_atom</a> (const <a class="el" href="#struct_metadata_set">MetadataSet</a> &amp;meta)</td></tr>
+<tr class="memitem:ab76e3d8a1fbbba228b96370fbc7d0a4f" id="r_ab76e3d8a1fbbba228b96370fbc7d0a4f"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab76e3d8a1fbbba228b96370fbc7d0a4f">build_meta_atom</a> (const <a class="el" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;meta)</td></tr>
 <tr class="memitem:a5d8c82a7abc345811b5b4aab84ad161a" id="r_a5d8c82a7abc345811b5b4aab84ad161a"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5d8c82a7abc345811b5b4aab84ad161a">build_meta_atom_from_ilst</a> (const std::vector&lt; uint8_t &gt; &amp;ilst_payload)</td></tr>
 </table>
-<hr/><h2 id="header-inline_5Fclasses" class="groupheader">Class Documentation</h2>
-<a name="struct_metadata_set" id="struct_metadata_set"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#struct_metadata_set">&#9670;&#160;</a></span>MetadataSet</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct MetadataSet</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"></div><table class="fieldtable">
-<tr><th colspan="3">Class Members</th></tr>
-<tr><td class="fieldtype">
-<a id="abd16bd278f38ec1327274ab5ff27ef85" name="abd16bd278f38ec1327274ab5ff27ef85"></a>string</td>
-<td class="fieldname">
-album</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="aa7adbd14b7cf1f5bf8cd88fe116a363e" name="aa7adbd14b7cf1f5bf8cd88fe116a363e"></a>string</td>
-<td class="fieldname">
-artist</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a6fd9f96c9d0d1c1f57b099321ec659e4" name="a6fd9f96c9d0d1c1f57b099321ec659e4"></a>string</td>
-<td class="fieldname">
-comment</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="ab8bb9a1bb70e9966b1cf57edf9175f59" name="ab8bb9a1bb70e9966b1cf57edf9175f59"></a>vector&lt; uint8_t &gt;</td>
-<td class="fieldname">
-cover</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="a9b380c1b3cd16bb9dbbd2c40ac70b27a" name="a9b380c1b3cd16bb9dbbd2c40ac70b27a"></a>string</td>
-<td class="fieldname">
-genre</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="acbc81c75d02c28d496329514230e767b" name="acbc81c75d02c28d496329514230e767b"></a>string</td>
-<td class="fieldname">
-title</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="abc91afa2af0b4c48ded5c13a86389369" name="abc91afa2af0b4c48ded5c13a86389369"></a>string</td>
-<td class="fieldname">
-year</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="aa41f44114fde8c2899ae997772980fa9" name="aa41f44114fde8c2899ae997772980fa9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa41f44114fde8c2899ae997772980fa9">&#9670;&#160;</a></span>build_ilst()</h2>
@@ -240,7 +177,7 @@ year</td>
         <tr>
           <td class="memname">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt; build_meta_atom </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="#struct_metadata_set">MetadataSet</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>meta</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>meta</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>

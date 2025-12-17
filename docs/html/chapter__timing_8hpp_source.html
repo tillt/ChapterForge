@@ -104,24 +104,45 @@ $(function(){initNavTree('chapter__timing_8hpp_source.html','',''); });
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Sample&gt;</div>
-<div class="foldopen" id="foldopen00015" data-start="{" data-end="}">
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="chapter__timing_8hpp.html#aed63c817841dfdab3478d196a09685f8">   15</a></span><span class="keyword">inline</span> std::vector&lt;uint32_t&gt; <a class="code hl_function" href="chapter__timing_8hpp.html#aed63c817841dfdab3478d196a09685f8">derive_durations_ms_from_starts</a>(<span class="keyword">const</span> std::vector&lt;Sample&gt; &amp;samples) {</div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    std::vector&lt;uint32_t&gt; durations;</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    durations.reserve(samples.size());</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; samples.size(); ++i) {</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>        <span class="keywordflow">if</span> (i + 1 &lt; samples.size()) {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>            uint32_t cur = samples[i].start_ms;</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>            uint32_t next = samples[i + 1].start_ms;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>            durations.push_back(next &gt; cur ? (next - cur) : 0);</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>            durations.push_back(0);</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        }</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    }</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keywordflow">return</span> durations;</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>}</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;<a class="code" href="logging_8hpp.html">logging.hpp</a>&quot;</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment">// Derive durations (ms) from sorted start times. If total_ms &gt; 0, the final</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment">// duration is clamped to fill the remaining time up to total_ms (min 1).</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">template</span> &lt;<span class="keyword">typename</span> Sample&gt;</div>
+<div class="foldopen" id="foldopen00019" data-start="{" data-end="}">
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="chapter__timing_8hpp.html#a4ee570ca1cbcf7fe346c40320202776d">   19</a></span><span class="keyword">inline</span> std::vector&lt;uint32_t&gt; <a class="code hl_function" href="chapter__timing_8hpp.html#a4ee570ca1cbcf7fe346c40320202776d">derive_durations_ms_from_starts</a>(<span class="keyword">const</span> std::vector&lt;Sample&gt; &amp;samples,</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                                                             uint32_t total_ms = 0) {</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    std::vector&lt;uint32_t&gt; durations;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    durations.reserve(samples.size());</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordflow">if</span> (samples.empty()) {</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        <span class="keywordflow">return</span> durations;</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    }</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keywordflow">if</span> (samples.front().start_ms != 0) {</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>        <span class="comment">// Apple players expect the first chapter to start at t=0. Warn callers so they</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>        <span class="comment">// can surface this to the user (e.g., log a warning).</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>        <a class="code hl_define" href="logging_8hpp.html#a27996c24a6b7ce286928c9848130348d">CH_LOG</a>(<span class="stringliteral">&quot;warn&quot;</span>, <span class="stringliteral">&quot;first chapter start_ms is &quot;</span> &lt;&lt; samples.front().start_ms</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>                                                    &lt;&lt; <span class="stringliteral">&quot;ms; Apple players expect 0ms. &quot;</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>                                                    &lt;&lt; <span class="stringliteral">&quot;Titles/URLs/thumbnails may not show.&quot;</span>);</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    }</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; samples.size(); ++i) {</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        <span class="keywordflow">if</span> (i + 1 &lt; samples.size()) {</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>            uint32_t cur = samples[i].start_ms;</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>            uint32_t next = samples[i + 1].start_ms;</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>            durations.push_back(next &gt; cur ? (next - cur) : 1);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>            <span class="keywordflow">if</span> (total_ms &gt; 0 &amp;&amp; samples[i].start_ms &lt; total_ms) {</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>                durations.push_back(std::max&lt;uint32_t&gt;(1, total_ms - samples[i].start_ms));</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>                durations.push_back(1);  <span class="comment">// pad final sample with minimum duration</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>            }</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        }</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    }</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="keywordflow">return</span> durations;</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>}</div>
 </div>
-<div class="ttc" id="achapter__timing_8hpp_html_aed63c817841dfdab3478d196a09685f8"><div class="ttname"><a href="chapter__timing_8hpp.html#aed63c817841dfdab3478d196a09685f8">derive_durations_ms_from_starts</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; derive_durations_ms_from_starts(const std::vector&lt; Sample &gt; &amp;samples)</div><div class="ttdef"><b>Definition</b> chapter_timing.hpp:15</div></div>
+<div class="ttc" id="achapter__timing_8hpp_html_a4ee570ca1cbcf7fe346c40320202776d"><div class="ttname"><a href="chapter__timing_8hpp.html#a4ee570ca1cbcf7fe346c40320202776d">derive_durations_ms_from_starts</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; derive_durations_ms_from_starts(const std::vector&lt; Sample &gt; &amp;samples, uint32_t total_ms=0)</div><div class="ttdef"><b>Definition</b> chapter_timing.hpp:19</div></div>
+<div class="ttc" id="alogging_8hpp_html"><div class="ttname"><a href="logging_8hpp.html">logging.hpp</a></div></div>
+<div class="ttc" id="alogging_8hpp_html_a27996c24a6b7ce286928c9848130348d"><div class="ttname"><a href="logging_8hpp.html#a27996c24a6b7ce286928c9848130348d">CH_LOG</a></div><div class="ttdeci">#define CH_LOG(level, message)</div><div class="ttdef"><b>Definition</b> logging.hpp:60</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

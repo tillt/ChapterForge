@@ -5,6 +5,7 @@ var dir_68267d1309a1af8e8297ef4c3efbcdba =
     [ "dinf_builder.cpp", "dinf__builder_8cpp.html", "dinf__builder_8cpp" ],
     [ "hdlr_builder.cpp", "hdlr__builder_8cpp.html", "hdlr__builder_8cpp" ],
     [ "jpeg_entry_builder.cpp", "jpeg__entry__builder_8cpp.html", "jpeg__entry__builder_8cpp" ],
+    [ "logging.cpp", "logging_8cpp.html", "logging_8cpp" ],
     [ "main.cpp", "main_8cpp.html", "main_8cpp" ],
     [ "mdat_writer.cpp", "mdat__writer_8cpp.html", "mdat__writer_8cpp" ],
     [ "mdhd_builder.cpp", "mdhd__builder_8cpp.html", "mdhd__builder_8cpp" ],
