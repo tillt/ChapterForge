@@ -209,8 +209,12 @@ jobs:
             rm -rf dist/chapterforge
           else
             mkdir -p dist/chapterforge
+            # Ship CLI, static lib + headers, and the universal framework for macOS.
             cp build/chapterforge_cli build/libchapterforge.a LICENSE README.md dist/chapterforge/
             (cd "${{ github.workspace }}" && cp -r include "${{ github.workspace }}/dist/chapterforge/")
+            if [[ -d build/ChapterForge.framework ]]; then
+              cp -R build/ChapterForge.framework dist/chapterforge/
+            fi
             (cd dist && zip -r chapterforge-${ver}${suffix}.zip chapterforge)
             rm -rf dist/chapterforge
           fi
