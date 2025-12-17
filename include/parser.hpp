@@ -27,6 +27,8 @@ struct ParsedMp4 {
 
     // ilst metadata atom payload (optional)
     std::vector<uint8_t> ilst_payload;
+    // raw meta payload (version/flags/reserved + children) to allow verbatim reuse.
+    std::vector<uint8_t> meta_payload;
 
     // audio track timing info.
     uint32_t audio_timescale = 0;

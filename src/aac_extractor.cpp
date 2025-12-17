@@ -365,6 +365,7 @@ std::optional<AacExtractResult> extract_from_mp4(const std::string &path) {
     out.stsc_payload = parsed.stsc;
     out.stsz_payload = parsed.stsz;
     out.stco_payload = parsed.stco;
+    out.meta_payload = parsed.meta_payload;
     out.ilst_payload = parsed.ilst_payload;
     const auto t_done = std::chrono::steady_clock::now();
     const auto open_ms =

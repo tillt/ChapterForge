@@ -183,6 +183,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
 
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
+    const std::vector<uint8_t> *meta_ptr = nullptr;
+    if (!aac->meta_payload.empty()) {
+        meta_ptr = &aac->meta_payload;
+        CH_LOG("debug", "Reusing source meta payload (" << meta_ptr->size() << " bytes)");
+    }
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
         CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
@@ -192,7 +197,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &cha
         CH_LOG("debug", "Using metadata provided by JSON overrides");
     }
     return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta, fast_start,
-                     extra_text_tracks, ilst_ptr);
+                     extra_text_tracks, ilst_ptr, meta_ptr);
 }
 
 bool mux_file_to_m4a(const std::string &input_audio_path,
@@ -215,6 +220,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     const auto t_load = std::chrono::steady_clock::now();
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
+    const std::vector<uint8_t> *meta_ptr = nullptr;
+    if (!aac->meta_payload.empty()) {
+        meta_ptr = &aac->meta_payload;
+        CH_LOG("debug", "Reusing source meta payload (" << meta_ptr->size() << " bytes)");
+    }
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
         CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
@@ -225,7 +235,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     }
     std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
     bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                        extra_text_tracks, ilst_ptr);
+                        extra_text_tracks, ilst_ptr, meta_ptr);
     const auto t1 = std::chrono::steady_clock::now();
     const auto load_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();
@@ -301,6 +311,11 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     const auto t_load = std::chrono::steady_clock::now();
     Mp4aConfig cfg{};
     const std::vector<uint8_t> *ilst_ptr = nullptr;
+    const std::vector<uint8_t> *meta_ptr = nullptr;
+    if (!aac->meta_payload.empty()) {
+        meta_ptr = &aac->meta_payload;
+        CH_LOG("debug", "Reusing source meta payload (" << meta_ptr->size() << " bytes)");
+    }
     if (!aac->ilst_payload.empty()) {
         ilst_ptr = &aac->ilst_payload;
         CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
@@ -315,7 +330,7 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
         extra_text_tracks.push_back({"Chapter URLs", url_chapters});
     }
     bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                        extra_text_tracks, ilst_ptr);
+                        extra_text_tracks, ilst_ptr, meta_ptr);
     const auto t1 = std::chrono::steady_clock::now();
     const auto load_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();

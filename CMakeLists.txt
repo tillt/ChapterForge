@@ -234,6 +234,13 @@ add_test(NAME parser_fallback_check COMMAND parser_fallback_check)
 set_tests_properties(parser_fallback_check PROPERTIES FIXTURES_REQUIRED assets)
 set_tests_properties(parser_fallback_check PROPERTIES LABELS "core")
 
+# Safety regression: refuse absurd atom sizes / overflows without crashing.
+add_executable(parser_safety_check tests/parser_safety.cpp)
+target_link_libraries(parser_safety_check PRIVATE chapterforge)
+target_include_directories(parser_safety_check PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(NAME parser_safety_check COMMAND parser_safety_check)
+set_tests_properties(parser_safety_check PROPERTIES LABELS "core")
+
 if(nlohmann_json_FOUND)
     add_executable(image_fixtures tests/image_fixtures.cpp)
     target_link_libraries(image_fixtures PRIVATE chapterforge nlohmann_json::nlohmann_json)
@@ -269,6 +276,7 @@ if(ENABLE_DOCS)
             COMMENT "Generating API documentation in ${CMAKE_CURRENT_BINARY_DIR}/docs/html"
             VERBATIM
         )
+
     else()
         message(WARNING "ENABLE_DOCS=ON but Doxygen not found; docs target will not be generated.")
     endif()

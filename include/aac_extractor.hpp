@@ -28,7 +28,8 @@ struct AacExtractResult {
     std::vector<uint8_t> stsz_payload;
     std::vector<uint8_t> stco_payload;
 
-    // Optional: original ilst payload (when source is MP4/M4A)
+    // Optional: original meta/ilst payloads (when source is MP4/M4A)
+    std::vector<uint8_t> meta_payload;
     std::vector<uint8_t> ilst_payload;
 };
 

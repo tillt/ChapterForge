@@ -11,9 +11,9 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
-#include <iomanip>
 #include <stdexcept>
 #include <sstream>
+#include <chrono>
 
 #include "logging.hpp"
 #include "mp4_atoms.hpp"
@@ -24,6 +24,19 @@ constexpr uint64_t kAtomHeaderSize = 8;
 constexpr uint64_t kFullBoxBaseHeader = 12;  // size+type+version/flags
 constexpr uint64_t kMetaReservedBytes = 4;
 constexpr uint64_t kHdlrMinPayload = 20;
+constexpr uint64_t kMaxAtomPayload = 512 * 1024 * 1024;  // 512 MB safety bound
+
+struct TrackParseResult {
+    uint32_t handler_type = 0;
+    uint32_t timescale = 0;
+    uint64_t duration = 0;
+    uint32_t sample_count = 0;
+    std::vector<uint8_t> stsd;
+    std::vector<uint8_t> stts;
+    std::vector<uint8_t> stsc;
+    std::vector<uint8_t> stsz;
+    std::vector<uint8_t> stco;
+};
 
 static bool is_printable_fourcc(uint32_t type) {
     for (int i = 0; i < 4; ++i) {
@@ -33,6 +46,15 @@ static bool is_printable_fourcc(uint32_t type) {
         }
     }
     return true;
+}
+
+static std::string fourcc_to_string(uint32_t type) {
+    std::string s(4, ' ');
+    s[0] = static_cast<char>((type >> 24) & 0xFF);
+    s[1] = static_cast<char>((type >> 16) & 0xFF);
+    s[2] = static_cast<char>((type >> 8) & 0xFF);
+    s[3] = static_cast<char>(type & 0xFF);
+    return s;
 }
 
 }  // namespace
@@ -65,6 +87,14 @@ static Mp4AtomInfo read_atom_header(std::istream &in) {
         // 64-bit extended size.
         info.size = read_u64(in);
     }
+    // Hard sanity: reject absurd payloads early (protect against corrupted headers).
+    if (info.size >= kAtomHeaderSize &&
+        (info.size - kAtomHeaderSize) > kMaxAtomPayload) {
+        CH_LOG("warn", "atom " << fourcc_to_string(info.type)
+                               << " claims payload " << (info.size - kAtomHeaderSize)
+                               << " bytes; exceeds safety bound, skipping");
+        info.size = 0;
+    }
     return info;
 }
 
@@ -75,27 +105,27 @@ static std::vector<uint8_t> read_bytes(std::istream &in, uint64_t size) {
     return buf;
 }
 
-// Render a short hex+ASCII preview from a given offset without changing the stream position.
-static std::string hex_preview(std::istream &in, uint64_t offset, uint64_t max_len) {
-    std::string out;
-    std::streampos cur = in.tellg();
-    in.seekg(offset);
-    const uint64_t len = std::min<uint64_t>(max_len, 64);
-    std::vector<uint8_t> buf(len);
-    in.read(reinterpret_cast<char *>(buf.data()), len);
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    for (size_t i = 0; i < buf.size(); ++i) {
-        oss << std::setw(2) << static_cast<unsigned>(buf[i]) << " ";
+
+static bool grab_atom_from_buffer(const std::vector<uint8_t> &buf, const char *fourcc,
+                                  std::vector<uint8_t> &dst) {
+    if (!dst.empty()) {
+        return false;
     }
-    oss << "| ";
-    for (uint8_t b : buf) {
-        oss << (std::isprint(b) ? static_cast<char>(b) : '.');
+    for (size_t i = 0; i + 8 <= buf.size(); ++i) {
+        if (buf[i + 4] == static_cast<uint8_t>(fourcc[0]) &&
+            buf[i + 5] == static_cast<uint8_t>(fourcc[1]) &&
+            buf[i + 6] == static_cast<uint8_t>(fourcc[2]) &&
+            buf[i + 7] == static_cast<uint8_t>(fourcc[3])) {
+            uint32_t sz = (buf[i] << 24) | (buf[i + 1] << 16) | (buf[i + 2] << 8) | buf[i + 3];
+            uint64_t end = static_cast<uint64_t>(i) + static_cast<uint64_t>(sz);
+            if (sz >= 8 && end <= buf.size() && end >= i + 8) {
+                dst.assign(buf.begin() + i + 8, buf.begin() + end);
+                CH_LOG("debug", "grabbed " << fourcc << " via raw scan, bytes=" << dst.size());
+                return true;
+            }
+        }
     }
-    out = oss.str();
-    in.clear();
-    in.seekg(cur);
-    return out;
+    return false;
 }
 
 // Naive scan for ilst payload (fallback when structured parse misses it)
@@ -157,8 +187,8 @@ static void parse_mdhd(std::istream &in, uint64_t size, uint32_t &timescale, uin
     }
 }
 
-// Extract ilst from meta.
-static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
+// Extract ilst from meta payload (payload only, after size/type).
+static void parse_meta_payload(std::istream &in, uint64_t size, ParsedMp4 &out) {
     const uint64_t start = (uint64_t)in.tellg();
 
     // meta full box header.
@@ -192,7 +222,7 @@ static void parse_meta(std::istream &in, uint64_t size, ParsedMp4 &out) {
         }
         while (remain > kAtomHeaderSize) {
             auto child = read_atom_header(in);
-            if (!in || child.size < kAtomHeaderSize || child.size > remain) {
+            if (!in || child.size == 0 || child.size < kAtomHeaderSize || child.size > remain) {
                 CH_LOG("debug", "meta child invalid size=" << child.size << " remain=" << remain);
                 break;
             }
@@ -255,52 +285,50 @@ static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
 }
 
 // Parse stbl children (stsd, stts, stsc, stsz, stco)
-static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &stsd,
-                       std::vector<uint8_t> &stts, std::vector<uint8_t> &stsc,
-                       std::vector<uint8_t> &stsz, std::vector<uint8_t> &stco) {
+static void parse_stbl(std::istream &in, uint64_t size, TrackParseResult &track) {
     CH_LOG("debug", "parse_stbl size=" << size);
     uint64_t start = (uint64_t)in.tellg();
     uint64_t remain = size;
 
     while (remain >= 8) {
         auto info = read_atom_header(in);
-        if (!in || info.size < 8) {
+        if (!in || info.size == 0 || info.size < 8) {
             break;
         }
         uint64_t payload_size = info.size - 8;
 
         switch (info.type) {
             case ('s' << 24 | 't' << 16 | 's' << 8 | 'd'):  // stsd
-                if (stsd.empty()) {
-                    stsd = read_bytes(in, payload_size);
+                if (track.stsd.empty()) {
+                    track.stsd = read_bytes(in, payload_size);
                 } else {
                     skip(in, payload_size);
                 }
                 break;
             case ('s' << 24 | 't' << 16 | 't' << 8 | 's'):  // stts
-                if (stts.empty()) {
-                    stts = read_bytes(in, payload_size);
+                if (track.stts.empty()) {
+                    track.stts = read_bytes(in, payload_size);
                 } else {
                     skip(in, payload_size);
                 }
                 break;
             case ('s' << 24 | 't' << 16 | 's' << 8 | 'c'):  // stsc
-                if (stsc.empty()) {
-                    stsc = read_bytes(in, payload_size);
+                if (track.stsc.empty()) {
+                    track.stsc = read_bytes(in, payload_size);
                 } else {
                     skip(in, payload_size);
                 }
                 break;
             case ('s' << 24 | 't' << 16 | 's' << 8 | 'z'):  // stsz
-                if (stsz.empty()) {
-                    stsz = read_bytes(in, payload_size);
+                if (track.stsz.empty()) {
+                    track.stsz = read_bytes(in, payload_size);
                 } else {
                     skip(in, payload_size);
                 }
                 break;
             case ('s' << 24 | 't' << 16 | 'c' << 8 | 'o'):  // stco
-                if (stco.empty()) {
-                    stco = read_bytes(in, payload_size);
+                if (track.stco.empty()) {
+                    track.stco = read_bytes(in, payload_size);
                 } else {
                     skip(in, payload_size);
                 }
@@ -314,41 +342,38 @@ static void parse_stbl(std::istream &in, uint64_t size, std::vector<uint8_t> &st
 
     uint64_t end = start + size;
     in.seekg(end);
-    CH_LOG("debug", "stbl parsed sizes stsd=" << stsd.size() << " stts=" << stts.size()
-                                               << " stsc=" << stsc.size() << " stsz=" << stsz.size()
-                                               << " stco=" << stco.size());
+    CH_LOG("debug", "stbl parsed sizes stsd=" << track.stsd.size()
+                                               << " stts=" << track.stts.size()
+                                               << " stsc=" << track.stsc.size()
+                                               << " stsz=" << track.stsz.size()
+                                               << " stco=" << track.stco.size());
 }
 
 // Parse mdia box of a track.
 static bool parse_mdia(std::istream &in, uint64_t mpay, uint64_t mdia_end,
-                       uint32_t &handler_type, uint32_t &mdhd_timescale, uint64_t &mdhd_duration,
-                       std::vector<uint8_t> &stsd, std::vector<uint8_t> &stts,
-                       std::vector<uint8_t> &stsc, std::vector<uint8_t> &stsz,
-                       std::vector<uint8_t> &stco, bool &force_fallback) {
+                       TrackParseResult &track, bool &force_fallback) {
     uint64_t mdia_remain = mpay;
     bool mdia_overflow = false;
 
     while (mdia_remain >= 8) {
         CH_LOG("debug", " mdia pos=" << (uint64_t)in.tellg() << " remain=" << mdia_remain);
         auto m = read_atom_header(in);
-        if (!in || m.size < 8) {
+        if (!in || m.size == 0 || m.size < 8) {
             CH_LOG("debug", "mdia break: stream bad or size<8");
             break;
         }
         uint64_t mpay_child = m.size - 8;
         if (m.size > mdia_remain) {
-            CH_LOG("debug",
-                   " mdia child type=" << std::hex << m.type << std::dec << " claims size="
-                                       << m.size << " but remain=" << mdia_remain
-                                       << " — clamping and bailing from mdia");
+            CH_LOG("debug", " mdia child type=" << fourcc_to_string(m.type) << " claims size="
+                                                << m.size << " but remain=" << mdia_remain
+                                                << " — clamping and bailing from mdia");
             mdia_overflow = true;
             in.seekg(mdia_end);
             mdia_remain = 0;
             break;
         }
-        CH_LOG("debug",
-               " mdia child type=" << std::hex << m.type << std::dec << " size=" << m.size
-                                   << " offset=" << m.offset);
+        CH_LOG("debug", " mdia child type=" << fourcc_to_string(m.type) << " size=" << m.size
+                                            << " offset=" << m.offset);
 
         // If a bogus child claims to run past mdia, clamp it but keep parsing so we can avoid a
         // full fallback where possible.
@@ -367,11 +392,12 @@ static bool parse_mdia(std::istream &in, uint64_t mpay, uint64_t mdia_end,
         }
 
         if (m.type == ('m' << 24 | 'd' << 16 | 'h' << 8 | 'd')) {
-            parse_mdhd(in, mpay_child, mdhd_timescale, mdhd_duration);
-            CH_LOG("debug", "  mdhd timescale=" << mdhd_timescale << " duration=" << mdhd_duration);
+            parse_mdhd(in, mpay_child, track.timescale, track.duration);
+            CH_LOG("debug", "  mdhd timescale=" << track.timescale
+                                                << " duration=" << track.duration);
         } else if (m.type == ('h' << 24 | 'd' << 16 | 'l' << 8 | 'r')) {
-            handler_type = parse_hdlr(in, m.size);
-            CH_LOG("debug", "  hdlr=" << std::hex << handler_type << std::dec);
+            track.handler_type = parse_hdlr(in, m.size);
+            CH_LOG("debug", "  hdlr=" << std::hex << track.handler_type << std::dec);
         } else if (m.type == ('m' << 24 | 'i' << 16 | 'n' << 8 | 'f')) {
             // find stbl.
             uint64_t minf_end = (uint64_t)in.tellg() + mpay_child;
@@ -389,7 +415,7 @@ static bool parse_mdia(std::istream &in, uint64_t mpay, uint64_t mdia_end,
                                                  << " size=" << mi.size);
 
                 if (mi.type == ('s' << 24 | 't' << 16 | 'b' << 8 | 'l')) {
-                    parse_stbl(in, mi_pay, stsd, stts, stsc, stsz, stco);
+                    parse_stbl(in, mi_pay, track);
                 } else {
                     skip(in, mi_pay);
                 }
@@ -409,10 +435,10 @@ static bool parse_mdia(std::istream &in, uint64_t mpay, uint64_t mdia_end,
                     if (maybe == minf_tag) {
                         uint64_t abs_pos = m.offset + 8 + off;
                         CH_LOG("debug", "  found nested minf @" << abs_pos << " inside "
-                                                                << std::hex << m.type << std::dec);
+                                                                << fourcc_to_string(m.type));
                         in.seekg((std::streamoff)abs_pos);
                         uint64_t minf_remaining = mdia_end - abs_pos;
-                        parse_stbl(in, minf_remaining, stsd, stts, stsc, stsz, stco);
+                        parse_stbl(in, minf_remaining, track);
                         in.seekg(mdia_end);
                         mdia_remain = 0;
                         goto mdia_done;
@@ -439,32 +465,27 @@ mdia_done:
     return true;
 }
 
-// Parse trak box and update ParsedMp4 if it is the best audio track found.
-static void parse_trak(std::istream &in, uint64_t c_payload, uint64_t file_size,
-                       uint32_t &best_audio_samples, ParsedMp4 &out, bool &force_fallback) {
+// Parse trak box and return a TrackParseResult (audio/video/text).
+static std::optional<TrackParseResult> parse_trak(std::istream &in, uint64_t c_payload,
+                                                  uint64_t file_size, bool &force_fallback) {
     (void)file_size;
     uint64_t trak_end = (uint64_t)in.tellg() + c_payload;
     uint64_t trak_remain = c_payload;
-    uint32_t handler_type = 0;
-    uint32_t mdhd_timescale = 0;
-    uint64_t mdhd_duration = 0;
-    std::vector<uint8_t> stsd, stts, stsc, stsz, stco;
+    TrackParseResult track;
     CH_LOG("debug", "trak start end=" << trak_end);
 
     while (trak_remain >= 8) {
         auto tchild = read_atom_header(in);
-        if (!in || tchild.size < 8) {
+        if (!in || tchild.size == 0 || tchild.size < 8) {
             break;
         }
         uint64_t tpay = tchild.size - 8;
-        CH_LOG("debug", " trak child=" << std::hex << tchild.type << std::dec
-                                       << " size=" << tchild.size);
+        CH_LOG("debug", " trak child=" << fourcc_to_string(tchild.type) << " size=" << tchild.size);
 
         if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
             CH_LOG("debug", "trak: entering mdia");
             uint64_t mdia_end = (uint64_t)in.tellg() + tpay;
-            parse_mdia(in, tpay, mdia_end, handler_type, mdhd_timescale, mdhd_duration, stsd, stts,
-                       stsc, stsz, stco, force_fallback);
+            parse_mdia(in, tpay, mdia_end, track, force_fallback);
             if (force_fallback) {
                 break;
             }
@@ -477,22 +498,16 @@ static void parse_trak(std::istream &in, uint64_t c_payload, uint64_t file_size,
         }
     }
 
-    if (handler_type == fourcc("soun")) {
-        uint32_t sample_count = 0;
-        if (stsz.size() >= 12) {
-            sample_count = (stsz[8] << 24) | (stsz[9] << 16) | (stsz[10] << 8) | stsz[11];
-        }
-        if (!stsz.empty() && (best_audio_samples == 0 || sample_count >= best_audio_samples)) {
-            best_audio_samples = sample_count;
-            out.audio_timescale = mdhd_timescale;
-            out.audio_duration = mdhd_duration;
-            out.stsd = std::move(stsd);
-            out.stts = std::move(stts);
-            out.stsc = std::move(stsc);
-            out.stsz = std::move(stsz);
-            out.stco = std::move(stco);
-        }
+    if (force_fallback) {
+        return std::nullopt;
     }
+
+    if (track.stsz.size() >= 12) {
+        track.sample_count = (track.stsz[8] << 24) | (track.stsz[9] << 16) |
+                             (track.stsz[10] << 8) | track.stsz[11];
+    }
+
+    return track;
 }
 
 // Parse moov atom.
@@ -508,14 +523,14 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
     CH_LOG("debug", "enter moov @0x" << std::hex << atom.offset << std::dec << " end=" << end);
     while (((uint64_t)in.tellg()) + 8 <= end) {
         auto child = read_atom_header(in);
-        if (!in || child.size < 8) {
+        if (!in || child.size == 0 || child.size < 8) {
             break;
         }
 
         if (child.offset + child.size > end) {
-            CH_LOG("error", "parse_mp4: child overflow type=" << std::hex << child.type << std::dec
-                                                              << " size=" << child.size
-                                                              << " end=" << end);
+                CH_LOG("error", "parse_mp4: child overflow type=" << fourcc_to_string(child.type)
+                                                                 << " size=" << child.size
+                                                                 << " end=" << end);
             child.size = end - child.offset;
             if (child.size < 8) {
                 break;
@@ -523,9 +538,8 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
         }
 
         uint64_t c_payload = child.size - 8;
-        CH_LOG("debug", "moov child=" << std::hex << child.type << std::dec << " size="
-                                      << child.size << " offset=0x" << std::hex << child.offset
-                                      << std::dec);
+        CH_LOG("debug", "moov child=" << fourcc_to_string(child.type) << " size=" << child.size
+                                      << " offset=0x" << std::hex << child.offset << std::dec);
 
         switch (child.type) {
             case ('u' << 24 | 'd' << 16 | 't' << 8 | 'a'): {
@@ -539,7 +553,13 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
 
                     if (u.type == ('m' << 24 | 'e' << 16 | 't' << 8 | 'a')) {
                         CH_LOG("debug", "found meta inside udta");
-                        parse_meta(in, upay, out);
+                        auto meta_buf = read_bytes(in, upay);
+                        if (out.meta_payload.empty()) {
+                            out.meta_payload = meta_buf;
+                        }
+                        std::string meta_str(meta_buf.begin(), meta_buf.end());
+                        std::istringstream meta_stream(meta_str);
+                        parse_meta_payload(meta_stream, upay, out);
                     } else {
                         skip(in, upay);
                     }
@@ -548,11 +568,34 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
             }
             case ('m' << 24 | 'e' << 16 | 't' << 8 | 'a'): {
                 CH_LOG("debug", "found meta under moov");
-                parse_meta(in, c_payload, out);
+                auto meta_buf = read_bytes(in, c_payload);
+                if (out.meta_payload.empty()) {
+                    out.meta_payload = meta_buf;
+                }
+                std::string meta_str(meta_buf.begin(), meta_buf.end());
+                std::istringstream meta_stream(meta_str);
+                parse_meta_payload(meta_stream, c_payload, out);
                 break;
             }
             case ('t' << 24 | 'r' << 16 | 'a' << 8 | 'k'): {
-                parse_trak(in, c_payload, file_size, best_audio_samples, out, force_fallback);
+                auto track_opt = parse_trak(in, c_payload, file_size, force_fallback);
+                if (!track_opt) {
+                    break;
+                }
+                auto &track = *track_opt;
+                if (track.handler_type == fourcc("soun")) {
+                    if (!track.stsz.empty() &&
+                        (best_audio_samples == 0 || track.sample_count >= best_audio_samples)) {
+                        best_audio_samples = track.sample_count;
+                        out.audio_timescale = track.timescale;
+                        out.audio_duration = track.duration;
+                        out.stsd = std::move(track.stsd);
+                        out.stts = std::move(track.stts);
+                        out.stsc = std::move(track.stsc);
+                        out.stsz = std::move(track.stsz);
+                        out.stco = std::move(track.stco);
+                    }
+                }
                 break;
             }
             default:
@@ -567,6 +610,7 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
 // Main MP4 parsing.
 //
 std::optional<ParsedMp4> parse_mp4(const std::string &path) {
+    const auto t_start = std::chrono::steady_clock::now();
     ParsedMp4 out;
     uint32_t best_audio_samples = 0;
     bool force_fallback = false;
@@ -588,6 +632,10 @@ std::optional<ParsedMp4> parse_mp4(const std::string &path) {
             break;
         }
         Mp4AtomInfo atom = read_atom_header(in);
+        if (atom.size == 0) {
+            CH_LOG("warn", "parse_mp4: atom with zero/invalid size encountered, bailing");
+            break;
+        }
         if (atom.size < 8 || atom.offset + atom.size > file_size) {
             CH_LOG("error", "parse_mp4: bad atom header size=" << atom.size
                                                                << " offset=" << atom.offset
@@ -611,6 +659,8 @@ std::optional<ParsedMp4> parse_mp4(const std::string &path) {
         }
     }
 
+    const auto t_struct_done = std::chrono::steady_clock::now();
+
     // Fallback: flat scan for sample-table atoms if they were not captured.
     if (out.stsz.empty() || out.stco.empty() || out.stsc.empty() || out.stsd.empty()) {
         CH_LOG("debug", "fallback flat scan for stbl atoms");
@@ -626,35 +676,13 @@ std::optional<ParsedMp4> parse_mp4(const std::string &path) {
         std::vector<uint8_t> buf(static_cast<size_t>(len));
         in.read(reinterpret_cast<char *>(buf.data()), len);
 
-        auto grab_atom = [&](const char *fourcc, std::vector<uint8_t> &dst) {
-            if (!dst.empty()) {
-                return;
-            }
-            for (size_t i = 0; i + 8 <= buf.size(); ++i) {
-                if (buf[i + 4] == static_cast<uint8_t>(fourcc[0]) &&
-                    buf[i + 5] == static_cast<uint8_t>(fourcc[1]) &&
-                    buf[i + 6] == static_cast<uint8_t>(fourcc[2]) &&
-                    buf[i + 7] == static_cast<uint8_t>(fourcc[3])) {
-                    uint32_t sz =
-                        (buf[i] << 24) | (buf[i + 1] << 16) | (buf[i + 2] << 8) | buf[i + 3];
-                    uint64_t end = static_cast<uint64_t>(i) + static_cast<uint64_t>(sz);
-                    if (sz >= 8 && end <= buf.size() && end >= i + 8) {
-                        dst.assign(buf.begin() + i + 8, buf.begin() + end);
-                        CH_LOG("debug",
-                               "grabbed " << fourcc << " via raw scan, bytes=" << dst.size());
-                        break;
-                    }
-                }
-            }
-        };
-
-        grab_atom("stsd", out.stsd);
-        grab_atom("stts", out.stts);
-        grab_atom("stsc", out.stsc);
-        grab_atom("stsz", out.stsz);
-        grab_atom("stco", out.stco);
+        grab_atom_from_buffer(buf, "stsd", out.stsd);
+        grab_atom_from_buffer(buf, "stts", out.stts);
+        grab_atom_from_buffer(buf, "stsc", out.stsc);
+        grab_atom_from_buffer(buf, "stsz", out.stsz);
+        grab_atom_from_buffer(buf, "stco", out.stco);
         if (out.ilst_payload.empty()) {
-            grab_atom("ilst", out.ilst_payload);
+            grab_atom_from_buffer(buf, "ilst", out.ilst_payload);
         }
     }
 
@@ -666,15 +694,29 @@ std::optional<ParsedMp4> parse_mp4(const std::string &path) {
             CH_LOG("debug", "ilst found via naive scan, bytes=" << out.ilst_payload.size());
         }
     }
+    const auto t_fallback_done = std::chrono::steady_clock::now();
+
     if (out.stco.empty() || out.stsc.empty() || out.stsz.empty() || out.stsd.empty()) {
         CH_LOG("error", "parse_mp4: missing stbl atoms stco/stsc/stsz/stsd");
     }
+    const auto t_done = std::chrono::steady_clock::now();
+    const auto ms_struct =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_struct_done - t_start).count();
+    const auto ms_fallback =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_fallback_done - t_struct_done)
+            .count();
+    const auto ms_total =
+        std::chrono::duration_cast<std::chrono::milliseconds>(t_done - t_start).count();
+
     CH_LOG("debug", "parse_mp4 done stco=" << out.stco.size() << " stsc=" << out.stsc.size()
-                                            << " stsz=" << out.stsz.size()
-                                            << " stsd=" << out.stsd.size()
-                                            << " ilst=" << out.ilst_payload.size()
-                                            << " timescale=" << out.audio_timescale
-                                            << " duration=" << out.audio_duration
-                                            << " fallback_stbl=" << out.used_fallback_stbl);
+                                           << " stsz=" << out.stsz.size()
+                                           << " stsd=" << out.stsd.size()
+                                           << " ilst=" << out.ilst_payload.size()
+                                           << " timescale=" << out.audio_timescale
+                                           << " duration=" << out.audio_duration
+                                           << " fallback_stbl=" << out.used_fallback_stbl
+                                           << " timings_ms struct=" << ms_struct
+                                           << " fallback=" << ms_fallback
+                                           << " total=" << ms_total);
     return out;
 }
