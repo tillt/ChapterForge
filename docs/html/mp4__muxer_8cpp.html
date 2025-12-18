@@ -95,8 +95,8 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 <code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;chrono&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
 <code>#include &lt;fstream&gt;</code><br />
-<code>#include &lt;iomanip&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
@@ -105,6 +105,7 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 <code>#include &quot;<a class="el" href="chapter__timing_8hpp_source.html">chapter_timing.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="logging_8hpp_source.html">logging.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mdat__writer_8hpp_source.html">mdat_writer.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="jpeg__info_8hpp_source.html">jpeg_info.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="metadata__set_8hpp_source.html">metadata_set.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meta__builder_8hpp_source.html">meta_builder.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="moov__builder_8hpp_source.html">moov_builder.hpp</a>&quot;</code><br />
@@ -115,11 +116,183 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 <code>#include &quot;<a class="el" href="trak__builder_8hpp_source.html">trak_builder.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="udta__builder_8hpp_source.html">udta_builder.hpp</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:DurationInfo_5Fstruct_5Fduration_5Finfo" id="r_DurationInfo_5Fstruct_5Fduration_5Finfo"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#struct_duration_info">DurationInfo</a></td></tr>
+<tr class="memitem:PreparedTextTracks_5Fstruct_5Fprepared_5Ftext_5Ftracks" id="r_PreparedTextTracks_5Fstruct_5Fprepared_5Ftext_5Ftracks"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#struct_prepared_text_tracks">PreparedTextTracks</a></td></tr>
+<tr class="memitem:ChunkPlans_5Fstruct_5Fchunk_5Fplans" id="r_ChunkPlans_5Fstruct_5Fchunk_5Fplans"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#struct_chunk_plans">ChunkPlans</a></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a6f746f1c24cddf14ce013d525795ed36" id="r_a6f746f1c24cddf14ce013d525795ed36"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6f746f1c24cddf14ce013d525795ed36">write_mp4</a> (const std::string &amp;output_path, const <a class="el" href="aac__extractor_8hpp.html#struct_aac_extract_result">AacExtractResult</a> &amp;aac, const std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &amp;text_chapters, const std::vector&lt; <a class="el" href="chapter__image__sample_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;image_chapters, <a class="el" href="mp4a__builder_8hpp.html#struct_mp4a_config">Mp4aConfig</a> audio_cfg, const <a class="el" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;metadata, bool fast_start, const std::vector&lt; std::pair&lt; std::string, std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt; &gt; &amp;extra_text_tracks, const std::vector&lt; uint8_t &gt; *ilst_payload, const std::vector&lt; uint8_t &gt; *meta_payload)</td></tr>
+<tr class="memitem:ac2d77650a478aa95f0827d4f4e73da2a" id="r_ac2d77650a478aa95f0827d4f4e73da2a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2d77650a478aa95f0827d4f4e73da2a">hex_prefix</a> (const std::vector&lt; uint8_t &gt; &amp;data, size_t max_len=kHexPreviewBytes)</td></tr>
 </table>
+<hr/><h2 id="header-inline_5Fclasses" class="groupheader">Class Documentation</h2>
+<a name="struct_duration_info" id="struct_duration_info"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#struct_duration_info">&#9670;&#160;</a></span>DurationInfo</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct DurationInfo</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock"></div><table class="fieldtable">
+<tr><th colspan="3">Class Members</th></tr>
+<tr><td class="fieldtype">
+<a id="a3b8a6cc17d2aa3c347bb3c7bf97a3118" name="a3b8a6cc17d2aa3c347bb3c7bf97a3118"></a>uint32_t</td>
+<td class="fieldname">
+audio_duration_ms = 0</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="afe9f557546c188ffc5b2a741caffe365" name="afe9f557546c188ffc5b2a741caffe365"></a>uint64_t</td>
+<td class="fieldname">
+audio_duration_ts = 0</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a594d7b1cbd93b1c35740b7018685095c" name="a594d7b1cbd93b1c35740b7018685095c"></a>uint32_t</td>
+<td class="fieldname">
+audio_timescale = 0</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="aedf90091900cd97cbc631372a971e9aa" name="aedf90091900cd97cbc631372a971e9aa"></a>uint64_t</td>
+<td class="fieldname">
+image_duration_ts = 0</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a8e90c056abd9602f3661295fd4f88c05" name="a8e90c056abd9602f3661295fd4f88c05"></a>vector&lt; uint32_t &gt;</td>
+<td class="fieldname">
+image_ms</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a8e945bb384dc2c6048d0d6488bc61c61" name="a8e945bb384dc2c6048d0d6488bc61c61"></a>uint64_t</td>
+<td class="fieldname">
+text_duration_ts = 0</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a6cc2be8285081e08cfc2ceaed1fc2c14" name="a6cc2be8285081e08cfc2ceaed1fc2c14"></a>vector&lt; uint32_t &gt;</td>
+<td class="fieldname">
+text_ms</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a name="struct_prepared_text_tracks" id="struct_prepared_text_tracks"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#struct_prepared_text_tracks">&#9670;&#160;</a></span>PreparedTextTracks</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct PreparedTextTracks</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock"></div><table class="fieldtable">
+<tr><th colspan="3">Class Members</th></tr>
+<tr><td class="fieldtype">
+<a id="a42604ff93650aa2ced254e139d67b27b" name="a42604ff93650aa2ced254e139d67b27b"></a>vector&lt; vector&lt; vector&lt; uint8_t &gt; &gt; &gt;</td>
+<td class="fieldname">
+extras</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="ab218aafdea04a710bc7112be241360bf" name="ab218aafdea04a710bc7112be241360bf"></a>vector&lt; vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt;</td>
+<td class="fieldname">
+extras_meta</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a166b1e718bcd1213b29e556edb732abc" name="a166b1e718bcd1213b29e556edb732abc"></a>vector&lt; vector&lt; uint8_t &gt; &gt;</td>
+<td class="fieldname">
+primary</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a16be7555c56aa40af2b1fd9a457de006" name="a16be7555c56aa40af2b1fd9a457de006"></a>vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt;</td>
+<td class="fieldname">
+primary_meta</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a name="struct_chunk_plans" id="struct_chunk_plans"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#struct_chunk_plans">&#9670;&#160;</a></span>ChunkPlans</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct ChunkPlans</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<div class="textblock"></div><table class="fieldtable">
+<tr><th colspan="3">Class Members</th></tr>
+<tr><td class="fieldtype">
+<a id="a8ba95f0825d4f66d6103bc782b8f2fb2" name="a8ba95f0825d4f66d6103bc782b8f2fb2"></a>vector&lt; uint32_t &gt;</td>
+<td class="fieldname">
+audio</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="aab23b0a0740c6f48139d7f50d3aef3a3" name="aab23b0a0740c6f48139d7f50d3aef3a3"></a>vector&lt; uint32_t &gt;</td>
+<td class="fieldname">
+image</td>
+<td class="fielddoc">
+</td></tr>
+<tr><td class="fieldtype">
+<a id="a7790ce85cccda0ef4a7ddf4bfb034ace" name="a7790ce85cccda0ef4a7ddf4bfb034ace"></a>vector&lt; vector&lt; uint32_t &gt; &gt;</td>
+<td class="fieldname">
+text</td>
+<td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ac2d77650a478aa95f0827d4f4e73da2a" name="ac2d77650a478aa95f0827d4f4e73da2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2d77650a478aa95f0827d4f4e73da2a">&#9670;&#160;</a></span>hex_prefix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="namespacechapterforge.html#ac2d77650a478aa95f0827d4f4e73da2a">chapterforge::hex_prefix</a> </td>
+          <td>(</td>
+          <td class="paramtype">const std::vector&lt; uint8_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>max_len</em></span><span class="paramdefsep"> = </span><span class="paramdefval">kHexPreviewBytes</span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a6f746f1c24cddf14ce013d525795ed36" name="a6f746f1c24cddf14ce013d525795ed36"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6f746f1c24cddf14ce013d525795ed36">&#9670;&#160;</a></span>write_mp4()</h2>
 

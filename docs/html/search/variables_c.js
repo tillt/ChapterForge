@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['text_0',['text',['../chapter__text__sample_8hpp.html#aac96a43112fc1c3d3a07863cd8d5593d',1,'ChapterTextSample']]],
-  ['text_5foffsets_1',['text_offsets',['../mdat__writer_8hpp.html#a7f0ea2a98c71af830cf1c3c35e0538df',1,'MdatOffsets']]],
-  ['title_2',['title',['../metadata__set_8hpp.html#acbc81c75d02c28d496329514230e767b',1,'MetadataSet']]],
-  ['type_3',['type',['../class_atom.html#ae1a986148327ad36ada291490893db27',1,'Atom::type'],['../parser_8hpp.html#a548f98a7564d50228eaf131943172098',1,'Mp4AtomInfo::type']]]
+  ['payload_0',['payload',['../class_atom.html#ad9e40aab112a93df39e3d7bb21de98a5',1,'Atom::payload'],['../stbl__metadata__builder_8hpp.html#a03efd421e7998930e83acc3504e63c95',1,'ChapterMetadataSample::payload']]],
+  ['payload_5fstart_1',['payload_start',['../mdat__writer_8hpp.html#a4f3a59497d88b3e60436b31e8d7671d1',1,'MdatOffsets']]],
+  ['primary_2',['primary',['../mp4__muxer_8cpp.html#a166b1e718bcd1213b29e556edb732abc',1,'PreparedTextTracks']]],
+  ['primary_5fmeta_3',['primary_meta',['../mp4__muxer_8cpp.html#a16be7555c56aa40af2b1fd9a457de006',1,'PreparedTextTracks']]]
 ];

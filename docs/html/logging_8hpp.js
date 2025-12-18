@@ -11,5 +11,7 @@ var logging_8hpp =
     [ "ch_severity_for_tag", "logging_8hpp.html#ae356656da8cfa553a94ca0796321b804", null ],
     [ "ch_should_log", "logging_8hpp.html#aa69285655d78d4739b7587c3891dce4f", null ],
     [ "chapterforge::get_log_verbosity", "namespacechapterforge.html#a1a73d9a090e505500642b5ff5cdedcbf", null ],
-    [ "chapterforge::set_log_verbosity", "namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394", null ]
+    [ "chapterforge::hex_prefix", "namespacechapterforge.html#ac2d77650a478aa95f0827d4f4e73da2a", null ],
+    [ "chapterforge::set_log_verbosity", "namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394", null ],
+    [ "chapterforge::kHexPreviewBytes", "namespacechapterforge.html#a421f14d458b91dcb4c817daadf3db061", null ]
 ];

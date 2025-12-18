@@ -105,7 +105,9 @@ $(function(){initNavTree('aac__extractor_8cpp.html','',''); });
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ab2318cbe11d49af853e5fc8f470aad59" id="r_ab2318cbe11d49af853e5fc8f470aad59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="aac__extractor_8hpp.html#struct_aac_extract_result">AacExtractResult</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab2318cbe11d49af853e5fc8f470aad59">extract_adts_frames</a> (const std::vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memdesc:ab2318cbe11d49af853e5fc8f470aad59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract AAC frames from a raw ADTS buffer.  <br /></td></tr>
 <tr class="memitem:a61ab92535cf59e5acd57921f2e941261" id="r_a61ab92535cf59e5acd57921f2e941261"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="aac__extractor_8hpp.html#struct_aac_extract_result">AacExtractResult</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61ab92535cf59e5acd57921f2e941261">extract_from_mp4</a> (const std::string &amp;path)</td></tr>
+<tr class="memdesc:a61ab92535cf59e5acd57921f2e941261"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract AAC frames and related tables from an MP4/M4A source.  <br /></td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="ab2318cbe11d49af853e5fc8f470aad59" name="ab2318cbe11d49af853e5fc8f470aad59"></a>
@@ -123,6 +125,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Extract AAC frames from a raw ADTS buffer. </p>
+
 </div>
 </div>
 <a id="a61ab92535cf59e5acd57921f2e941261" name="a61ab92535cf59e5acd57921f2e941261"></a>
@@ -139,6 +143,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Extract AAC frames and related tables from an MP4/M4A source. </p>
+<p>Preferred when the input is already an MP4 container so we can reuse stsd/stts/stsc/stsz/stco and any meta/ilst payloads. </p>
 
 </div>
 </div>
