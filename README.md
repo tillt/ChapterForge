@@ -40,11 +40,11 @@ Back in the days, under the umbrella of the QuickTime.framework, Apple had relea
 
 Apple did support authoring tools - but that was way back in PowerPC times. The QTKit is long gone. There appears to be not a single open source tool in the market that would support a recent OS. There are tools like ffmpeg - it does even support chapter marks for MP4 - but - no images for those. The only tool in the market supporting images in chapter marks in 2025 appears to be Auphonic - commercial.
 
-All the existing libraries offered to application developers, even the commercial ones like Bento4 do not support chapter marks with images. AVFoundation, the framework Apple offers these days for media playback and authoring does fully support reading of MP4 chapter marks including images. Thus creating a player supporting that feature is trivial. The kicker here is, Apple does not support any way of authoring / writing / creating such files - none at all.
+All the existing libraries offered to application developers, even the big players like Bento4 do not support chapter marks with images. AVFoundation, the framework Apple offers these days for media playback and authoring does fully support reading of MP4 chapter marks including images. Thus creating a player supporting that feature is trivial. The kicker here is, Apple does not support any way of authoring / writing / creating such files - none at all.
 
 No one had a strong enough interest to change this, until today.
 
-The player I am tinkering with needs support for storing a track-list / set-list in the file itself. That way I can attribute those beautiful DJ sets and have neat track-mark thumbnails and descriptions on the player, persisted in the M4A file. A few thousand lines of code later, we have a new library based on no other works available which does the job for me - maybe also for you.
+My tinker project needs support for storing a track-list / set-list in the file itself. That way I can attribute those beautiful DJ sets and have neat track-mark thumbnails and descriptions on the player, persisted in the M4A file. A few thousand lines of code later, we have a new library based on no other works available which does the job for me - maybe also for you.
 
 
 ## Features
@@ -200,7 +200,7 @@ Output (ChapterForge)
 │  ├─ mvhd
 │  ├─ trak (audio, reused stbl when input is MP4/M4A)
 │  ├─ trak (chapter titles, tx3g)
-│  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco (padded samples)
+│  │  └─ stbl with stsd(tx3g) + stts/stsc/stsz/stco
 │  ├─ trak (chapter URLs, tx3g with href) [only if any chapter has `url` or `url_text`]
 │  │  └─ same structure as titles; text may be empty, href carries the URL
 │  ├─ trak (chapter images, jpeg)
@@ -244,7 +244,6 @@ trak (URLs, only if any chapter has `url`)
   stbl mirrors titles; samples carry `href` box:
     sample = [len][utf8 text (often empty)][href box]
     href box: size=0x1a, type='href', start=0, end=0x000a, url_len, url bytes, pad
-  Same sample count as chapters; no extra padding
 
 trak (images)
   tkhd flags=7, id=4, width/height set from first JPEG
@@ -263,7 +262,6 @@ trak (images)
   - default style: start=0, end=0, fontID=1, face=1, size=0x12, color=000000FF (RGBA: black, opaque)
   - font table: single entry “Sans-Serif”
 - Text samples: `[len][utf8 text][href box?]` where href box is `size=0x1a type=href start=0 end=0x000a len url pad`.
-- Padding: none. Each track has exactly one sample per chapter. This keeps QuickTime/Music in sync without duplicate chapters.
 - URL track (`tx3g` with `href`): same sample entry; samples may have empty text, `href` drives AVFoundation’s `extraAttributes[HREF]`.
 
 #### image as MJPEG sample entry
