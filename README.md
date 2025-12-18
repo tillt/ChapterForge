@@ -12,7 +12,6 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 - [Motivation and Backstory](#motivation-and-backstory)
 - [Features](#features)
 - [Platforms](#platforms)
-- [Building](#building)
   - [Example output to validate players](#example-output-to-validate-players)
 - [CLI Usage](#cli-usage)
 - [Chapters JSON format](#chapters-json-format)
@@ -22,6 +21,7 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
     - [Chapter track reference (titles, URLs, images)](#chapter-track-reference-titles-urls-images)
     - [title and url as tx3g sample entry](#title-and-url-as-tx3g-sample-entry)
     - [image as MJPEG sample entry](#image-as-mjpeg-sample-entry)
+- [Building](#building)
 - [Embedding API (C++)](#embedding-api-c)
 - [Minimal C++ usage (CLI equivalent)](#minimal-c-usage-cli-equivalent)
 - [Tests & Dependencies](#tests-dependencies)
@@ -72,23 +72,6 @@ URL text commonly is displayed nowhere.
 
 Note that AVFoundation supports all of those attributes for parsing and extraction - on macOS and iOS it is therefor trivial to support them.
 
-## Building
-
-```bash
-cmake -S . -B build
-cmake --build build
-```
-
-Targets:
-- `chapterforge` — static library
-- `chapterforge_cli` — command-line tool
-
-Notes:
-- Requires a compiler with C++20 support.
-- Fast-start is on by default.
-- Tests and docs are optional targets (see below).
-- To make AVFoundation surface `extraAttributes[HREF]` consistently, ChapterForge mirrors each URL into both the URL track and the title track sample text; players still show the title normally, while AVFoundation exposes the HREF.
-
 ### Example output to validate players
 
 We ship two reference files you can open in your favorite player to sanity-check chapter handling:
@@ -108,7 +91,10 @@ What to expect:
 
 Bonus: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a) — 50 chapters, small images, and per-chapter URLs to stress-test players.
 
+The following screenshot shows QuickTime.app on macOS playing our example file:
+
 ![QuickTime displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/quicktime_shows_chapters.png)
+
 
 ## CLI Usage
 
@@ -270,6 +256,25 @@ trak (images)
   ```bash
   ffmpeg -y -i your_art.jpg -pix_fmt yuvj420p your_art_420.jpg
   ```
+
+
+## Building
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+Targets:
+- `chapterforge` — static library
+- `chapterforge_cli` — command-line tool
+
+Notes:
+- Requires a compiler with C++20 support.
+- Fast-start is on by default.
+- Tests and docs are optional targets (see below).
+- To make AVFoundation surface `extraAttributes[HREF]` consistently, ChapterForge mirrors each URL into both the URL track and the title track sample text; players still show the title normally, while AVFoundation exposes the HREF.
+
 
 ## Embedding API (C++)
 
