@@ -21,11 +21,11 @@ HEADING_RE = re.compile(r"^(#{2,6})\s+(.*)$")
 
 
 def slugify(text: str) -> str:
-    # GitHub-style anchor slug
+    # GitHub-style anchor slug: strip punctuation, hyphenate spaces.
     slug = text.strip().lower()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"\s+", "-", slug)
-    # Collapse multiple dashes and trim edges to mirror GitHub anchors.
+    # Collapse multiple dashes and trim edges.
     slug = re.sub(r"-{2,}", "-", slug).strip("-")
     return slug
 
@@ -62,6 +62,9 @@ def build_toc(lines):
             continue
         clean = normalize_title(title)
         if not clean:
+            continue
+        # Avoid a self-link entry for the TOC heading itself.
+        if clean.lower() == "table of contents":
             continue
         indent = "  " * (level - 2)
         anchor = slugify(clean)
