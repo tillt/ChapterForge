@@ -32,3 +32,26 @@ bool write_mp4(const std::string &path, const AacExtractResult &aac,
                    &extra_text_tracks = {},
                const std::vector<uint8_t> *ilst_payload = nullptr,
                const std::vector<uint8_t> *meta_payload = nullptr);
+
+#ifdef CHAPTERFORGE_TESTING
+namespace chapterforge::testing {
+struct TestDurationInfo {
+    uint32_t audio_timescale = 0;
+    uint64_t audio_duration_ts = 0;
+    uint32_t audio_duration_ms = 0;
+    std::vector<uint32_t> text_ms;
+    std::vector<uint32_t> image_ms;
+};
+
+std::vector<uint32_t> build_audio_chunk_plan_for_test(uint32_t sample_count);
+std::vector<uint32_t> derive_chunk_plan_for_test(const std::vector<uint8_t> &stsc_payload,
+                                                 uint32_t sample_count);
+std::vector<uint8_t> encode_tx3g_sample_for_test(const ChapterTextSample &sample);
+std::vector<std::vector<uint8_t>> encode_tx3g_track_for_test(
+    const std::vector<ChapterTextSample> &chapters);
+TestDurationInfo compute_durations_for_test(
+    const AacExtractResult &aac, Mp4aConfig audio_cfg,
+    const std::vector<ChapterTextSample> &text_chapters,
+    const std::vector<ChapterImageSample> &image_chapters);
+}  // namespace chapterforge::testing
+#endif

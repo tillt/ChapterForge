@@ -316,6 +316,38 @@ static void log_inputs(const MetadataSet &metadata,
     }
 }
 
+#ifdef CHAPTERFORGE_TESTING
+namespace chapterforge::testing {
+std::vector<uint32_t> build_audio_chunk_plan_for_test(uint32_t sample_count) {
+    return build_audio_chunk_plan(sample_count);
+}
+std::vector<uint32_t> derive_chunk_plan_for_test(const std::vector<uint8_t> &stsc_payload,
+                                                 uint32_t sample_count) {
+    return derive_chunk_plan(stsc_payload, sample_count);
+}
+std::vector<uint8_t> encode_tx3g_sample_for_test(const ChapterTextSample &sample) {
+    return encode_tx3g_sample(sample);
+}
+std::vector<std::vector<uint8_t>> encode_tx3g_track_for_test(
+    const std::vector<ChapterTextSample> &chapters) {
+    return encode_tx3g_track(chapters);
+}
+TestDurationInfo compute_durations_for_test(
+    const AacExtractResult &aac, Mp4aConfig audio_cfg,
+    const std::vector<ChapterTextSample> &text_chapters,
+    const std::vector<ChapterImageSample> &image_chapters) {
+    auto info = compute_durations(aac, audio_cfg, text_chapters, image_chapters);
+    TestDurationInfo out;
+    out.audio_timescale = info.audio_timescale;
+    out.audio_duration_ts = info.audio_duration_ts;
+    out.audio_duration_ms = info.audio_duration_ms;
+    out.text_ms = info.text_ms;
+    out.image_ms = info.image_ms;
+    return out;
+}
+}  // namespace chapterforge::testing
+#endif
+
 // -----------------------------------------------------------------------------
 // Complete MP4 writer.
 // -----------------------------------------------------------------------------
