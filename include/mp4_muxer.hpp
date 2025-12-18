@@ -15,7 +15,7 @@
 #include <utility>
 
 #include "aac_extractor.hpp"
-#include "meta_builder.hpp"
+#include "metadata_set.hpp"
 #include "mp4_atoms.hpp"
 #include "mp4a_builder.hpp"
 #include "stbl_image_builder.hpp"
@@ -31,4 +31,5 @@ bool write_mp4(const std::string &path, const AacExtractResult &aac,
                const MetadataSet &meta, bool fast_start = true,
                const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
                    &extra_text_tracks = {},
-               const std::vector<uint8_t> *ilst_payload = nullptr);
+               const std::vector<uint8_t> *ilst_payload = nullptr,
+               const std::vector<uint8_t> *meta_payload = nullptr);

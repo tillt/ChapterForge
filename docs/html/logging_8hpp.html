@@ -92,19 +92,37 @@ $(function(){initNavTree('logging_8hpp.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;cerrno&gt;</code><br />
+<code>#include &lt;atomic&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
+<code>#include &lt;string_view&gt;</code><br />
 <code>#include &lt;system_error&gt;</code><br />
 </div>
 <p><a href="logging_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-namespaces" class="groupheader"><a id="namespaces" name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:chapterforge" id="r_chapterforge"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html">chapterforge</a></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a27996c24a6b7ce286928c9848130348d" id="r_a27996c24a6b7ce286928c9848130348d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a27996c24a6b7ce286928c9848130348d">CH_LOG</a>(level,  message)</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a78ba096769e30d7a539086e8cfae0099" id="r_a78ba096769e30d7a539086e8cfae0099"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> { <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a902b0d55fddef6f8d651fe1035b7d4bd">chapterforge::Error</a> = 0
+, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a56525ae64d370c0b448ac0d60710ef17">chapterforge::Warn</a> = 1
+, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a4059b0251f66a18cb56f544728796875">chapterforge::Info</a> = 2
+, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099aa603905470e2a5b8c13e96b579ef0dba">chapterforge::Debug</a> = 3
+ }</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:acfab47cf7dcb8f5395c5e12650bad394" id="r_acfab47cf7dcb8f5395c5e12650bad394"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394">chapterforge::set_log_verbosity</a> (<a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a> level)</td></tr>
+<tr class="memitem:a1a73d9a090e505500642b5ff5cdedcbf" id="r_a1a73d9a090e505500642b5ff5cdedcbf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a1a73d9a090e505500642b5ff5cdedcbf">chapterforge::get_log_verbosity</a> ()</td></tr>
+<tr class="memitem:ae356656da8cfa553a94ca0796321b804" id="r_ae356656da8cfa553a94ca0796321b804"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae356656da8cfa553a94ca0796321b804">ch_severity_for_tag</a> (std::string_view tag)</td></tr>
+<tr class="memitem:aa69285655d78d4739b7587c3891dce4f" id="r_aa69285655d78d4739b7587c3891dce4f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a> (const char *level)</td></tr>
 <tr class="memitem:a4d79605a02ae1c6dfd3454016983dd1d" id="r_a4d79605a02ae1c6dfd3454016983dd1d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d79605a02ae1c6dfd3454016983dd1d">ch_log_impl</a> (const char *level, const std::string &amp;msg, const char *file, int line, const char *func)</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
@@ -127,10 +145,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> {                                                                    \</div>
-<div class="line">        std::ostringstream _ch_log_ss;                                      \</div>
-<div class="line">        _ch_log_ss &lt;&lt; message;                                              \</div>
-<div class="line">        ch_log_impl(level, _ch_log_ss.str(), __FILE__, __LINE__, __func__); \</div>
+<div class="line">        if (<a class="code hl_function" href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a>(level)) {                                         \</div>
+<div class="line">            std::ostringstream _ch_log_ss;                                  \</div>
+<div class="line">            _ch_log_ss &lt;&lt; message;                                          \</div>
+<div class="line">            ch_log_impl(level, _ch_log_ss.str(), __FILE__, __LINE__,        \</div>
+<div class="line">                        __func__);                                          \</div>
+<div class="line">        }                                                                   \</div>
 <div class="line">    } <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="alogging_8hpp_html_aa69285655d78d4739b7587c3891dce4f"><div class="ttname"><a href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a></div><div class="ttdeci">bool ch_should_log(const char *level)</div><div class="ttdef"><b>Definition</b> logging.hpp:43</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -168,6 +190,56 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>func</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae356656da8cfa553a94ca0796321b804" name="ae356656da8cfa553a94ca0796321b804"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae356656da8cfa553a94ca0796321b804">&#9670;&#160;</a></span>ch_severity_for_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> ch_severity_for_tag </td>
+          <td>(</td>
+          <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>tag</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel constexpr">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa69285655d78d4739b7587c3891dce4f" name="aa69285655d78d4739b7587c3891dce4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa69285655d78d4739b7587c3891dce4f">&#9670;&#160;</a></span>ch_should_log()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ch_should_log </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>level</em></span></td><td>)</td>
+          <td></td>
         </tr>
       </table>
   </td>

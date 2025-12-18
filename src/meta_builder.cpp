@@ -11,6 +11,7 @@
 #include <cstring>
 #include <vector>
 
+#include "metadata_set.hpp"
 #include "mp4_atoms.hpp"
 
 // ILST item structure:

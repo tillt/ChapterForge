@@ -94,55 +94,18 @@ $(function(){initNavTree('stbl__image__builder_8hpp.html','',''); });
 <div class="textblock"><code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
+<code>#include &quot;<a class="el" href="chapter__image__sample_8hpp_source.html">chapter_image_sample.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mp4__atoms_8hpp_source.html">mp4_atoms.hpp</a>&quot;</code><br />
 </div>
 <p><a href="stbl__image__builder_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
-Classes</h2></td></tr>
-<tr class="memitem:ChapterImageSample_5Fstruct_5Fchapter_5Fimage_5Fsample" id="r_ChapterImageSample_5Fstruct_5Fchapter_5Fimage_5Fsample"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#struct_chapter_image_sample">ChapterImageSample</a></td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a65d537b8de7eec81bf400422f2c4b679" id="r_a65d537b8de7eec81bf400422f2c4b679"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a65d537b8de7eec81bf400422f2c4b679">build_image_stbl</a> (const std::vector&lt; <a class="el" href="#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;samples, uint32_t track_timescale, uint16_t width, uint16_t height, const std::vector&lt; uint32_t &gt; &amp;chunk_plan)</td></tr>
+<tr class="memitem:a6ac09ea089622f1267e3cac9e2b9e306" id="r_a6ac09ea089622f1267e3cac9e2b9e306"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6ac09ea089622f1267e3cac9e2b9e306">build_image_stbl</a> (const std::vector&lt; <a class="el" href="chapter__image__sample_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;samples, uint32_t track_timescale, uint16_t width, uint16_t height, const std::vector&lt; uint32_t &gt; &amp;chunk_plan, uint32_t total_ms=0)</td></tr>
 </table>
-<hr/><h2 id="header-inline_5Fclasses" class="groupheader">Class Documentation</h2>
-<a name="struct_chapter_image_sample" id="struct_chapter_image_sample"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#struct_chapter_image_sample">&#9670;&#160;</a></span>ChapterImageSample</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct ChapterImageSample</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>Represents a chapter image sample (JPEG).</p><ul>
-<li><span class="tt"><a class="el" href="#a60dfa8cc76d2b1a132342a9296b7cb0a">data</a></span>: Raw JPEG bytes for the chapter thumbnail/frame.</li>
-<li><span class="tt"><a class="el" href="#af558b07233c248f7ece59d932826fb84">start_ms</a></span>: Absolute start time in milliseconds. </li>
-</ul>
-</div><table class="fieldtable">
-<tr><th colspan="3">Class Members</th></tr>
-<tr><td class="fieldtype">
-<a id="a60dfa8cc76d2b1a132342a9296b7cb0a" name="a60dfa8cc76d2b1a132342a9296b7cb0a"></a>vector&lt; uint8_t &gt;</td>
-<td class="fieldname">
-data</td>
-<td class="fielddoc">
-</td></tr>
-<tr><td class="fieldtype">
-<a id="af558b07233c248f7ece59d932826fb84" name="af558b07233c248f7ece59d932826fb84"></a>uint32_t</td>
-<td class="fieldname">
-start_ms = 0</td>
-<td class="fielddoc">
-</td></tr>
-</table>
-
-</div>
-</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a65d537b8de7eec81bf400422f2c4b679" name="a65d537b8de7eec81bf400422f2c4b679"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65d537b8de7eec81bf400422f2c4b679">&#9670;&#160;</a></span>build_image_stbl()</h2>
+<a id="a6ac09ea089622f1267e3cac9e2b9e306" name="a6ac09ea089622f1267e3cac9e2b9e306"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6ac09ea089622f1267e3cac9e2b9e306">&#9670;&#160;</a></span>build_image_stbl()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,7 +113,7 @@ start_ms = 0</td>
         <tr>
           <td class="memname">std::unique_ptr&lt; <a class="el" href="class_atom.html">Atom</a> &gt; build_image_stbl </td>
           <td>(</td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>samples</em></span>, </td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="chapter__image__sample_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>samples</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -170,7 +133,12 @@ start_ms = 0</td>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; uint32_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>chunk_plan</em></span>&#160;)</td>
+          <td class="paramtype">const std::vector&lt; uint32_t &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>chunk_plan</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>total_ms</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -11,17 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "chapter_text_sample.hpp"
 #include "mp4_atoms.hpp"
-
-/// Represents a chapter title/URL sample.
-/// - `text`: UTF-8 chapter title (or URL text, if used on a URL track).
-/// - `href`: Optional hyperlink URL (tx3g modifier). Leave empty for plain title.
-/// - `start_ms`: Absolute start time in milliseconds.
-struct ChapterTextSample {
-    std::string text;       // UTF-8 text
-    std::string href;       // optional hyperlink URL (tx3g modifier)
-    uint32_t start_ms = 0;  // absolute start time in ms
-};
 
 std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samples,
                                       uint32_t track_timescale,

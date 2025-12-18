@@ -93,8 +93,10 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="mp4__muxer_8hpp_source.html">mp4_muxer.hpp</a>&quot;</code><br />
 <code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;chrono&gt;</code><br />
 <code>#include &lt;cstddef&gt;</code><br />
 <code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;iomanip&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
@@ -103,6 +105,7 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 <code>#include &quot;<a class="el" href="chapter__timing_8hpp_source.html">chapter_timing.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="logging_8hpp_source.html">logging.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mdat__writer_8hpp_source.html">mdat_writer.hpp</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="metadata__set_8hpp_source.html">metadata_set.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meta__builder_8hpp_source.html">meta_builder.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="moov__builder_8hpp_source.html">moov_builder.hpp</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mp4__atoms_8hpp_source.html">mp4_atoms.hpp</a>&quot;</code><br />
@@ -114,11 +117,11 @@ $(function(){initNavTree('mp4__muxer_8cpp.html','',''); });
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a284fe6b0559a47e2ceadbac38f3dcd31" id="r_a284fe6b0559a47e2ceadbac38f3dcd31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a284fe6b0559a47e2ceadbac38f3dcd31">write_mp4</a> (const std::string &amp;output_path, const <a class="el" href="aac__extractor_8hpp.html#struct_aac_extract_result">AacExtractResult</a> &amp;aac, const std::vector&lt; <a class="el" href="stbl__text__builder_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &amp;text_chapters, const std::vector&lt; <a class="el" href="stbl__image__builder_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;image_chapters, <a class="el" href="mp4a__builder_8hpp.html#struct_mp4a_config">Mp4aConfig</a> audio_cfg, const <a class="el" href="meta__builder_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;metadata, bool fast_start, const std::vector&lt; std::pair&lt; std::string, std::vector&lt; <a class="el" href="stbl__text__builder_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt; &gt; &amp;extra_text_tracks, const std::vector&lt; uint8_t &gt; *ilst_payload)</td></tr>
+<tr class="memitem:a6f746f1c24cddf14ce013d525795ed36" id="r_a6f746f1c24cddf14ce013d525795ed36"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6f746f1c24cddf14ce013d525795ed36">write_mp4</a> (const std::string &amp;output_path, const <a class="el" href="aac__extractor_8hpp.html#struct_aac_extract_result">AacExtractResult</a> &amp;aac, const std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &amp;text_chapters, const std::vector&lt; <a class="el" href="chapter__image__sample_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;image_chapters, <a class="el" href="mp4a__builder_8hpp.html#struct_mp4a_config">Mp4aConfig</a> audio_cfg, const <a class="el" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;metadata, bool fast_start, const std::vector&lt; std::pair&lt; std::string, std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt; &gt; &amp;extra_text_tracks, const std::vector&lt; uint8_t &gt; *ilst_payload, const std::vector&lt; uint8_t &gt; *meta_payload)</td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a284fe6b0559a47e2ceadbac38f3dcd31" name="a284fe6b0559a47e2ceadbac38f3dcd31"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a284fe6b0559a47e2ceadbac38f3dcd31">&#9670;&#160;</a></span>write_mp4()</h2>
+<a id="a6f746f1c24cddf14ce013d525795ed36" name="a6f746f1c24cddf14ce013d525795ed36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f746f1c24cddf14ce013d525795ed36">&#9670;&#160;</a></span>write_mp4()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -136,12 +139,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="stbl__text__builder_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>text_chapters</em></span>, </td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>text_chapters</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; <a class="el" href="stbl__image__builder_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>image_chapters</em></span>, </td>
+          <td class="paramtype">const std::vector&lt; <a class="el" href="chapter__image__sample_8hpp.html#struct_chapter_image_sample">ChapterImageSample</a> &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>image_chapters</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -151,7 +154,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="meta__builder_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>metadata</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> &amp;</td>          <td class="paramname"><span class="paramname"><em>metadata</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -161,12 +164,17 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; std::pair&lt; std::string, std::vector&lt; <a class="el" href="stbl__text__builder_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>extra_text_tracks</em></span>, </td>
+          <td class="paramtype">const std::vector&lt; std::pair&lt; std::string, std::vector&lt; <a class="el" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> &gt; &gt; &gt; &amp;</td>          <td class="paramname"><span class="paramname"><em>extra_text_tracks</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const std::vector&lt; uint8_t &gt; *</td>          <td class="paramname"><span class="paramname"><em>ilst_payload</em></span>&#160;)</td>
+          <td class="paramtype">const std::vector&lt; uint8_t &gt; *</td>          <td class="paramname"><span class="paramname"><em>ilst_payload</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::vector&lt; uint8_t &gt; *</td>          <td class="paramname"><span class="paramname"><em>meta_payload</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">

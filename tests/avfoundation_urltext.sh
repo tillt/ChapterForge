@@ -105,68 +105,38 @@ if ! command -v "$PYBIN" >/dev/null 2>&1; then
   PYBIN=python
 fi
 
-# Post-process: derive expected url_text and href strings from the JSON profile
-# so the test works for both href and no-href variants.
-TEXT_NEEDLES_STR=$("$PYBIN" - "$FILE_JSON" <<'PY'
-import json, sys
-p = sys.argv[1]
-with open(p, "r", encoding="utf-8") as f:
+# Post-process in Python: compare Swift log against JSON expectations
+"$PYBIN" - "$FILE_JSON" "$LOG_OUT" <<'PY'
+import json, sys, re
+json_path, log = sys.argv[1], sys.argv[2]
+with open(json_path, "r", encoding="utf-8") as f:
     j = json.load(f)
-outs = []
-for c in j.get("chapters", []):
-    ut = c.get("url_text", "")
-    if ut:
-        outs.append(ut)
-print("\n".join(outs))
+
+chapters = j.get("chapters", [])
+logtxt = log
+
+def fail(msg):
+    sys.stderr.write(msg + "\n")
+    sys.exit(1)
+
+# Validate url_text entries appear with their start PTS in the Swift dump
+for idx, c in enumerate(chapters):
+    url_text = c.get("url_text", "")
+    start_ms = c.get("start_ms", 0)
+    if not url_text:
+        continue
+    pts = start_ms / 1000.0
+    pattern = rf"pts={pts:.3f}.*payload=.*{re.escape(url_text)}"
+    if not re.search(pattern, logtxt, re.DOTALL):
+        fail(f"Missing url_text '{url_text}' at pts~{pts:.3f}s in Swift log")
+
+# Validate hrefs (if any) show up either in sample payload or extraAttributes dump
+hrefs = [c.get("url", "") for c in chapters if c.get("url")]
+for href in hrefs:
+    if href not in logtxt:
+        fail(f"Missing href '{href}' in Swift log")
+
+print("AVFoundation URL text OK (strings, timings, hrefs present)")
 PY
-)
-HREFS_STR=$("$PYBIN" - "$FILE_JSON" <<'PY'
-import json, sys
-p = sys.argv[1]
-with open(p, "r", encoding="utf-8") as f:
-    j = json.load(f)
-outs = []
-for c in j.get("chapters", []):
-    u = c.get("url", "")
-    if u:
-        outs.append(u)
-print("\n".join(outs))
-PY
-)
-IFS=$'\n' read -r -a TEXT_NEEDLES <<< "$TEXT_NEEDLES_STR"
-IFS=$'\n' read -r -a HREFS <<< "$HREFS_STR"
 
-found_text=false
-for n in "${TEXT_NEEDLES[@]}"; do
-  if echo "$LOG_OUT" | grep -q "$n"; then
-    found_text=true
-    break
-  fi
-done
-if [ "$found_text" = false ]; then
-  echo "Missing any url_text payload in AVF dump" >&2
-  exit 1
-fi
-
-found_href=false
-for h in "${HREFS[@]}"; do
-  if echo "$LOG_OUT" | grep -q "$h"; then
-    found_href=true
-    break
-  fi
-done
-if [ "${#HREFS[@]}" -gt 0 ]; then
-  found_href=false
-  for h in "${HREFS[@]}"; do
-    if echo "$LOG_OUT" | grep -q "$h"; then
-      found_href=true
-      break
-    fi
-  done
-  if [ "$found_href" = false ]; then
-    echo "Missing expected href payload" >&2
-    exit 1
-  fi
-fi
-
-echo "AVFoundation URL text OK (strings + hrefs present in log)"
+echo "AVFoundation URL text OK"

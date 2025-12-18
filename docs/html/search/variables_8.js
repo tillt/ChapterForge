@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['mdat_5fdata_0',['mdat_data',['../parser_8hpp.html#a5ab6448adebfef2b6c17770d660433d1',1,'ParsedMp4']]],
-  ['mdat_5fsize_1',['mdat_size',['../parser_8hpp.html#a4f0d3499ce09bb8283d3df410ccb29aa',1,'ParsedMp4']]]
+  ['meta_5fpayload_0',['meta_payload',['../aac__extractor_8hpp.html#a3e9c893aaab8caec2a776845080433f1',1,'AacExtractResult::meta_payload'],['../parser_8hpp.html#aa627fdc58a0b5db6a4679b22afa5685d',1,'ParsedMp4::meta_payload']]]
 ];

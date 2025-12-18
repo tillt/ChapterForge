@@ -22,6 +22,7 @@
 #include "chapter_timing.hpp"
 #include "logging.hpp"
 #include "mdat_writer.hpp"
+#include "metadata_set.hpp"
 #include "meta_builder.hpp"
 #include "moov_builder.hpp"
 #include "mp4_atoms.hpp"
@@ -200,13 +201,18 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const MetadataSet &metadata, bool fast_start,
                const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>>
                    &extra_text_tracks,
-               const std::vector<uint8_t> *ilst_payload) {
+               const std::vector<uint8_t> *ilst_payload,
+               const std::vector<uint8_t> *meta_payload) {
     CH_LOG("debug", "write_mp4 begin output=" << output_path << " audio_frames=" << aac.frames.size()
                                               << " titles=" << text_chapters.size()
                                              << " images=" << image_chapters.size()
                                              << " extra_text_tracks=" << extra_text_tracks.size()
                                              << " fast_start=" << fast_start);
     auto now = [] { return std::chrono::steady_clock::now(); };
+    auto meta_is_empty = [](const MetadataSet &m) {
+        return m.title.empty() && m.artist.empty() && m.album.empty() && m.genre.empty() &&
+               m.year.empty() && m.comment.empty() && m.cover.empty();
+    };
     auto t_start = now();
 
     CH_LOG("debug", "metadata title='" << metadata.title << "' artist='" << metadata.artist
@@ -515,8 +521,15 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     // 7) Build udta/meta/ilst block for cover art, metadata, and chpl.
     //
     std::unique_ptr<Atom> meta_atom;
-    if (ilst_payload && !ilst_payload->empty()) {
-        meta_atom = build_meta_atom_from_ilst(*ilst_payload);
+    if (meta_is_empty(metadata)) {
+        if (meta_payload && !meta_payload->empty()) {
+            meta_atom = Atom::create("meta");
+            meta_atom->payload = *meta_payload;
+        } else if (ilst_payload && !ilst_payload->empty()) {
+            meta_atom = build_meta_atom_from_ilst(*ilst_payload);
+        } else {
+            meta_atom = build_meta_atom(metadata);
+        }
     } else {
         meta_atom = build_meta_atom(metadata);
     }
