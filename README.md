@@ -95,6 +95,10 @@ The following screenshot shows QuickTime.app on macOS playing our example file:
 
 ![QuickTime displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/quicktime_shows_chapters.png)
 
+A screenshot showing Music.app on macOS playing our example file:
+
+![Music.app displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/music_shows_chapters.png)
+
 
 ## CLI Usage
 
