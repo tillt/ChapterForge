@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -34,6 +33,8 @@
 #include "trak_builder.hpp"
 #include "udta_builder.hpp"
 
+using chapterforge::hex_prefix;
+
 namespace {
 
 constexpr uint32_t kAacSamplesPerFrame = 1024;     // AAC LC = 1024 PCM samples/frame
@@ -45,22 +46,8 @@ constexpr uint16_t kDefaultImageHeight = 720;
 constexpr uint32_t kDefaultAudioChunk = 21;        // chunk size used for derived plans
 constexpr uint32_t kStscHeaderSize = 8;
 constexpr uint32_t kStscEntrySize = 12;
-constexpr size_t kHexPreviewBytes = 8;
 
 }  // namespace
-
-static std::string hex_prefix(const std::vector<uint8_t> &data, size_t max_len = kHexPreviewBytes) {
-    std::ostringstream oss;
-    oss << std::hex << std::setfill('0');
-    const size_t limit = std::min(max_len, data.size());
-    for (size_t i = 0; i < limit; ++i) {
-        oss << std::setw(2) << static_cast<unsigned int>(data[i]);
-        if (i + 1 != limit) {
-            oss << ' ';
-        }
-    }
-    return oss.str();
-}
 
 // Build an audio chunking plan. We previously mirrored the golden sample’s 22/21 pattern; this
 // version uses a consistent chunk size to see if Apple players remain happy without the quirky

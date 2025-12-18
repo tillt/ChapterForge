@@ -8,13 +8,17 @@
 
 #pragma once
 
-#include <cerrno>
+#include <algorithm>
 #include <atomic>
+#include <cerrno>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <vector>
+#include <cstdint>
 
 namespace chapterforge {
 
@@ -23,6 +27,22 @@ enum class LogVerbosity { Error = 0, Warn = 1, Info = 2, Debug = 3 };
 // Set/get global logging verbosity.
 void set_log_verbosity(LogVerbosity level);
 LogVerbosity get_log_verbosity();
+
+// Hex-preview helper used in debug logs to dump a short prefix of binary blobs (e.g. JPEG).
+inline constexpr size_t kHexPreviewBytes = 8;
+inline std::string hex_prefix(const std::vector<uint8_t>& data,
+                              size_t max_len = kHexPreviewBytes) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+    const size_t limit = std::min(max_len, data.size());
+    for (size_t i = 0; i < limit; ++i) {
+        oss << std::setw(2) << static_cast<unsigned int>(data[i]);
+        if (i + 1 != limit) {
+            oss << ' ';
+        }
+    }
+    return oss.str();
+}
 
 }  // namespace chapterforge
 
