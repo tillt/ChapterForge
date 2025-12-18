@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['frames_0',['frames',['../aac__extractor_8hpp.html#ab104368c1cbd7c387a82b65d50ecb7b4',1,'AacExtractResult']]]
+  ['extras_0',['extras',['../mp4__muxer_8cpp.html#a42604ff93650aa2ced254e139d67b27b',1,'PreparedTextTracks']]],
+  ['extras_5fmeta_1',['extras_meta',['../mp4__muxer_8cpp.html#ab218aafdea04a710bc7112be241360bf',1,'PreparedTextTracks']]]
 ];

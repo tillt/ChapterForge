@@ -91,13 +91,17 @@ $(function(){initNavTree('logging_8hpp.html','',''); });
   <div class="headertitle"><div class="title">logging.hpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;cerrno&gt;</code><br />
+<div class="textblock"><code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;atomic&gt;</code><br />
+<code>#include &lt;cerrno&gt;</code><br />
+<code>#include &lt;iomanip&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
 <code>#include &lt;sstream&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;string_view&gt;</code><br />
 <code>#include &lt;system_error&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;cstdint&gt;</code><br />
 </div>
 <p><a href="logging_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -121,9 +125,14 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:acfab47cf7dcb8f5395c5e12650bad394" id="r_acfab47cf7dcb8f5395c5e12650bad394"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394">chapterforge::set_log_verbosity</a> (<a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a> level)</td></tr>
 <tr class="memitem:a1a73d9a090e505500642b5ff5cdedcbf" id="r_a1a73d9a090e505500642b5ff5cdedcbf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a1a73d9a090e505500642b5ff5cdedcbf">chapterforge::get_log_verbosity</a> ()</td></tr>
+<tr class="memitem:ac2d77650a478aa95f0827d4f4e73da2a" id="r_ac2d77650a478aa95f0827d4f4e73da2a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#ac2d77650a478aa95f0827d4f4e73da2a">chapterforge::hex_prefix</a> (const std::vector&lt; uint8_t &gt; &amp;data, size_t max_len=<a class="el" href="namespacechapterforge.html#a421f14d458b91dcb4c817daadf3db061">kHexPreviewBytes</a>)</td></tr>
 <tr class="memitem:ae356656da8cfa553a94ca0796321b804" id="r_ae356656da8cfa553a94ca0796321b804"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae356656da8cfa553a94ca0796321b804">ch_severity_for_tag</a> (std::string_view tag)</td></tr>
 <tr class="memitem:aa69285655d78d4739b7587c3891dce4f" id="r_aa69285655d78d4739b7587c3891dce4f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a> (const char *level)</td></tr>
 <tr class="memitem:a4d79605a02ae1c6dfd3454016983dd1d" id="r_a4d79605a02ae1c6dfd3454016983dd1d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d79605a02ae1c6dfd3454016983dd1d">ch_log_impl</a> (const char *level, const std::string &amp;msg, const char *file, int line, const char *func)</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a421f14d458b91dcb4c817daadf3db061" id="r_a421f14d458b91dcb4c817daadf3db061"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a421f14d458b91dcb4c817daadf3db061">chapterforge::kHexPreviewBytes</a> = 8</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="a27996c24a6b7ce286928c9848130348d" name="a27996c24a6b7ce286928c9848130348d"></a>
@@ -152,7 +161,7 @@ Functions</h2></td></tr>
 <div class="line">                        __func__);                                          \</div>
 <div class="line">        }                                                                   \</div>
 <div class="line">    } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="alogging_8hpp_html_aa69285655d78d4739b7587c3891dce4f"><div class="ttname"><a href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a></div><div class="ttdeci">bool ch_should_log(const char *level)</div><div class="ttdef"><b>Definition</b> logging.hpp:43</div></div>
+<div class="ttc" id="alogging_8hpp_html_aa69285655d78d4739b7587c3891dce4f"><div class="ttname"><a href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a></div><div class="ttdeci">bool ch_should_log(const char *level)</div><div class="ttdef"><b>Definition</b> logging.hpp:63</div></div>
 </div><!-- fragment -->
 </div>
 </div>
