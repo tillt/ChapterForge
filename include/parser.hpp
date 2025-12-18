@@ -50,3 +50,27 @@ uint64_t read_u64(std::istream &in);
 
 // Main parsing entry point.
 std::optional<ParsedMp4> parse_mp4(const std::string &path);
+
+namespace parser_detail {
+struct TrackParseResult {
+    uint32_t handler_type = 0;
+    uint32_t timescale = 0;
+    uint64_t duration = 0;
+    uint32_t sample_count = 0;
+    std::vector<uint8_t> stsd;
+    std::vector<uint8_t> stts;
+    std::vector<uint8_t> stsc;
+    std::vector<uint8_t> stsz;
+    std::vector<uint8_t> stco;
+};
+}  // namespace parser_detail
+
+#ifdef CHAPTERFORGE_TESTING
+// Test-only wrappers that allow unit tests to exercise lower-level parsing.
+std::optional<parser_detail::TrackParseResult> parse_trak_for_test(std::istream &in,
+                                                                   uint64_t payload_size,
+                                                                   uint64_t file_size,
+                                                                   bool &force_fallback);
+void parse_moov_for_test(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_size,
+                         ParsedMp4 &out, uint32_t &best_audio_samples, bool &force_fallback);
+#endif
