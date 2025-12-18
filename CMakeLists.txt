@@ -301,6 +301,15 @@ add_test(
     NAME chapter_start_rules
     COMMAND chapter_start_rules
 )
+add_executable(helper_unit
+    tests/helper_unit.cpp
+)
+target_link_libraries(helper_unit PRIVATE chapterforge)
+target_include_directories(helper_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(
+    NAME helper_unit
+    COMMAND helper_unit "${TESTDATA_DIR}"
+)
 
 # macOS Framework packaging (uses the existing static lib).
 if(APPLE AND ENABLE_MACOS_FRAMEWORK)
@@ -331,6 +340,7 @@ if(APPLE AND ENABLE_MACOS_FRAMEWORK)
     )
 endif()
 set_tests_properties(chapter_start_rules PROPERTIES LABELS "unit")
+set_tests_properties(helper_unit PROPERTIES FIXTURES_REQUIRED assets LABELS "unit")
 
 add_test(
     NAME image_missing_first
