@@ -38,8 +38,10 @@ namespace {
 
 constexpr uint32_t kAacSamplesPerFrame = 1024;     // AAC LC = 1024 PCM samples/frame
 constexpr uint32_t kChapterTimescale = 1000;       // ms resolution for text/image tracks
-constexpr uint16_t kDefaultImageWidth = 1280;      // fallback when JPEG lacks size
-constexpr uint16_t kDefaultImageHeight = 720;      // fallback when JPEG lacks size
+// Fallback when a JPEG carries no decodable size: mirror the 1280x720 track dimensions
+// seen in the Apple-authored “golden” samples to keep player expectations aligned.
+constexpr uint16_t kDefaultImageWidth = 1280;
+constexpr uint16_t kDefaultImageHeight = 720;
 constexpr uint32_t kDefaultAudioChunk = 21;        // chunk size used for derived plans
 constexpr uint32_t kStscHeaderSize = 8;
 constexpr uint32_t kStscEntrySize = 12;

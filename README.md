@@ -232,10 +232,10 @@ trak (titles)
     minf/nmhd
       stbl
         stsd -> tx3g sample entry (see "title and url as tx3g sample")
-        stts: one entry per sample, sample_count = chapter_count + 2 (padded)
+        stts: one entry per sample, sample_count = chapter_count
         stsc: 3 entries, 1 sample per chunk
-        stsz: per-sample sizes (chapter_count + 2)
-        stco: chunk offsets (chapter_count + 2)
+        stsz: per-sample sizes (chapter_count)
+        stco: chunk offsets (chapter_count)
 
 trak (URLs, only if any chapter has `url`)
   tkhd flags=1, alt_group=1, id=3
@@ -244,7 +244,7 @@ trak (URLs, only if any chapter has `url`)
   stbl mirrors titles; samples carry `href` box:
     sample = [len][utf8 text (often empty)][href box]
     href box: size=0x1a, type='href', start=0, end=0x000a, url_len, url bytes, pad
-  Same padding rule: chapter_count + 2 samples, matching stts/stsc/stsz/stco
+  Same sample count as chapters; no extra padding
 
 trak (images)
   tkhd flags=7, id=4, width/height set from first JPEG
@@ -263,8 +263,8 @@ trak (images)
   - default style: start=0, end=0, fontID=1, face=1, size=0x12, color=000000FF (RGBA: black, opaque)
   - font table: single entry “Sans-Serif”
 - Text samples: `[len][utf8 text][href box?]` where href box is `size=0x1a type=href start=0 end=0x000a len url pad`.
-- Padding: we duplicate the final text/URL samples twice so Apple players see `chapter_count + 2` samples (mirrors golden behavior).
-- URL track (`tx3g` with `href`): same padding rule and sample entry; samples may have empty text, `href` drives AVFoundation’s `extraAttributes[HREF]`.
+- Padding: none. Each track has exactly one sample per chapter. This keeps QuickTime/Music in sync without duplicate chapters.
+- URL track (`tx3g` with `href`): same sample entry; samples may have empty text, `href` drives AVFoundation’s `extraAttributes[HREF]`.
 
 #### image as MJPEG sample entry
 
