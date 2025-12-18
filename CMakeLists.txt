@@ -330,17 +330,9 @@ add_executable(parser_unit
     tests/parser_unit.cpp
 )
 target_link_libraries(parser_unit PRIVATE chapterforge)
+target_compile_definitions(parser_unit PRIVATE CHAPTERFORGE_TESTING)
 add_test(NAME parser_unit COMMAND parser_unit)
 set_tests_properties(parser_unit PROPERTIES LABELS "unit")
-
-add_executable(parser_detail_unit
-    tests/parser_detail_unit.cpp
-)
-target_link_libraries(parser_detail_unit PRIVATE chapterforge)
-target_include_directories(parser_detail_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_definitions(parser_detail_unit PRIVATE CHAPTERFORGE_TESTING)
-add_test(NAME parser_detail_unit COMMAND parser_detail_unit)
-set_tests_properties(parser_detail_unit PROPERTIES LABELS "unit")
 
 # macOS Framework packaging (uses the existing static lib).
 if(APPLE AND ENABLE_MACOS_FRAMEWORK)
