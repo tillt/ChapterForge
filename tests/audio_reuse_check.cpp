@@ -1,5 +1,5 @@
-// Compares the audio media payload extracted via stsz/stco/stsc between.
-// input and output MP4/M4A files.
+// Compares the audio media payload extracted via stsz/stco/stsc between input and output MP4/M4A
+// files.
 #include <cstdint>
 #include <fstream>
 #include <iostream>

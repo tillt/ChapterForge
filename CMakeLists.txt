@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 # Base version is "dev"; Git tags override when present.
 project(ChapterForge VERSION 0.0.0 LANGUAGES CXX)
 
+include(CTest)
+
 set(CHAPTERFORGE_VERSION_STRING "dev")
 set(CHAPTERFORGE_VERSION_DEV TRUE)
 set(CHAPTERFORGE_GIT_HASH "unknown")
@@ -79,6 +81,7 @@ set(CHAPTERFORGE_CORE_SOURCES
     src/dinf_builder.cpp
     src/hdlr_builder.cpp
     src/jpeg_entry_builder.cpp
+    src/jpeg_info.cpp
     src/logging.cpp
     src/mdat_writer.cpp
     src/mdhd_builder.cpp
@@ -94,7 +97,6 @@ set(CHAPTERFORGE_CORE_SOURCES
     src/parser.cpp
     src/smhd_builder.cpp
     src/stbl_audio_builder.cpp
-    src/stbl_builder.cpp
     src/stbl_image_builder.cpp
     src/stbl_metadata_builder.cpp
     src/stbl_text_builder.cpp
@@ -117,6 +119,9 @@ target_include_directories(chapterforge PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 target_link_libraries(chapterforge PUBLIC nlohmann_json::nlohmann_json)
+if(BUILD_TESTING)
+    target_compile_definitions(chapterforge PRIVATE CHAPTERFORGE_TESTING)
+endif()
 file(GENERATE
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/chapterforge_version.hpp
     CONTENT "//
@@ -301,6 +306,25 @@ add_test(
     NAME chapter_start_rules
     COMMAND chapter_start_rules
 )
+add_executable(helper_unit
+    tests/helper_unit.cpp
+)
+target_link_libraries(helper_unit PRIVATE chapterforge)
+target_include_directories(helper_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(
+    NAME helper_unit
+    COMMAND helper_unit "${TESTDATA_DIR}"
+)
+add_executable(writer_unit
+    tests/writer_unit.cpp
+)
+target_link_libraries(writer_unit PRIVATE chapterforge)
+target_compile_definitions(writer_unit PRIVATE CHAPTERFORGE_TESTING)
+target_include_directories(writer_unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_test(
+    NAME writer_unit
+    COMMAND writer_unit
+)
 
 # macOS Framework packaging (uses the existing static lib).
 if(APPLE AND ENABLE_MACOS_FRAMEWORK)
@@ -331,6 +355,8 @@ if(APPLE AND ENABLE_MACOS_FRAMEWORK)
     )
 endif()
 set_tests_properties(chapter_start_rules PROPERTIES LABELS "unit")
+set_tests_properties(helper_unit PROPERTIES FIXTURES_REQUIRED assets LABELS "unit")
+set_tests_properties(writer_unit PROPERTIES LABELS "unit")
 
 add_test(
     NAME image_missing_first

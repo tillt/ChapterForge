@@ -33,8 +33,15 @@ struct AacExtractResult {
     std::vector<uint8_t> ilst_payload;
 };
 
+/**
+ * @brief Extract AAC frames from a raw ADTS buffer.
+ */
 AacExtractResult extract_adts_frames(const std::vector<uint8_t> &data);
 
-// Extract AAC frames and related tables from an MP4/M4A source (preferred.
-// when the input is already an MP4 container)
+/**
+ * @brief Extract AAC frames and related tables from an MP4/M4A source.
+ *
+ * Preferred when the input is already an MP4 container so we can reuse stsd/stts/stsc/stsz/stco and
+ * any meta/ilst payloads.
+ */
 std::optional<AacExtractResult> extract_from_mp4(const std::string &path);

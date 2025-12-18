@@ -19,7 +19,6 @@
 #include "mp4_atoms.hpp"
 #include "nmhd_builder.hpp"
 #include "smhd_builder.hpp"
-#include "stbl_builder.hpp"  // for the stbl you pass in
 #include "tkhd_builder.hpp"
 #include "vmhd_builder.hpp"
 

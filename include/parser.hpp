@@ -17,15 +17,15 @@
 
 struct Mp4AtomInfo {
     uint32_t type;
-    uint64_t size;    // total atom size
-    uint64_t offset;  // offset in file
+    uint64_t size;    // total atom size.
+    uint64_t offset;  // offset in file.
 };
 
 // Minimal parsed MP4 data for our authoring needs.
 struct ParsedMp4 {
     bool used_fallback_stbl = false;  // true if stbl atoms were recovered via flat scan.
 
-    // ilst metadata atom payload (optional)
+    // ilst metadata atom payload (optional).
     std::vector<uint8_t> ilst_payload;
     // raw meta payload (version/flags/reserved + children) to allow verbatim reuse.
     std::vector<uint8_t> meta_payload;
