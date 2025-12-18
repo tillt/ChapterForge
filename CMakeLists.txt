@@ -79,6 +79,7 @@ set(CHAPTERFORGE_CORE_SOURCES
     src/dinf_builder.cpp
     src/hdlr_builder.cpp
     src/jpeg_entry_builder.cpp
+    src/jpeg_info.cpp
     src/logging.cpp
     src/mdat_writer.cpp
     src/mdhd_builder.cpp
