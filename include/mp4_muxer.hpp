@@ -23,8 +23,7 @@
 
 // Complete MP4 writer: takes raw AAC (ADTS) bytes, chapter text/image samples,
 // audio config, and metadata.
-// Exposed for embedding; prefer the higher-level helper in chapterforge.hpp.
-// when linking externally.
+// Exposed for embedding; prefer the higher-level helper in chapterforge.hpp when linking externally.
 bool write_mp4(const std::string &path, const AacExtractResult &aac,
                const std::vector<ChapterTextSample> &text_chapters,
                const std::vector<ChapterImageSample> &image_chapters, Mp4aConfig audio_cfg,

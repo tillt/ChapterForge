@@ -128,7 +128,7 @@ static bool grab_atom_from_buffer(const std::vector<uint8_t> &buf, const char *f
     return false;
 }
 
-// Naive scan for ilst payload (fallback when structured parse misses it)
+// Naive scan for ilst payload (fallback when structured parse misses it).
 static std::vector<uint8_t> scan_ilst_payload(const std::string &path) {
     std::ifstream f(path, std::ios::binary);
     if (!f.is_open()) {

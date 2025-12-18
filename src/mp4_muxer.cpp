@@ -58,9 +58,9 @@ static std::string hex_prefix(const std::vector<uint8_t> &data, size_t max_len =
     return oss.str();
 }
 
-// Build an audio chunking plan. We previously mirrored the golden sample’s.
-// 22/21 pattern; this version uses a consistent chunk size to see if Apple.
-// players remain happy without the quirky first-chunk bump.
+// Build an audio chunking plan. We previously mirrored the golden sample’s 22/21 pattern; this
+// version uses a consistent chunk size to see if Apple players remain happy without the quirky
+// first-chunk bump.
 static std::vector<uint32_t> build_audio_chunk_plan(uint32_t sample_count) {
     std::vector<uint32_t> chunks;
     if (sample_count == 0) {
@@ -443,10 +443,9 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     std::unique_ptr<Atom> stbl_audio;
     if (!aac.stsd_payload.empty() && !aac.stts_payload.empty() && !aac.stsc_payload.empty() &&
         !aac.stsz_payload.empty() && !aac.stco_payload.empty()) {
-        // Golden-aligned path: reuse the source audio stbl verbatim. Rebuilding.
-        // stbl for audio triggered decoding issues in Apple players even when.
-        // the fields were “correct” per spec, so we preserve the original.
-        // structure whenever we can.
+        // Golden-aligned path: reuse the source audio stbl verbatim. Rebuilding stbl for audio
+        // triggered decoding issues in Apple players even when the fields were “correct” per spec,
+        // so we preserve the original structure whenever we can.
         CH_LOG("debug", "Reusing source audio stbl");
         stbl_audio = build_audio_stbl_raw(aac.stsd_payload, aac.stts_payload, aac.stsc_payload,
                                           aac.stsz_payload, aac.stco_payload);
@@ -548,10 +547,10 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     auto t_write_end = t_moov_end;
 
     if (fast_start) {
-        // moov before mdat: compute offsets assuming mdat follows immediately.
-        // after moov. This fast-start layout mirrors the golden file and keeps.
-        // Apple players happy; other valid layouts have shown sporadic playback.
-        // regressions despite being spec-compliant.
+        // Moov before mdat: compute offsets assuming mdat follows immediately after moov.
+        // This fast-start layout mirrors the golden file and keeps Apple players happy;
+        // other valid layouts have shown sporadic playback regressions despite being
+        // spec-compliant.
         uint64_t payload_start =
             static_cast<uint64_t>(ftyp_size) + moov->size() + 8;  // +8 for mdat header
         MdatOffsets mdat_offs =
@@ -576,9 +575,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
         patch_all_stco(moov.get(), mdat_offs, true);
         t_layout_end = now();
 
-        // Optional leading free box before moov (padding). Size/placement.
-        // mirrors the golden sample to avoid surprising atom ordering.
-        // sensitivities.
+        // Optional leading free box before moov (padding). Size/placement mirrors the golden sample
+        // to avoid surprising atom ordering sensitivities.
         {
             auto free = Atom::create("free");
             free->payload.resize(1024, 0);
