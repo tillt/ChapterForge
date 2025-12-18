@@ -20,23 +20,13 @@
 
 namespace {
 
+using parser_detail::TrackParseResult;
+
 constexpr uint64_t kAtomHeaderSize = 8;
 constexpr uint64_t kFullBoxBaseHeader = 12;  // size+type+version/flags
 constexpr uint64_t kMetaReservedBytes = 4;
 constexpr uint64_t kHdlrMinPayload = 20;
 constexpr uint64_t kMaxAtomPayload = 512 * 1024 * 1024;  // 512 MB safety bound
-
-struct TrackParseResult {
-    uint32_t handler_type = 0;
-    uint32_t timescale = 0;
-    uint64_t duration = 0;
-    uint32_t sample_count = 0;
-    std::vector<uint8_t> stsd;
-    std::vector<uint8_t> stts;
-    std::vector<uint8_t> stsc;
-    std::vector<uint8_t> stsz;
-    std::vector<uint8_t> stco;
-};
 
 static bool is_printable_fourcc(uint32_t type) {
     for (int i = 0; i < 4; ++i) {
@@ -720,3 +710,15 @@ std::optional<ParsedMp4> parse_mp4(const std::string &path) {
                                            << " total=" << ms_total);
     return out;
 }
+
+#ifdef CHAPTERFORGE_TESTING
+std::optional<TrackParseResult> parse_trak_for_test(std::istream &in, uint64_t payload_size,
+                                                    uint64_t file_size, bool &force_fallback) {
+    return parse_trak(in, payload_size, file_size, force_fallback);
+}
+
+void parse_moov_for_test(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_size,
+                         ParsedMp4 &out, uint32_t &best_audio_samples, bool &force_fallback) {
+    parse_moov(in, atom, file_size, out, best_audio_samples, force_fallback);
+}
+#endif
