@@ -25,7 +25,23 @@ def slugify(text: str) -> str:
     slug = text.strip().lower()
     slug = re.sub(r"[^\w\s-]", "", slug)
     slug = re.sub(r"\s+", "-", slug)
+    # Collapse multiple dashes and trim edges to mirror GitHub anchors.
+    slug = re.sub(r"-{2,}", "-", slug).strip("-")
     return slug
+
+
+def normalize_title(title: str) -> str:
+    """
+    Remove Markdown markup (links/images/inline code) so the TOC entries and
+    anchors stay valid even if the heading itself is a link.
+    """
+    # Strip images entirely.
+    title = re.sub(r"!\[[^\]]*\]\([^)]+\)", "", title)
+    # Replace links [text](url) with just the link text.
+    title = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", title)
+    # Drop inline code markers.
+    title = title.replace("`", "")
+    return title.strip()
 
 
 def parse_headings(lines):
@@ -44,9 +60,12 @@ def build_toc(lines):
         # Skip the H1 title
         if level == 1:
             continue
+        clean = normalize_title(title)
+        if not clean:
+            continue
         indent = "  " * (level - 2)
-        anchor = slugify(title)
-        items.append(f"{indent}- [{title}](#{anchor})")
+        anchor = slugify(clean)
+        items.append(f"{indent}- [{clean}](#{anchor})")
     toc = ["## Table of Contents"] + items
     return "\n".join(toc) + "\n"
 

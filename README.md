@@ -22,6 +22,7 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
     - [title and url as tx3g sample entry](#title-and-url-as-tx3g-sample-entry)
     - [image as MJPEG sample entry](#image-as-mjpeg-sample-entry)
 - [Building](#building)
+- [API Documentation on GitHub](#api-documentation-on-github)
 - [Embedding API (C++)](#embedding-api-c)
 - [Minimal C++ usage (CLI equivalent)](#minimal-c-usage-cli-equivalent)
 - [Tests & Dependencies](#tests-dependencies)
@@ -91,14 +92,15 @@ What to expect:
 
 Bonus: [ChapterForge Bonus Track M4A File](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/example/output_small50.m4a) — 50 chapters, small images, and per-chapter URLs to stress-test players.
 
-The following screenshot shows QuickTime.app on macOS playing our example file:
+QuickTime.app on macOS playing our example file:
 
 ![QuickTime displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/quicktime_shows_chapters.png)
 
-A screenshot showing Music.app on macOS playing our example file:
+Music.app on macOS playing our example file:
 
 ![Music.app displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/music_shows_chapters.png)
 
+Do you have more players showing our example file? Would be great to see them.
 
 ## CLI Usage
 
@@ -278,6 +280,9 @@ Notes:
 - Fast-start is on by default.
 - Tests and docs are optional targets (see below).
 - To make AVFoundation surface `extraAttributes[HREF]` consistently, ChapterForge mirrors each URL into both the URL track and the title track sample text; players still show the title normally, while AVFoundation exposes the HREF.
+
+
+## [API Documentation on GitHub](https://tillt.github.io/ChapterForge/)
 
 
 ## Embedding API (C++)
