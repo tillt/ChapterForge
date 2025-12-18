@@ -12,6 +12,11 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 - [Features](#features)
 - [Platforms](#platforms)
   - [Example output to validate players](#example-output-to-validate-players)
+- [Installing](#installing)
+  - [macOS (Homebrew tap)](#macos-homebrew-tap)
+  - [Windows](#windows)
+  - [Linux](#linux)
+  - [vcpkg (overlay port)](#vcpkg-overlay-port)
 - [CLI Usage](#cli-usage)
 - [Chapters JSON format](#chapters-json-format)
 - [Output](#output)
@@ -28,6 +33,7 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 - [Contributing](#contributing)
 - [Advanced Usage](#advanced-usage)
   - [Objective-C++ Example](#objective-c-example)
+  - [Release notes](#release-notes)
 - [Disclaimer](#disclaimer)
 <!-- TOC END -->
 
@@ -100,6 +106,49 @@ Music.app on macOS playing our example file:
 ![Music.app displays chapters](https://github.com/tillt/ChapterForge/raw/refs/heads/main/docs/diagrams/music_shows_chapters.png)
 
 Do you have more players showing our example file? Would be great to see them.
+
+
+## Installing
+
+### macOS (Homebrew tap)
+
+```bash
+brew tap tillt/chapterforge https://github.com/tillt/ChapterForge.git
+brew install --HEAD tillt/chapterforge/chapterforge
+```
+
+This builds the CLI and static library (and the universal macOS framework when enabled). Head-only for now; tags will become bottled when we ship stable releases.
+
+### Windows
+
+- **Prebuilt release zip**: grab the latest draft/release artifact from GitHub. Inside you’ll find `chapterforge_cli.exe`, `chapterforge.lib`, and `include/`.
+- **Build from source** (MSVC):
+  ```bash
+  cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+  cmake --build build --config Release
+  ```
+  Outputs land in `build/Release/`.
+
+### Linux
+
+- **Prebuilt tarball**: download the release tarball (`chapterforge-<ver>-ubuntu-latest.tar.gz`) and use `chapterforge_cli` + `libchapterforge.a` under `include/`.
+- **Build from source**:
+  ```bash
+  cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+  cmake --build build
+  ```
+  Ensure dependencies: CMake, a C++20 compiler, and the test tools if you run `ctest` (mp4info/mp4dump from Bento4, AtomicParsley, xxd, gpac/mp4box optional).
+
+### vcpkg (overlay port)
+
+Add this repo as an overlay (or copy `ports/chapterforge` into your overlays), then:
+
+```bash
+vcpkg install chapterforge
+```
+
+The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterforge/portfile.cmake` when you bump versions.
+
 
 ## CLI Usage
 
@@ -469,6 +518,12 @@ void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
 ```
 
 If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse. Leaving `meta` empty will reuse the source `ilst` when available.
+
+### Release notes
+
+When cutting a release, also:
+- Update the vcpkg overlay pin (`REF`/`SHA512` in `ports/chapterforge/portfile.cmake`).
+- Bump the Homebrew tap if you’re tagging a version (currently head-only).
 
 
 ## Disclaimer
