@@ -350,16 +350,16 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
-struct MuxStatus { bool ok; std::string message; }; // status + message on failure
+struct Status { bool ok; std::string message; }; // status + message on failure
 
 // JSON-driven (reuses ilst unless JSON metadata overrides it)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::string& chapter_json_path,
                           const std::string& output_path,
                           bool fast_start = true);
 
 // Titles + images (metadata provided)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const std::vector<ChapterImageSample>& image_chapters,
                           const MetadataSet& metadata,
@@ -367,27 +367,27 @@ MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
                           bool fast_start = true);
 
 // Titles + images (metadata reused from source)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const std::vector<ChapterImageSample>& image_chapters,
                           const std::string& output_path,
                           bool fast_start = true);
 
 // Titles only (metadata provided)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const MetadataSet& metadata,
                           const std::string& output_path,
                           bool fast_start = true);
 
 // Titles only (metadata reused from source)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const std::string& output_path,
                           bool fast_start = true);
 
 // Titles + URLs + images (metadata provided)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const std::vector<ChapterTextSample>& url_chapters,
                           const std::vector<ChapterImageSample>& image_chapters,
@@ -396,7 +396,7 @@ MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
                           bool fast_start = true);
 
 // Titles + URLs + images (metadata reused from source)
-MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+Status mux_file_to_m4a(const std::string& input_audio_path,
                           const std::vector<ChapterTextSample>& text_chapters,
                           const std::vector<ChapterTextSample>& url_chapters,
                           const std::vector<ChapterImageSample>& image_chapters,

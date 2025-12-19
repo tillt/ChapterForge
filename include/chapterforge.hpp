@@ -28,7 +28,7 @@ namespace chapterforge {
  * When `ok == true`, `message` is empty. On failure, `message` contains a short description of
  * what went wrong (e.g., failure to parse input, open files, or validate images).
  */
-struct MuxStatus {
+struct Status {
     bool ok{false};
     std::string message;
 };
@@ -41,25 +41,25 @@ struct MuxStatus {
 std::string version_string();  ///< @ingroup api
 
 /// Mux AAC input + chapter/text/image metadata into an M4A file (JSON driven).
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::string &chapter_json_path, const std::string &output_path,
                           bool fast_start = true);  ///< @ingroup api
 
 /// Mux AAC input + in-memory chapter data (titles + images + metadata).
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::vector<ChapterTextSample> &text_chapters,
                           const std::vector<ChapterImageSample> &image_chapters,
                           const MetadataSet &metadata, const std::string &output_path,
                           bool fast_start = true);  ///< @ingroup api
 
 /// @overload status-returning without images.
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::vector<ChapterTextSample> &text_chapters,
                           const MetadataSet &metadata, const std::string &output_path,
                           bool fast_start = true);  ///< @ingroup api
 
 /// @overload status-returning without metadata (reuses source ilst if any).
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::vector<ChapterTextSample> &text_chapters,
                           const std::vector<ChapterImageSample> &image_chapters,
                           const std::string &output_path,
@@ -76,7 +76,7 @@ MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
  * @param output_path Destination .m4a file.
  * @param fast_start When true, places moov ahead of mdat.
  */
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::vector<ChapterTextSample> &text_chapters,
                           const std::vector<ChapterTextSample> &url_chapters,
                           const std::vector<ChapterImageSample> &image_chapters,
@@ -94,12 +94,31 @@ MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
  * @param output_path Destination .m4a file.
  * @param fast_start When true, places moov ahead of mdat.
  */
-MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+Status mux_file_to_m4a(const std::string &input_audio_path,
                           const std::vector<ChapterTextSample> &text_chapters,
                           const std::vector<ChapterTextSample> &url_chapters,
                           const std::vector<ChapterImageSample> &image_chapters,
                           const MetadataSet &metadata, const std::string &output_path,
                           bool fast_start = true);  ///< @ingroup api
+
+/**
+ * @brief Parse an existing M4A/MP4 file and return its chapter data.
+ *
+ * Extracts chapter titles, optional URL samples (tx3g + href), chapter images (MJPEG samples),
+ * and top-level metadata (ilst if present). Does not decode audio.
+ *
+ * On success `status.ok == true` and the vectors are filled; on failure `status.ok == false` and
+ * `status.message` contains a short description.
+ */
+struct ReadResult {
+    Status status;
+    std::vector<ChapterTextSample> titles;
+    std::vector<ChapterTextSample> urls;
+    std::vector<ChapterImageSample> images;
+    MetadataSet metadata;
+};
+
+ReadResult read_m4a(const std::string &path);  ///< @ingroup api
 
 /// @}
 

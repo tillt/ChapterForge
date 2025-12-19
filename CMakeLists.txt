@@ -334,6 +334,14 @@ target_compile_definitions(parser_unit PRIVATE CHAPTERFORGE_TESTING)
 add_test(NAME parser_unit COMMAND parser_unit)
 set_tests_properties(parser_unit PROPERTIES LABELS "unit")
 
+add_executable(read_unit
+    tests/read_api_unit.cpp
+)
+target_link_libraries(read_unit PRIVATE chapterforge)
+target_compile_definitions(read_unit PRIVATE CHAPTERFORGE_TESTING TESTDATA_DIR=\"${TESTDATA_DIR}\")
+add_test(NAME read_unit COMMAND read_unit)
+set_tests_properties(read_unit PROPERTIES LABELS "unit")
+
 # macOS Framework packaging (uses the existing static lib).
 if(APPLE AND ENABLE_MACOS_FRAMEWORK)
     # Stage a static framework bundle that wraps the built static library.

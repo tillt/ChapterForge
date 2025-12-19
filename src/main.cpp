@@ -29,7 +29,10 @@ int main(int argc, char **argv) {
     if (argc < 4 || argc > 7) {
         std::cerr << "ChapterForge " << CHAPTERFORGE_VERSION_DISPLAY << "\n"
                   << "Copyright (c) 2025 Till Toenshoff\n\n"
-                  << "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a> "
+                  << "usage for reading:\n"
+				  << "  chapterforge <input.m4a> [--log-level warn|info|debug]\n"
+                  << "usage for writing:\n"
+				  << "  chapterforge <input.aac> <chapters.json> <output.m4a> "
                   << "[--faststart] [--log-level warn|info|debug]\n"
                   << "Options:\n"
                   << "  --faststart         Place 'moov' atom before 'mdat' for faster playback start.\n"

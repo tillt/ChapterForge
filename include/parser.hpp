@@ -21,9 +21,29 @@ struct Mp4AtomInfo {
     uint64_t offset;  // offset in file.
 };
 
+namespace parser_detail {
+struct TrackParseResult {
+    uint32_t track_id = 0;
+    uint32_t tkhd_flags = 0;
+    uint32_t handler_type = 0;
+    std::string handler_name;
+    uint32_t timescale = 0;
+    uint64_t duration = 0;
+    uint32_t sample_count = 0;
+    std::vector<uint8_t> stsd;
+    std::vector<uint8_t> stts;
+    std::vector<uint8_t> stsc;
+    std::vector<uint8_t> stsz;
+    std::vector<uint8_t> stco;
+};
+}  // namespace parser_detail
+
 // Minimal parsed MP4 data for our authoring needs.
 struct ParsedMp4 {
     bool used_fallback_stbl = false;  // true if stbl atoms were recovered via flat scan.
+
+    // All parsed tracks (audio/text/video).
+    std::vector<parser_detail::TrackParseResult> tracks;
 
     // ilst metadata atom payload (optional).
     std::vector<uint8_t> ilst_payload;
@@ -50,20 +70,6 @@ uint64_t read_u64(std::istream &in);
 
 // Main parsing entry point.
 std::optional<ParsedMp4> parse_mp4(const std::string &path);
-
-namespace parser_detail {
-struct TrackParseResult {
-    uint32_t handler_type = 0;
-    uint32_t timescale = 0;
-    uint64_t duration = 0;
-    uint32_t sample_count = 0;
-    std::vector<uint8_t> stsd;
-    std::vector<uint8_t> stts;
-    std::vector<uint8_t> stsc;
-    std::vector<uint8_t> stsz;
-    std::vector<uint8_t> stco;
-};
-}  // namespace parser_detail
 
 #ifdef CHAPTERFORGE_TESTING
 // Test-only wrappers that allow unit tests to exercise lower-level parsing.
