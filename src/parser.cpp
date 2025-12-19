@@ -249,11 +249,11 @@ static void parse_meta_payload(std::istream &in, uint64_t size, ParsedMp4 &out) 
     in.seekg(end);
 }
 
-// Parse hdlr to retrieve handler type. Expects payload size (box size minus 8).
-static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
+// Parse hdlr to retrieve handler type and name. Expects payload size (box size minus 8).
+static void parse_hdlr(std::istream &in, uint64_t payload_size, TrackParseResult &track) {
     if (payload_size < kHdlrMinPayload) {  // too small to contain required fields
         skip(in, payload_size);
-        return 0;
+        return;
     }
 
     uint8_t version = in.get();
@@ -264,14 +264,49 @@ static uint32_t parse_hdlr(std::istream &in, uint64_t payload_size) {
 
     // pre_defined + handler_type.
     skip(in, 4);
-    uint32_t handler_type = read_u32(in);
+    track.handler_type = read_u32(in);
 
-    // skip reserved + name.
+    // reserved (12 bytes), then a Pascal-style or null-terminated UTF-8 name.
     uint64_t consumed = 1 + 3 + 4 + 4 + 12;
+    std::string name;
+    if (payload_size > consumed) {
+        uint64_t name_len = payload_size - consumed;
+        name.resize(static_cast<size_t>(name_len));
+        in.read(name.data(), (std::streamsize)name_len);
+        // Trim any trailing nulls.
+        while (!name.empty() && name.back() == '\0') {
+            name.pop_back();
+        }
+    }
+    track.handler_name = std::move(name);
+}
+
+// Parse tkhd to retrieve track id and flags.
+static void parse_tkhd(std::istream &in, uint64_t payload_size, TrackParseResult &track) {
+    if (payload_size < 20) {
+        skip(in, payload_size);
+        return;
+    }
+    uint8_t version = in.get();
+    uint8_t flags_bytes[3];
+    in.read((char *)flags_bytes, 3);
+    track.tkhd_flags = (flags_bytes[0] << 16) | (flags_bytes[1] << 8) | flags_bytes[2];
+    // creation + modification time (version dependent); skip 8 or 16 bytes.
+    uint64_t consumed = 1 + 3;
+    if (version == 1) {
+        skip(in, 16);
+        consumed += 16;
+    } else {
+        skip(in, 8);
+        consumed += 8;
+    }
+    track.track_id = read_u32(in);
+    skip(in, 4);  // reserved
+    consumed += 8;  // track_id + reserved
+    // remainder not needed here.
     if (payload_size > consumed) {
         skip(in, payload_size - consumed);
     }
-    return handler_type;
 }
 
 // Parse stbl children (stsd, stts, stsc, stsz, stco)
@@ -386,8 +421,11 @@ static bool parse_mdia(std::istream &in, uint64_t mpay, uint64_t mdia_end,
             CH_LOG("debug", "  mdhd timescale=" << track.timescale
                                                 << " duration=" << track.duration);
         } else if (m.type == ('h' << 24 | 'd' << 16 | 'l' << 8 | 'r')) {
-            track.handler_type = parse_hdlr(in, m.size);
-            CH_LOG("debug", "  hdlr=" << std::hex << track.handler_type << std::dec);
+            // Pass the payload size (box size minus header) so the handler name length is read
+            // correctly.
+            parse_hdlr(in, mpay_child, track);
+            CH_LOG("debug", "  hdlr=" << std::hex << track.handler_type << std::dec
+                                      << " name=" << track.handler_name);
         } else if (m.type == ('m' << 24 | 'i' << 16 | 'n' << 8 | 'f')) {
             // find stbl.
             uint64_t minf_end = (uint64_t)in.tellg() + mpay_child;
@@ -472,7 +510,9 @@ static std::optional<TrackParseResult> parse_trak(std::istream &in, uint64_t c_p
         uint64_t tpay = tchild.size - 8;
         CH_LOG("debug", " trak child=" << fourcc_to_string(tchild.type) << " size=" << tchild.size);
 
-        if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
+        if (tchild.type == ('t' << 24 | 'k' << 16 | 'h' << 8 | 'd')) {
+            parse_tkhd(in, tpay, track);
+        } else if (tchild.type == ('m' << 24 | 'd' << 16 | 'i' << 8 | 'a')) {
             CH_LOG("debug", "trak: entering mdia");
             uint64_t mdia_end = (uint64_t)in.tellg() + tpay;
             parse_mdia(in, tpay, mdia_end, track, force_fallback);
@@ -579,13 +619,14 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
                         best_audio_samples = track.sample_count;
                         out.audio_timescale = track.timescale;
                         out.audio_duration = track.duration;
-                        out.stsd = std::move(track.stsd);
-                        out.stts = std::move(track.stts);
-                        out.stsc = std::move(track.stsc);
-                        out.stsz = std::move(track.stsz);
-                        out.stco = std::move(track.stco);
+                        out.stsd = track.stsd;
+                        out.stts = track.stts;
+                        out.stsc = track.stsc;
+                        out.stsz = track.stsz;
+                        out.stco = track.stco;
                     }
                 }
+                out.tracks.push_back(track);
                 break;
             }
             default:

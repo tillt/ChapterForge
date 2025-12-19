@@ -155,14 +155,22 @@ The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterfo
 
 ```bash
 ./chapterforge_cli <input.m4a|.mp4|.aac> <chapters.json> <output.m4a>
+./chapterforge_cli <input.m4a> [--export-jpegs DIR]                     # read/extract
 ./chapterforge_cli --version
 ```
 
-- If the input already has metadata (`ilst`), it is reused by default.
-- Fast-start is on by default.
+- Write mode: mux chapters/images/URLs into an output M4A. If the input already has metadata (`ilst`),
+  it is reused by default. Fast-start is off by default; enable with `--faststart`.
+- Read mode: extract metadata, chapter titles/URLs/URL-texts, and images from an M4A. The JSON emitted
+  matches the writer input format and is always printed to stdout. Use `--export-jpegs DIR` to dump cover
+  + chapter images alongside the JSON and reference them in the output.
 - Logging: defaults to version + warnings/errors. Set verbosity when embedding via
   `chapterforge::set_log_verbosity(LogVerbosity::Warn|Info|Debug)` or pass `--log-level warn|info|debug`
   to the CLI. Debug-only logs stay hidden unless you raise the level.
+- Options:
+  - `--faststart` (write) Place `moov` before `mdat` for faster playback start.
+  - `--log-level LEVEL`   One of `warn|info|debug`.
+  - `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
 
 
 ## Chapters JSON format
@@ -350,56 +358,58 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
-// JSON helper (titles/images/urls/metadata pulled from JSON)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::string& chapter_json_path,
-                     const std::string& output_path,
-                     bool fast_start = true);
+struct Status { bool ok; std::string message; }; // status + message on failure
 
-// Titles + images, metadata provided
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// JSON-driven (reuses ilst unless JSON metadata overrides it)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::string& chapter_json_path,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + images, metadata reused from source (or empty)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + images (metadata provided)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles only, metadata provided (no image track)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + images (metadata reused from source)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles only, metadata reused from source (no image track)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles only (metadata provided)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + URLs + images, metadata provided (URL track optional)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterTextSample>& url_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles only (metadata reused from source)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + URLs + images, metadata reused from source (URL track optional)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterTextSample>& url_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + URLs + images (metadata provided)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterTextSample>& url_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
+
+// Titles + URLs + images (metadata reused from source)
+Status mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterTextSample>& url_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 ```
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.
@@ -421,8 +431,9 @@ int main(int argc, char** argv) {
   std::string chapters= argv[2];
   std::string output  = argv[3];
 
-  if (!chapterforge::mux_file_to_m4a(input, chapters, output)) {
-    std::cerr << "chapterforge: failed to write output\n";
+  auto status = chapterforge::mux_file_to_m4a(input, chapters, output);
+  if (!status.ok) {
+    std::cerr << "chapterforge: failed to write output: " << status.message << "\n";
     return 1;
   }
   std::cout << "Wrote: " << output << "\n";
@@ -431,6 +442,20 @@ int main(int argc, char** argv) {
 ```
 
 Use the higher-level overload if you already have chapters/material in memory and don’t want to read JSON on disk.
+
+Reading (extract chapters/metadata/images) mirrors the CLI read mode:
+
+```c++
+auto res = chapterforge::read_m4a("input.m4a");
+if (!res.status.ok) {
+  std::cerr << "read failed: " << res.status.message << "\n";
+} else {
+  std::cout << "title: " << res.metadata.title << "\n";
+  for (const auto& c : res.titles) {
+    std::cout << c.start_ms << " ms -> " << c.text << " href=" << c.href << "\n";
+  }
+}
+```
 
 
 ## Tests & Dependencies
