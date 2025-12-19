@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build](https://img.shields.io/badge/build-CMake-blue.svg)](#building)
 [![Tests](https://img.shields.io/badge/tests-ctest-orange.svg)](#tests)
+[![Docs](https://img.shields.io/badge/docs-Doxygen-blueviolet.svg)](https://tillt.github.io/ChapterForge/)
+[![Homebrew](https://img.shields.io/badge/homebrew-tap-181717.svg)](#macos-homebrew)
 
 ChapterForge is a library and CLI to mux chapters (text and optional images) into AAC/M4A files while preserving metadata and handling Apple-compatible chapter tracks.
 
