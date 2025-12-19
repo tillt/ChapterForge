@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: Atom Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('class_atom.html','','class_atom-members'); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -107,9 +121,9 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a217353390d4802214aec03f88bcb0093" id="r_a217353390d4802214aec03f88bcb0093"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a217353390d4802214aec03f88bcb0093">create</a> (const char t[4])</td></tr>
-<tr class="memitem:ac9bae9d0d9f1462a1a8b717d8d3ee63f" id="r_ac9bae9d0d9f1462a1a8b717d8d3ee63f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac9bae9d0d9f1462a1a8b717d8d3ee63f">create</a> (uint32_t t)</td></tr>
-<tr class="memitem:a7e1c89a320c5d15df2914da4af0bb1bf" id="r_a7e1c89a320c5d15df2914da4af0bb1bf"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7e1c89a320c5d15df2914da4af0bb1bf">create</a> (const std::string &amp;t)</td></tr>
+<tr class="memitem:aaf913d6f918f84d7f55db889b2ffafbe" id="r_aaf913d6f918f84d7f55db889b2ffafbe"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaf913d6f918f84d7f55db889b2ffafbe">create</a> (const char t[4])</td></tr>
+<tr class="memitem:a85a24faa0416341a556df06fe9d7db13" id="r_a85a24faa0416341a556df06fe9d7db13"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85a24faa0416341a556df06fe9d7db13">create</a> (uint32_t t)</td></tr>
+<tr class="memitem:a69361e25d01b03ca6de6762ad944f57a" id="r_a69361e25d01b03ca6de6762ad944f57a"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a69361e25d01b03ca6de6762ad944f57a">create</a> (const std::string &amp;t)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -212,8 +226,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a217353390d4802214aec03f88bcb0093" name="a217353390d4802214aec03f88bcb0093"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a217353390d4802214aec03f88bcb0093">&#9670;&#160;</a></span>create() <span class="overload">[1/3]</span></h2>
+<a id="aaf913d6f918f84d7f55db889b2ffafbe" name="aaf913d6f918f84d7f55db889b2ffafbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf913d6f918f84d7f55db889b2ffafbe">&#9670;&#160;</a></span>create() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -237,8 +251,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="a7e1c89a320c5d15df2914da4af0bb1bf" name="a7e1c89a320c5d15df2914da4af0bb1bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e1c89a320c5d15df2914da4af0bb1bf">&#9670;&#160;</a></span>create() <span class="overload">[2/3]</span></h2>
+<a id="a69361e25d01b03ca6de6762ad944f57a" name="a69361e25d01b03ca6de6762ad944f57a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69361e25d01b03ca6de6762ad944f57a">&#9670;&#160;</a></span>create() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -262,8 +276,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ac9bae9d0d9f1462a1a8b717d8d3ee63f" name="ac9bae9d0d9f1462a1a8b717d8d3ee63f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9bae9d0d9f1462a1a8b717d8d3ee63f">&#9670;&#160;</a></span>create() <span class="overload">[3/3]</span></h2>
+<a id="a85a24faa0416341a556df06fe9d7db13" name="a85a24faa0416341a556df06fe9d7db13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85a24faa0416341a556df06fe9d7db13">&#9670;&#160;</a></span>create() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -412,9 +426,8 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<hr/>The documentation for this class was generated from the following file:<ul>
 <li>/Users/till/Development/chapterforge/chapterforge/include/<a class="el" href="mp4__atoms_8hpp_source.html">mp4_atoms.hpp</a></li>
-<li>/Users/till/Development/chapterforge/chapterforge/src/<a class="el" href="mp4__atoms_8cpp.html">mp4_atoms.cpp</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->

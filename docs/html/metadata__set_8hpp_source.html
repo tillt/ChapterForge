@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/metadata_set.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('metadata__set_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -104,25 +118,25 @@ $(function(){initNavTree('metadata__set_8hpp_source.html','',''); });
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span></div>
-<div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html">   19</a></span><span class="keyword">struct </span><a class="code hl_struct" href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a> {</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#acbc81c75d02c28d496329514230e767b">   20</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#acbc81c75d02c28d496329514230e767b">title</a>;          </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">   21</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">artist</a>;         </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#abd16bd278f38ec1327274ab5ff27ef85">   22</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#abd16bd278f38ec1327274ab5ff27ef85">album</a>;          </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">   23</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">genre</a>;          </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#abc91afa2af0b4c48ded5c13a86389369">   24</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#abc91afa2af0b4c48ded5c13a86389369">year</a>;           </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#a6fd9f96c9d0d1c1f57b099321ec659e4">   25</a></span>    std::string <a class="code hl_variable" href="metadata__set_8hpp.html#a6fd9f96c9d0d1c1f57b099321ec659e4">comment</a>;        </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="metadata__set_8hpp.html#ab8bb9a1bb70e9966b1cf57edf9175f59">   26</a></span>    std::vector&lt;uint8_t&gt; <a class="code hl_variable" href="metadata__set_8hpp.html#ab8bb9a1bb70e9966b1cf57edf9175f59">cover</a>; </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
+<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="group__api.html">   16</a></span><span class="keyword">struct </span><a class="code hl_struct" href="group__api.html#struct_metadata_set">MetadataSet</a> {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="group__api.html#acbc81c75d02c28d496329514230e767b">   17</a></span>    std::string <a class="code hl_variable" href="group__api.html#acbc81c75d02c28d496329514230e767b">title</a>;          </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="group__api.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">   18</a></span>    std::string <a class="code hl_variable" href="group__api.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">artist</a>;         </div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="group__api.html#abd16bd278f38ec1327274ab5ff27ef85">   19</a></span>    std::string <a class="code hl_variable" href="group__api.html#abd16bd278f38ec1327274ab5ff27ef85">album</a>;          </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno"><a class="line" href="group__api.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">   20</a></span>    std::string <a class="code hl_variable" href="group__api.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">genre</a>;          </div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="group__api.html#abc91afa2af0b4c48ded5c13a86389369">   21</a></span>    std::string <a class="code hl_variable" href="group__api.html#abc91afa2af0b4c48ded5c13a86389369">year</a>;           </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="group__api.html#a6fd9f96c9d0d1c1f57b099321ec659e4">   22</a></span>    std::string <a class="code hl_variable" href="group__api.html#a6fd9f96c9d0d1c1f57b099321ec659e4">comment</a>;        </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="group__api.html#ab8bb9a1bb70e9966b1cf57edf9175f59">   23</a></span>    std::vector&lt;uint8_t&gt; <a class="code hl_variable" href="group__api.html#ab8bb9a1bb70e9966b1cf57edf9175f59">cover</a>; </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>};</div>
 </div>
-<div class="ttc" id="ametadata__set_8hpp_html_a6fd9f96c9d0d1c1f57b099321ec659e4"><div class="ttname"><a href="metadata__set_8hpp.html#a6fd9f96c9d0d1c1f57b099321ec659e4">MetadataSet::comment</a></div><div class="ttdeci">std::string comment</div><div class="ttdoc">Comment/description.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:25</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_a9b380c1b3cd16bb9dbbd2c40ac70b27a"><div class="ttname"><a href="metadata__set_8hpp.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">MetadataSet::genre</a></div><div class="ttdeci">std::string genre</div><div class="ttdoc">Genre tag.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:23</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_aa7adbd14b7cf1f5bf8cd88fe116a363e"><div class="ttname"><a href="metadata__set_8hpp.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">MetadataSet::artist</a></div><div class="ttdeci">std::string artist</div><div class="ttdoc">Artist/author.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:21</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_ab8bb9a1bb70e9966b1cf57edf9175f59"><div class="ttname"><a href="metadata__set_8hpp.html#ab8bb9a1bb70e9966b1cf57edf9175f59">MetadataSet::cover</a></div><div class="ttdeci">std::vector&lt; uint8_t &gt; cover</div><div class="ttdoc">JPEG cover data.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:26</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_abc91afa2af0b4c48ded5c13a86389369"><div class="ttname"><a href="metadata__set_8hpp.html#abc91afa2af0b4c48ded5c13a86389369">MetadataSet::year</a></div><div class="ttdeci">std::string year</div><div class="ttdoc">Year (free-form).</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:24</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_abd16bd278f38ec1327274ab5ff27ef85"><div class="ttname"><a href="metadata__set_8hpp.html#abd16bd278f38ec1327274ab5ff27ef85">MetadataSet::album</a></div><div class="ttdeci">std::string album</div><div class="ttdoc">Album/collection.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:22</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_acbc81c75d02c28d496329514230e767b"><div class="ttname"><a href="metadata__set_8hpp.html#acbc81c75d02c28d496329514230e767b">MetadataSet::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Track title.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:20</div></div>
-<div class="ttc" id="ametadata__set_8hpp_html_struct_metadata_set"><div class="ttname"><a href="metadata__set_8hpp.html#struct_metadata_set">MetadataSet</a></div><div class="ttdoc">Top-level metadata container for ilst.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:19</div></div>
+<div class="ttc" id="agroup__api_html_a6fd9f96c9d0d1c1f57b099321ec659e4"><div class="ttname"><a href="group__api.html#a6fd9f96c9d0d1c1f57b099321ec659e4">MetadataSet::comment</a></div><div class="ttdeci">std::string comment</div><div class="ttdoc">Comment/description.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:22</div></div>
+<div class="ttc" id="agroup__api_html_a9b380c1b3cd16bb9dbbd2c40ac70b27a"><div class="ttname"><a href="group__api.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a">MetadataSet::genre</a></div><div class="ttdeci">std::string genre</div><div class="ttdoc">Genre tag.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:20</div></div>
+<div class="ttc" id="agroup__api_html_aa7adbd14b7cf1f5bf8cd88fe116a363e"><div class="ttname"><a href="group__api.html#aa7adbd14b7cf1f5bf8cd88fe116a363e">MetadataSet::artist</a></div><div class="ttdeci">std::string artist</div><div class="ttdoc">Artist/author.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:18</div></div>
+<div class="ttc" id="agroup__api_html_ab8bb9a1bb70e9966b1cf57edf9175f59"><div class="ttname"><a href="group__api.html#ab8bb9a1bb70e9966b1cf57edf9175f59">MetadataSet::cover</a></div><div class="ttdeci">std::vector&lt; uint8_t &gt; cover</div><div class="ttdoc">JPEG cover data.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:23</div></div>
+<div class="ttc" id="agroup__api_html_abc91afa2af0b4c48ded5c13a86389369"><div class="ttname"><a href="group__api.html#abc91afa2af0b4c48ded5c13a86389369">MetadataSet::year</a></div><div class="ttdeci">std::string year</div><div class="ttdoc">Year (free-form).</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:21</div></div>
+<div class="ttc" id="agroup__api_html_abd16bd278f38ec1327274ab5ff27ef85"><div class="ttname"><a href="group__api.html#abd16bd278f38ec1327274ab5ff27ef85">MetadataSet::album</a></div><div class="ttdeci">std::string album</div><div class="ttdoc">Album/collection.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:19</div></div>
+<div class="ttc" id="agroup__api_html_acbc81c75d02c28d496329514230e767b"><div class="ttname"><a href="group__api.html#acbc81c75d02c28d496329514230e767b">MetadataSet::title</a></div><div class="ttdeci">std::string title</div><div class="ttdoc">Track title.</div><div class="ttdef"><b>Definition</b> metadata_set.hpp:17</div></div>
+<div class="ttc" id="agroup__api_html_struct_metadata_set"><div class="ttname"><a href="group__api.html#struct_metadata_set">MetadataSet</a></div><div class="ttdef"><b>Definition</b> metadata_set.hpp:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

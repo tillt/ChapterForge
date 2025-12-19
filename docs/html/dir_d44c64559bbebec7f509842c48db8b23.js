@@ -1,8 +1,8 @@
 var dir_d44c64559bbebec7f509842c48db8b23 =
 [
     [ "aac_extractor.hpp", "aac__extractor_8hpp.html", "aac__extractor_8hpp" ],
-    [ "chapter_image_sample.hpp", "chapter__image__sample_8hpp.html", "chapter__image__sample_8hpp" ],
-    [ "chapter_text_sample.hpp", "chapter__text__sample_8hpp.html", "chapter__text__sample_8hpp" ],
+    [ "chapter_image_sample.hpp", "chapter__image__sample_8hpp.html", null ],
+    [ "chapter_text_sample.hpp", "chapter__text__sample_8hpp.html", null ],
     [ "chapter_timing.hpp", "chapter__timing_8hpp.html", "chapter__timing_8hpp" ],
     [ "chapterforge.hpp", "chapterforge_8hpp.html", "chapterforge_8hpp" ],
     [ "dinf_builder.hpp", "dinf__builder_8hpp.html", "dinf__builder_8hpp" ],
@@ -14,7 +14,7 @@ var dir_d44c64559bbebec7f509842c48db8b23 =
     [ "mdhd_builder.hpp", "mdhd__builder_8hpp.html", "mdhd__builder_8hpp" ],
     [ "mdia_builder.hpp", "mdia__builder_8hpp.html", "mdia__builder_8hpp" ],
     [ "meta_builder.hpp", "meta__builder_8hpp.html", "meta__builder_8hpp" ],
-    [ "metadata_set.hpp", "metadata__set_8hpp.html", "metadata__set_8hpp" ],
+    [ "metadata_set.hpp", "metadata__set_8hpp.html", null ],
     [ "minf_builder.hpp", "minf__builder_8hpp.html", "minf__builder_8hpp" ],
     [ "moov_builder.hpp", "moov__builder_8hpp.html", "moov__builder_8hpp" ],
     [ "mp4_atoms.hpp", "mp4__atoms_8hpp.html", "mp4__atoms_8hpp" ],

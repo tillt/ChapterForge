@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['platforms_0',['Platforms',['../index.html#autotoc_md4',1,'']]],
-  ['players_1',['Example output to validate players',['../index.html#autotoc_md6',1,'']]]
+  ['layout_0',['Reference Layout',['../index.html#autotoc_md3',1,'']]],
+  ['linux_1',['Linux',['..//Users/till/Development/chapterforge/chapterforge/README.md#autotoc_md14',1,'']]]
 ];

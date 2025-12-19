@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['json_20format_0',['Chapters JSON format',['../index.html#autotoc_md8',1,'']]]
+  ['homebrew_20tap_0',['macOS (Homebrew tap)',['..//Users/till/Development/chapterforge/chapterforge/README.md#autotoc_md12',1,'']]]
 ];

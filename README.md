@@ -33,7 +33,6 @@ ChapterForge is a library and CLI to mux chapters (text and optional images) int
 - [Contributing](#contributing)
 - [Advanced Usage](#advanced-usage)
   - [Objective-C++ Example](#objective-c-example)
-  - [Release notes](#release-notes)
 - [Disclaimer](#disclaimer)
 <!-- TOC END -->
 
@@ -518,13 +517,6 @@ void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
 ```
 
 If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse. Leaving `meta` empty will reuse the source `ilst` when available.
-
-### Release notes
-
-When cutting a release, also:
-- Update the vcpkg overlay pin (`REF`/`SHA512` in `ports/chapterforge/portfile.cmake`).
-- Bump the Homebrew tap if you’re tagging a version (currently head-only).
-
 
 ## Disclaimer
 

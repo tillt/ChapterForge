@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/mdia_builder.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('mdia__builder_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -105,17 +119,17 @@ $(function(){initNavTree('mdia__builder_8hpp_source.html','',''); });
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;<a class="code" href="mp4__atoms_8hpp.html">mp4_atoms.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment">// Build mdia for audio/text/image.</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a602f69ac205b04a06a473fad622036a6">build_mdia_audio</a>(uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno"><a class="line" href="mdia__builder_8hpp.html#a602f69ac205b04a06a473fad622036a6">   15</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a602f69ac205b04a06a473fad622036a6">build_mdia_audio</a>(uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>                                       std::unique_ptr&lt;Atom&gt; stbl);</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a1bbb6055b511a366556dceb011dc8259">build_mdia_text</a>(uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="mdia__builder_8hpp.html#a1bbb6055b511a366556dceb011dc8259">   18</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a1bbb6055b511a366556dceb011dc8259">build_mdia_text</a>(uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>                                      std::unique_ptr&lt;Atom&gt; stbl);</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a192fd6cdab0110d15587506bf7eaa310">build_mdia_image</a>(uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="mdia__builder_8hpp.html#a192fd6cdab0110d15587506bf7eaa310">   21</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="mdia__builder_8hpp.html#a192fd6cdab0110d15587506bf7eaa310">build_mdia_image</a>(uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>                                       std::unique_ptr&lt;Atom&gt; stbl);</div>
-<div class="ttc" id="amdia__builder_8hpp_html_a192fd6cdab0110d15587506bf7eaa310"><div class="ttname"><a href="mdia__builder_8hpp.html#a192fd6cdab0110d15587506bf7eaa310">build_mdia_image</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_image(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div><div class="ttdef"><b>Definition</b> mdia_builder.cpp:33</div></div>
-<div class="ttc" id="amdia__builder_8hpp_html_a1bbb6055b511a366556dceb011dc8259"><div class="ttname"><a href="mdia__builder_8hpp.html#a1bbb6055b511a366556dceb011dc8259">build_mdia_text</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_text(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div><div class="ttdef"><b>Definition</b> mdia_builder.cpp:24</div></div>
-<div class="ttc" id="amdia__builder_8hpp_html_a602f69ac205b04a06a473fad622036a6"><div class="ttname"><a href="mdia__builder_8hpp.html#a602f69ac205b04a06a473fad622036a6">build_mdia_audio</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_audio(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div><div class="ttdef"><b>Definition</b> mdia_builder.cpp:15</div></div>
+<div class="ttc" id="amdia__builder_8hpp_html_a192fd6cdab0110d15587506bf7eaa310"><div class="ttname"><a href="mdia__builder_8hpp.html#a192fd6cdab0110d15587506bf7eaa310">build_mdia_image</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_image(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div></div>
+<div class="ttc" id="amdia__builder_8hpp_html_a1bbb6055b511a366556dceb011dc8259"><div class="ttname"><a href="mdia__builder_8hpp.html#a1bbb6055b511a366556dceb011dc8259">build_mdia_text</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_text(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div></div>
+<div class="ttc" id="amdia__builder_8hpp_html_a602f69ac205b04a06a473fad622036a6"><div class="ttname"><a href="mdia__builder_8hpp.html#a602f69ac205b04a06a473fad622036a6">build_mdia_audio</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_mdia_audio(uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl)</div></div>
 <div class="ttc" id="amp4__atoms_8hpp_html"><div class="ttname"><a href="mp4__atoms_8hpp.html">mp4_atoms.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

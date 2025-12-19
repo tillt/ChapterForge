@@ -11,13 +11,8 @@
 #include <cstdint>
 #include <string>
 
-/**
- * @brief Represents a chapter title/URL sample.
- *
- * @param text UTF-8 chapter title (or URL text, if used on a URL track).
- * @param href Optional hyperlink URL (tx3g modifier). Leave empty for plain title.
- * @param start_ms Absolute start time in milliseconds.
- */
+/// @ingroup api
+/// Represents a chapter title/URL sample.
 struct ChapterTextSample {
     std::string text;       ///< UTF-8 text
     std::string href;       ///< Optional hyperlink URL (tx3g modifier)

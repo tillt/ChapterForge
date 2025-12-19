@@ -1,11 +1,11 @@
 var logging_8hpp =
 [
     [ "CH_LOG", "logging_8hpp.html#a27996c24a6b7ce286928c9848130348d", null ],
-    [ "chapterforge::LogVerbosity", "namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099", [
-      [ "chapterforge::LogVerbosity::Error", "namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a902b0d55fddef6f8d651fe1035b7d4bd", null ],
-      [ "chapterforge::LogVerbosity::Warn", "namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a56525ae64d370c0b448ac0d60710ef17", null ],
-      [ "chapterforge::LogVerbosity::Info", "namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a4059b0251f66a18cb56f544728796875", null ],
-      [ "chapterforge::LogVerbosity::Debug", "namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099aa603905470e2a5b8c13e96b579ef0dba", null ]
+    [ "chapterforge::LogVerbosity", "group__api.html#ga78ba096769e30d7a539086e8cfae0099", [
+      [ "chapterforge::LogVerbosity::Error", "group__api.html#gga78ba096769e30d7a539086e8cfae0099a902b0d55fddef6f8d651fe1035b7d4bd", null ],
+      [ "chapterforge::LogVerbosity::Warn", "group__api.html#gga78ba096769e30d7a539086e8cfae0099a56525ae64d370c0b448ac0d60710ef17", null ],
+      [ "chapterforge::LogVerbosity::Info", "group__api.html#gga78ba096769e30d7a539086e8cfae0099a4059b0251f66a18cb56f544728796875", null ],
+      [ "chapterforge::LogVerbosity::Debug", "group__api.html#gga78ba096769e30d7a539086e8cfae0099aa603905470e2a5b8c13e96b579ef0dba", null ]
     ] ],
     [ "ch_log_impl", "logging_8hpp.html#a4d79605a02ae1c6dfd3454016983dd1d", null ],
     [ "ch_severity_for_tag", "logging_8hpp.html#ae356656da8cfa553a94ca0796321b804", null ],

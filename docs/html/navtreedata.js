@@ -25,6 +25,8 @@
 var NAVTREE =
 [
   [ "ChapterForge", "index.html", [
+    [ "ChapterForge API Documentation", "index.html", "index" ],
+    [ "Topics", "topics.html", "topics" ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
       [ "Namespace Members", "namespacemembers.html", [
@@ -57,8 +59,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"aac__extractor_8cpp.html",
-"namespaceparser__detail.html#aeacbb48f1414592d86841a6313cabc3a"
+"aac__extractor_8hpp.html",
+"tkhd__builder_8hpp.html#a9b576bef7038e4b02e844ed8fc750403"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

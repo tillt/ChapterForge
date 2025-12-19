@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/chapter_text_sample.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('chapter__text__sample_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -104,17 +118,17 @@ $(function(){initNavTree('chapter__text__sample_8hpp_source.html','',''); });
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;cstdint&gt;</span></div>
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &lt;string&gt;</span></div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span></div>
-<div class="foldopen" id="foldopen00021" data-start="{" data-end="};">
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="chapter__text__sample_8hpp.html">   21</a></span><span class="keyword">struct </span><a class="code hl_struct" href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a> {</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="chapter__text__sample_8hpp.html#aac96a43112fc1c3d3a07863cd8d5593d">   22</a></span>    std::string <a class="code hl_variable" href="chapter__text__sample_8hpp.html#aac96a43112fc1c3d3a07863cd8d5593d">text</a>;       </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="chapter__text__sample_8hpp.html#ae9f8aca25789e6f695ccb85e262130d3">   23</a></span>    std::string <a class="code hl_variable" href="chapter__text__sample_8hpp.html#ae9f8aca25789e6f695ccb85e262130d3">href</a>;       </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="chapter__text__sample_8hpp.html#a6a5d34b4ca72520ffdd9c8aa2354b876">   24</a></span>    uint32_t <a class="code hl_variable" href="chapter__text__sample_8hpp.html#a6a5d34b4ca72520ffdd9c8aa2354b876">start_ms</a> = 0;  </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>};</div>
+<div class="foldopen" id="foldopen00016" data-start="{" data-end="};">
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="group__api.html">   16</a></span><span class="keyword">struct </span><a class="code hl_struct" href="group__api.html#struct_chapter_text_sample">ChapterTextSample</a> {</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="group__api.html#aac96a43112fc1c3d3a07863cd8d5593d">   17</a></span>    std::string <a class="code hl_variable" href="group__api.html#aac96a43112fc1c3d3a07863cd8d5593d">text</a>;       </div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="group__api.html#ae9f8aca25789e6f695ccb85e262130d3">   18</a></span>    std::string <a class="code hl_variable" href="group__api.html#ae9f8aca25789e6f695ccb85e262130d3">href</a>;       </div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="group__api.html#a6a5d34b4ca72520ffdd9c8aa2354b876">   19</a></span>    uint32_t <a class="code hl_variable" href="group__api.html#a6a5d34b4ca72520ffdd9c8aa2354b876">start_ms</a> = 0;  </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>};</div>
 </div>
-<div class="ttc" id="achapter__text__sample_8hpp_html_a6a5d34b4ca72520ffdd9c8aa2354b876"><div class="ttname"><a href="chapter__text__sample_8hpp.html#a6a5d34b4ca72520ffdd9c8aa2354b876">ChapterTextSample::start_ms</a></div><div class="ttdeci">uint32_t start_ms</div><div class="ttdoc">Absolute start time in ms.</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:24</div></div>
-<div class="ttc" id="achapter__text__sample_8hpp_html_aac96a43112fc1c3d3a07863cd8d5593d"><div class="ttname"><a href="chapter__text__sample_8hpp.html#aac96a43112fc1c3d3a07863cd8d5593d">ChapterTextSample::text</a></div><div class="ttdeci">std::string text</div><div class="ttdoc">UTF-8 text.</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:22</div></div>
-<div class="ttc" id="achapter__text__sample_8hpp_html_ae9f8aca25789e6f695ccb85e262130d3"><div class="ttname"><a href="chapter__text__sample_8hpp.html#ae9f8aca25789e6f695ccb85e262130d3">ChapterTextSample::href</a></div><div class="ttdeci">std::string href</div><div class="ttdoc">Optional hyperlink URL (tx3g modifier).</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:23</div></div>
-<div class="ttc" id="achapter__text__sample_8hpp_html_struct_chapter_text_sample"><div class="ttname"><a href="chapter__text__sample_8hpp.html#struct_chapter_text_sample">ChapterTextSample</a></div><div class="ttdoc">Represents a chapter title/URL sample.</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:21</div></div>
+<div class="ttc" id="agroup__api_html_a6a5d34b4ca72520ffdd9c8aa2354b876"><div class="ttname"><a href="group__api.html#a6a5d34b4ca72520ffdd9c8aa2354b876">ChapterTextSample::start_ms</a></div><div class="ttdeci">uint32_t start_ms</div><div class="ttdoc">Absolute start time in ms.</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:19</div></div>
+<div class="ttc" id="agroup__api_html_aac96a43112fc1c3d3a07863cd8d5593d"><div class="ttname"><a href="group__api.html#aac96a43112fc1c3d3a07863cd8d5593d">ChapterTextSample::text</a></div><div class="ttdeci">std::string text</div><div class="ttdoc">UTF-8 text.</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:17</div></div>
+<div class="ttc" id="agroup__api_html_ae9f8aca25789e6f695ccb85e262130d3"><div class="ttname"><a href="group__api.html#ae9f8aca25789e6f695ccb85e262130d3">ChapterTextSample::href</a></div><div class="ttdeci">std::string href</div><div class="ttdoc">Optional hyperlink URL (tx3g modifier).</div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:18</div></div>
+<div class="ttc" id="agroup__api_html_struct_chapter_text_sample"><div class="ttname"><a href="group__api.html#struct_chapter_text_sample">ChapterTextSample</a></div><div class="ttdef"><b>Definition</b> chapter_text_sample.hpp:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

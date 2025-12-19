@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('class_atom.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -100,9 +114,9 @@ $(function(){initNavTree('class_atom.html','',''); });
   <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#a91543714fa9fe8cc6be7c6726ebe47c9">Atom</a>(const char t[4])</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">explicit</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="class_atom.html#a5b3910dc517de51045861417065b56fd">box_size</a></td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#add4f4ec61701a7671ba45aeacc0802d4">children</a></td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_atom.html#a217353390d4802214aec03f88bcb0093">create</a>(const char t[4])</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#ac9bae9d0d9f1462a1a8b717d8d3ee63f">create</a>(uint32_t t)</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="class_atom.html#a7e1c89a320c5d15df2914da4af0bb1bf">create</a>(const std::string &amp;t)</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_atom.html#aaf913d6f918f84d7f55db889b2ffafbe">create</a>(const char t[4])</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#a85a24faa0416341a556df06fe9d7db13">create</a>(uint32_t t)</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_atom.html#a69361e25d01b03ca6de6762ad944f57a">create</a>(const std::string &amp;t)</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"><span class="mlabel">static</span></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">find</a>(const std::string &amp;t)</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="class_atom.html#af2273b315a901bbaa9b66329180b2770">fix_size_recursive</a>()</td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"></td></tr>
   <tr class="odd"><td class="entry"><a class="el" href="class_atom.html#ad9e40aab112a93df39e3d7bb21de98a5">payload</a></td><td class="entry"><a class="el" href="class_atom.html">Atom</a></td><td class="entry"></td></tr>

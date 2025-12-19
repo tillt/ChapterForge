@@ -1,0 +1,11 @@
+{
+  "name": "chapterforge",
+  "version-string": "0.10.0-dev",
+  "homepage": "https://github.com/tillt/ChapterForge",
+  "description": "Mux AAC/M4A with Apple-compatible chapter text, URLs, and images",
+  "license": "MIT",
+  "dependencies": [
+    "vcpkg-cmake",
+    "vcpkg-cmake-config"
+  ]
+}

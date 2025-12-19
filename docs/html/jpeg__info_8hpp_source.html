@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/jpeg_info.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('jpeg__info_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -98,10 +112,10 @@ $(function(){initNavTree('jpeg__info_8hpp_source.html','',''); });
 <div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
 <div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">// Minimal JPEG header inspection helper used to obtain dimensions and subsampling.</span></div>
 <div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">// Returns true when width/height were found; sets is_yuv420 when sampling factors match 4:2:0.</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keywordtype">bool</span> <a class="code hl_function" href="jpeg__info_8hpp.html#a48832ef322bb90ff137eee2d3023b11c">parse_jpeg_info</a>(<span class="keyword">const</span> std::vector&lt;uint8_t&gt; &amp;data, uint16_t &amp;width, uint16_t &amp;height,</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno"><a class="line" href="jpeg__info_8hpp.html#a48832ef322bb90ff137eee2d3023b11c">    8</a></span><span class="keywordtype">bool</span> <a class="code hl_function" href="jpeg__info_8hpp.html#a48832ef322bb90ff137eee2d3023b11c">parse_jpeg_info</a>(<span class="keyword">const</span> std::vector&lt;uint8_t&gt; &amp;data, uint16_t &amp;width, uint16_t &amp;height,</div>
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>                     <span class="keywordtype">bool</span> &amp;is_yuv420);</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="ttc" id="ajpeg__info_8hpp_html_a48832ef322bb90ff137eee2d3023b11c"><div class="ttname"><a href="jpeg__info_8hpp.html#a48832ef322bb90ff137eee2d3023b11c">parse_jpeg_info</a></div><div class="ttdeci">bool parse_jpeg_info(const std::vector&lt; uint8_t &gt; &amp;data, uint16_t &amp;width, uint16_t &amp;height, bool &amp;is_yuv420)</div><div class="ttdef"><b>Definition</b> jpeg_info.cpp:4</div></div>
+<div class="ttc" id="ajpeg__info_8hpp_html_a48832ef322bb90ff137eee2d3023b11c"><div class="ttname"><a href="jpeg__info_8hpp.html#a48832ef322bb90ff137eee2d3023b11c">parse_jpeg_info</a></div><div class="ttdeci">bool parse_jpeg_info(const std::vector&lt; uint8_t &gt; &amp;data, uint16_t &amp;width, uint16_t &amp;height, bool &amp;is_yuv420)</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

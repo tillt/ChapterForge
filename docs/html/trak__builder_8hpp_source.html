@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/trak_builder.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('trak__builder_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -109,32 +123,32 @@ $(function(){initNavTree('trak__builder_8hpp_source.html','',''); });
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="preprocessor">#include &quot;<a class="code" href="mp4__atoms_8hpp.html">mp4_atoms.hpp</a>&quot;</span></div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">// Build full audio track (with tref linking to chapter tracks)</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#af84abaa34bedd1bcc6143f0c6f217b1e">build_trak_audio</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="trak__builder_8hpp.html#af84abaa34bedd1bcc6143f0c6f217b1e">   19</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#af84abaa34bedd1bcc6143f0c6f217b1e">build_trak_audio</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>                                       std::unique_ptr&lt;Atom&gt; stbl_audio,</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>                                       <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;chapter_ref_track_ids,</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>                                       uint64_t tkhd_duration_mvhd);</div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">// Build full text chapter track.</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#a6a5fdc5f450f2294dba8587e05d05901">build_trak_text</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="trak__builder_8hpp.html#a6a5fdc5f450f2294dba8587e05d05901">   25</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#a6a5fdc5f450f2294dba8587e05d05901">build_trak_text</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>                                      std::unique_ptr&lt;Atom&gt; stbl_text, uint64_t tkhd_duration_mvhd,</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>                                      <span class="keyword">const</span> std::string &amp;handler_name, <span class="keywordtype">bool</span> enabled);</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="comment">// Build timed metadata track (mdta/metx style).</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#aebf1ec393f4d3dd3ddf326694c39c15a">build_trak_metadata</a>(uint32_t track_id, uint32_t timescale,</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="trak__builder_8hpp.html#aebf1ec393f4d3dd3ddf326694c39c15a">   30</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#aebf1ec393f4d3dd3ddf326694c39c15a">build_trak_metadata</a>(uint32_t track_id, uint32_t timescale,</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>                                          uint64_t duration_ts,</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>                                          std::unique_ptr&lt;Atom&gt; stbl_metadata,</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>                                          uint64_t tkhd_duration_mvhd,</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>                                          <span class="keyword">const</span> std::string &amp;handler_name);</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="comment">// Build full image chapter track.</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#a07a3bcc3f7e3931fd46c94513612c6e9">build_trak_image</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="trak__builder_8hpp.html#a07a3bcc3f7e3931fd46c94513612c6e9">   37</a></span>std::unique_ptr&lt;Atom&gt; <a class="code hl_function" href="trak__builder_8hpp.html#a07a3bcc3f7e3931fd46c94513612c6e9">build_trak_image</a>(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,</div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>                                       std::unique_ptr&lt;Atom&gt; stbl_image, uint16_t width,</div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>                                       uint16_t height, uint64_t tkhd_duration_mvhd);</div>
 <div class="ttc" id="amp4__atoms_8hpp_html"><div class="ttname"><a href="mp4__atoms_8hpp.html">mp4_atoms.hpp</a></div></div>
-<div class="ttc" id="atrak__builder_8hpp_html_a07a3bcc3f7e3931fd46c94513612c6e9"><div class="ttname"><a href="trak__builder_8hpp.html#a07a3bcc3f7e3931fd46c94513612c6e9">build_trak_image</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_image(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_image, uint16_t width, uint16_t height, uint64_t tkhd_duration_mvhd)</div><div class="ttdef"><b>Definition</b> trak_builder.cpp:139</div></div>
-<div class="ttc" id="atrak__builder_8hpp_html_a6a5fdc5f450f2294dba8587e05d05901"><div class="ttname"><a href="trak__builder_8hpp.html#a6a5fdc5f450f2294dba8587e05d05901">build_trak_text</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_text, uint64_t tkhd_duration_mvhd, const std::string &amp;handler_name, bool enabled)</div><div class="ttdef"><b>Definition</b> trak_builder.cpp:81</div></div>
-<div class="ttc" id="atrak__builder_8hpp_html_aebf1ec393f4d3dd3ddf326694c39c15a"><div class="ttname"><a href="trak__builder_8hpp.html#aebf1ec393f4d3dd3ddf326694c39c15a">build_trak_metadata</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_metadata(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_metadata, uint64_t tkhd_duration_mvhd, const std::string &amp;handler_name)</div><div class="ttdef"><b>Definition</b> trak_builder.cpp:111</div></div>
-<div class="ttc" id="atrak__builder_8hpp_html_af84abaa34bedd1bcc6143f0c6f217b1e"><div class="ttname"><a href="trak__builder_8hpp.html#af84abaa34bedd1bcc6143f0c6f217b1e">build_trak_audio</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_audio(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_audio, const std::vector&lt; uint32_t &gt; &amp;chapter_ref_track_ids, uint64_t tkhd_duration_mvhd)</div><div class="ttdef"><b>Definition</b> trak_builder.cpp:47</div></div>
+<div class="ttc" id="atrak__builder_8hpp_html_a07a3bcc3f7e3931fd46c94513612c6e9"><div class="ttname"><a href="trak__builder_8hpp.html#a07a3bcc3f7e3931fd46c94513612c6e9">build_trak_image</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_image(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_image, uint16_t width, uint16_t height, uint64_t tkhd_duration_mvhd)</div></div>
+<div class="ttc" id="atrak__builder_8hpp_html_a6a5fdc5f450f2294dba8587e05d05901"><div class="ttname"><a href="trak__builder_8hpp.html#a6a5fdc5f450f2294dba8587e05d05901">build_trak_text</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_text, uint64_t tkhd_duration_mvhd, const std::string &amp;handler_name, bool enabled)</div></div>
+<div class="ttc" id="atrak__builder_8hpp_html_aebf1ec393f4d3dd3ddf326694c39c15a"><div class="ttname"><a href="trak__builder_8hpp.html#aebf1ec393f4d3dd3ddf326694c39c15a">build_trak_metadata</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_metadata(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_metadata, uint64_t tkhd_duration_mvhd, const std::string &amp;handler_name)</div></div>
+<div class="ttc" id="atrak__builder_8hpp_html_af84abaa34bedd1bcc6143f0c6f217b1e"><div class="ttname"><a href="trak__builder_8hpp.html#af84abaa34bedd1bcc6143f0c6f217b1e">build_trak_audio</a></div><div class="ttdeci">std::unique_ptr&lt; Atom &gt; build_trak_audio(uint32_t track_id, uint32_t timescale, uint64_t duration_ts, std::unique_ptr&lt; Atom &gt; stbl_audio, const std::vector&lt; uint32_t &gt; &amp;chapter_ref_track_ids, uint64_t tkhd_duration_mvhd)</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

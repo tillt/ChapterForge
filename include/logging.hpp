@@ -22,10 +22,13 @@
 
 namespace chapterforge {
 
+/// @ingroup api
+/// Log verbosity levels for library and CLI output.
 enum class LogVerbosity { Error = 0, Warn = 1, Info = 2, Debug = 3 };
 
-// Set/get global logging verbosity.
+/// Set global logging verbosity.
 void set_log_verbosity(LogVerbosity level);
+/// Get current logging verbosity.
 LogVerbosity get_log_verbosity();
 
 // Hex-preview helper used in debug logs to dump a short prefix of binary blobs (e.g. JPEG).
