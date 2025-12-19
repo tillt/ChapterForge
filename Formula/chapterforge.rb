@@ -2,7 +2,9 @@
 class Chapterforge < Formula
   desc "Mux AAC/M4A with Apple-compatible chapter text, URLs, and images"
   homepage "https://github.com/tillt/ChapterForge"
-  head "https://github.com/tillt/ChapterForge.git"
+  license "MIT"
+
+  head "https://github.com/tillt/ChapterForge.git", branch: "main"
 
   depends_on "cmake" => :build
   depends_on "ninja" => :build
