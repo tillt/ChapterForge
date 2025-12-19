@@ -27,6 +27,12 @@
 
 using json = nlohmann::json;
 
+namespace chapterforge {
+
+std::string version_string() { return CHAPTERFORGE_VERSION_DISPLAY; }
+
+}  // namespace chapterforge
+
 namespace {
 
 static bool read_file(const std::string &path, std::vector<uint8_t> &out) {
@@ -162,145 +168,17 @@ static bool metadata_is_empty(const MetadataSet &m) {
 
 namespace chapterforge {
 
-bool mux_file_to_m4a(const std::string &input_audio_path, const std::string &chapter_json_path,
-                     const std::string &output_path, bool fast_start) {
-    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
-    CH_LOG("debug", "mux_file_to_m4a(json) input=" << input_audio_path
-                                                   << " chapters=" << chapter_json_path
-                                                   << " output=" << output_path
-                                                   << " fast_start=" << fast_start);
-    auto aac = load_audio(input_audio_path);
-    if (!aac) {
-        CH_LOG("error", "Failed to load audio from " << input_audio_path);
-        return false;
-    }
+namespace {
+MuxStatus make_status(bool ok, std::string msg = {}) { return MuxStatus{ok, std::move(msg)}; }
+}  // namespace
 
-    std::vector<ChapterTextSample> text_chapters;
-    std::vector<ChapterImageSample> image_chapters;
-    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
-    MetadataSet meta;
-    if (!load_chapters_json(chapter_json_path, text_chapters, image_chapters, meta,
-                            extra_text_tracks)) {
-        CH_LOG("error", "Failed to load chapters JSON: " << chapter_json_path);
-        return false;
-    }
-    CH_LOG("debug", "chapters: titles=" << text_chapters.size()
-                                        << " urls=" << extra_text_tracks.size()
-                                        << " images=" << image_chapters.size());
-
-    Mp4aConfig cfg{};
-    const std::vector<uint8_t> *ilst_ptr = nullptr;
-    const std::vector<uint8_t> *meta_ptr = nullptr;
-    if (!aac->meta_payload.empty()) {
-        meta_ptr = &aac->meta_payload;
-        CH_LOG("debug", "Reusing source meta payload (" << meta_ptr->size() << " bytes)");
-    }
-    if (!aac->ilst_payload.empty()) {
-        ilst_ptr = &aac->ilst_payload;
-        CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
-    } else if (metadata_is_empty(meta)) {
-        CH_LOG("warn", "source metadata missing and no metadata provided; output will carry empty ilst");
-    } else {
-        CH_LOG("debug", "Using metadata provided by JSON overrides");
-    }
-    return write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, meta, fast_start,
-                     extra_text_tracks, ilst_ptr, meta_ptr);
-}
-
-bool mux_file_to_m4a(const std::string &input_audio_path,
-                     const std::vector<ChapterTextSample> &text_chapters,
-                     const std::vector<ChapterImageSample> &image_chapters,
-                     const MetadataSet &metadata, const std::string &output_path,
-                     bool fast_start) {
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::vector<ChapterTextSample> &text_chapters,
+                          const std::vector<ChapterTextSample> &url_chapters,
+                          const std::vector<ChapterImageSample> &image_chapters,
+                          const MetadataSet &metadata, const std::string &output_path,
+                          bool fast_start) {
     const auto t0 = std::chrono::steady_clock::now();
-    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
-    CH_LOG("debug", "mux_file_to_m4a(titles+images) input=" << input_audio_path
-                                                            << " output=" << output_path
-                                                            << " fast_start=" << fast_start
-                                                            << " titles=" << text_chapters.size()
-                                                            << " images=" << image_chapters.size());
-    auto aac = load_audio(input_audio_path);
-    if (!aac) {
-        CH_LOG("error", "Failed to load audio from " << input_audio_path);
-        return false;
-    }
-    const auto t_load = std::chrono::steady_clock::now();
-    Mp4aConfig cfg{};
-    const std::vector<uint8_t> *ilst_ptr = nullptr;
-    const std::vector<uint8_t> *meta_ptr = nullptr;
-    if (!aac->meta_payload.empty()) {
-        meta_ptr = &aac->meta_payload;
-        CH_LOG("debug", "Reusing source meta payload (" << meta_ptr->size() << " bytes)");
-    }
-    if (!aac->ilst_payload.empty()) {
-        ilst_ptr = &aac->ilst_payload;
-        CH_LOG("debug", "Reusing source ilst metadata (" << ilst_ptr->size() << " bytes)");
-    } else if (metadata_is_empty(metadata)) {
-        CH_LOG("warn", "source metadata missing and no metadata provided; output will carry empty ilst");
-    } else {
-        CH_LOG("debug", "Using metadata provided by caller");
-    }
-    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
-    bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                        extra_text_tracks, ilst_ptr, meta_ptr);
-    const auto t1 = std::chrono::steady_clock::now();
-    const auto load_ms =
-        std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();
-    const auto mux_ms =
-        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t_load).count();
-    const auto total_ms =
-        std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-    CH_LOG("debug", "mux_file_to_m4a(titles+images) timings ms: load=" << load_ms
-                                                                       << " mux=" << mux_ms
-                                                                       << " total=" << total_ms);
-    return ok;
-}
-
-bool mux_file_to_m4a(const std::string &input_audio_path,
-                     const std::vector<ChapterTextSample> &text_chapters,
-                     const MetadataSet &metadata,
-                     const std::string &output_path,
-                     bool fast_start) {
-    std::vector<ChapterImageSample> empty_images;
-    return mux_file_to_m4a(input_audio_path, text_chapters, empty_images, metadata, output_path,
-                           fast_start);
-}
-
-bool mux_file_to_m4a(const std::string &input_audio_path,
-                     const std::vector<ChapterTextSample> &text_chapters,
-                     const std::vector<ChapterImageSample> &image_chapters,
-                     const std::string &output_path, bool fast_start) {
-    MetadataSet empty{};
-    return mux_file_to_m4a(input_audio_path, text_chapters, image_chapters, empty, output_path,
-                           fast_start);
-}
-
-bool mux_file_to_m4a(const std::string &input_audio_path,
-                     const std::vector<ChapterTextSample> &text_chapters,
-                     const std::vector<ChapterTextSample> &url_chapters,
-                     const std::vector<ChapterImageSample> &image_chapters,
-                     const std::string &output_path, bool fast_start) {
-    const MetadataSet metadata{};
-    CH_LOG("debug", "mux_file_to_m4a(titles+urls+images,no meta) input=" << input_audio_path
-                                                                         << " output=" << output_path
-                                                                         << " titles="
-                                                                         << text_chapters.size()
-                                                                         << " urls="
-                                                                         << url_chapters.size()
-                                                                         << " images="
-                                                                         << image_chapters.size());
-    return mux_file_to_m4a(input_audio_path, text_chapters, url_chapters, image_chapters,
-                           metadata, output_path, fast_start);
-}
-
-bool mux_file_to_m4a(const std::string &input_audio_path,
-                     const std::vector<ChapterTextSample> &text_chapters,
-                     const std::vector<ChapterTextSample> &url_chapters,
-                     const std::vector<ChapterImageSample> &image_chapters,
-                     const MetadataSet &metadata, const std::string &output_path,
-                     bool fast_start) {
-    const auto t0 = std::chrono::steady_clock::now();
-    CH_LOG("info", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
     CH_LOG("debug", "mux_file_to_m4a(titles+urls+images+meta) input=" << input_audio_path
                                                                       << " output=" << output_path
                                                                       << " fast_start=" << fast_start
@@ -312,8 +190,9 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                                                                       << image_chapters.size());
     auto aac = load_audio(input_audio_path);
     if (!aac) {
-        CH_LOG("error", "Failed to load audio from " << input_audio_path);
-        return false;
+        std::string msg = "Failed to load audio from " + input_audio_path;
+        CH_LOG("error", msg);
+        return make_status(false, msg);
     }
     const auto t_load = std::chrono::steady_clock::now();
     Mp4aConfig cfg{};
@@ -336,8 +215,8 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
     if (!url_chapters.empty()) {
         extra_text_tracks.push_back({"Chapter URLs", url_chapters});
     }
-    bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata, fast_start,
-                        extra_text_tracks, ilst_ptr, meta_ptr);
+    bool ok = write_mp4(output_path, *aac, text_chapters, image_chapters, cfg, metadata,
+                        fast_start, extra_text_tracks, ilst_ptr, meta_ptr);
     const auto t1 = std::chrono::steady_clock::now();
     const auto load_ms =
         std::chrono::duration_cast<std::chrono::milliseconds>(t_load - t0).count();
@@ -349,7 +228,80 @@ bool mux_file_to_m4a(const std::string &input_audio_path,
                                                                                 << " mux=" << mux_ms
                                                                                 << " total="
                                                                                 << total_ms);
-    return ok;
+    if (!ok) {
+        return make_status(false, "Failed to write M4A to " + output_path);
+    }
+    return make_status(true);
+}
+
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::vector<ChapterTextSample> &text_chapters,
+                          const std::vector<ChapterImageSample> &image_chapters,
+                          const MetadataSet &metadata, const std::string &output_path,
+                          bool fast_start) {
+    std::vector<ChapterTextSample> empty_urls;
+    return mux_file_to_m4a(input_audio_path, text_chapters, empty_urls, image_chapters, metadata,
+                           output_path, fast_start);
+}
+
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::vector<ChapterTextSample> &text_chapters,
+                          const MetadataSet &metadata, const std::string &output_path,
+                          bool fast_start) {
+    std::vector<ChapterImageSample> empty_images;
+    std::vector<ChapterTextSample> empty_urls;
+    return mux_file_to_m4a(input_audio_path, text_chapters, empty_urls, empty_images, metadata,
+                           output_path, fast_start);
+}
+
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::vector<ChapterTextSample> &text_chapters,
+                          const std::vector<ChapterImageSample> &image_chapters,
+                          const std::string &output_path, bool fast_start) {
+    MetadataSet empty{};
+    std::vector<ChapterTextSample> empty_urls;
+    return mux_file_to_m4a(input_audio_path, text_chapters, empty_urls, image_chapters, empty,
+                           output_path, fast_start);
+}
+
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::vector<ChapterTextSample> &text_chapters,
+                          const std::vector<ChapterTextSample> &url_chapters,
+                          const std::vector<ChapterImageSample> &image_chapters,
+                          const std::string &output_path,
+                          bool fast_start) {
+    MetadataSet empty{};
+    return mux_file_to_m4a(input_audio_path, text_chapters, url_chapters, image_chapters, empty,
+                           output_path, fast_start);
+}
+
+MuxStatus mux_file_to_m4a(const std::string &input_audio_path,
+                          const std::string &chapter_json_path, const std::string &output_path,
+                          bool fast_start) {
+    CH_LOG("debug", "mux_file_to_m4a(json) input=" << input_audio_path
+                                                   << " chapters=" << chapter_json_path
+                                                   << " output=" << output_path
+                                                   << " fast_start=" << fast_start);
+    std::vector<ChapterTextSample> text_chapters;
+    std::vector<ChapterImageSample> image_chapters;
+    std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> extra_text_tracks;
+    MetadataSet meta;
+    if (!load_chapters_json(chapter_json_path, text_chapters, image_chapters, meta,
+                            extra_text_tracks)) {
+        std::string msg = "Failed to load chapters JSON: " + chapter_json_path;
+        CH_LOG("error", msg);
+        return make_status(false, msg);
+    }
+    CH_LOG("debug", "chapters: titles=" << text_chapters.size()
+                                        << " urls=" << extra_text_tracks.size()
+                                        << " images=" << image_chapters.size());
+
+    std::vector<ChapterTextSample> url_chapters;
+    if (!extra_text_tracks.empty()) {
+        url_chapters = std::move(extra_text_tracks.front().second);
+    }
+    return mux_file_to_m4a(input_audio_path, text_chapters, url_chapters, image_chapters, meta,
+                           output_path, fast_start);
 }
 
 }  // namespace chapterforge

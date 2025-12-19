@@ -27,9 +27,13 @@ int main(int argc, char **argv) {
     }
 
     if (argc < 4 || argc > 7) {
-        std::cerr
-            << "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a> "
-            << "[--faststart] [--log-level warn|info|debug]\n";
+        std::cerr << "ChapterForge " << CHAPTERFORGE_VERSION_DISPLAY << "\n"
+                  << "Copyright (c) 2025 Till Toenshoff\n\n"
+                  << "usage: chapterforge <input.m4a|.mp4|.aac> <chapters.json> <output.m4a> "
+                  << "[--faststart] [--log-level warn|info|debug]\n"
+                  << "Options:\n"
+                  << "  --faststart         Place 'moov' atom before 'mdat' for faster playback start.\n"
+                  << "  --log-level LEVEL   Set logging verbosity (default: info).\n";
         return 2;
     }
 
@@ -48,8 +52,10 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (!chapterforge::mux_file_to_m4a(input_path, chapters_path, output_path, fast_start)) {
-        CH_LOG("error", "chapterforge: failed to write output");
+    auto status =
+        chapterforge::mux_file_to_m4a(input_path, chapters_path, output_path, fast_start);
+    if (!status.ok) {
+        CH_LOG("error", "chapterforge: failed to mux m4a: " << status.message);
         return 1;
     }
 

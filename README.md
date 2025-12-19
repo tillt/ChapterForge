@@ -350,56 +350,58 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
-// JSON helper (titles/images/urls/metadata pulled from JSON)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::string& chapter_json_path,
-                     const std::string& output_path,
-                     bool fast_start = true);
+struct MuxStatus { bool ok; std::string message; }; // status + message on failure
 
-// Titles + images, metadata provided
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// JSON-driven (reuses ilst unless JSON metadata overrides it)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::string& chapter_json_path,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + images, metadata reused from source (or empty)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + images (metadata provided)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles only, metadata provided (no image track)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + images (metadata reused from source)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles only, metadata reused from source (no image track)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles only (metadata provided)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + URLs + images, metadata provided (URL track optional)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterTextSample>& url_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const MetadataSet& metadata,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles only (metadata reused from source)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 
-// Titles + URLs + images, metadata reused from source (URL track optional)
-bool mux_file_to_m4a(const std::string& input_audio_path,
-                     const std::vector<ChapterTextSample>& text_chapters,
-                     const std::vector<ChapterTextSample>& url_chapters,
-                     const std::vector<ChapterImageSample>& image_chapters,
-                     const std::string& output_path,
-                     bool fast_start = true);
+// Titles + URLs + images (metadata provided)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterTextSample>& url_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const MetadataSet& metadata,
+                          const std::string& output_path,
+                          bool fast_start = true);
+
+// Titles + URLs + images (metadata reused from source)
+MuxStatus mux_file_to_m4a(const std::string& input_audio_path,
+                          const std::vector<ChapterTextSample>& text_chapters,
+                          const std::vector<ChapterTextSample>& url_chapters,
+                          const std::vector<ChapterImageSample>& image_chapters,
+                          const std::string& output_path,
+                          bool fast_start = true);
 ```
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.
@@ -421,8 +423,9 @@ int main(int argc, char** argv) {
   std::string chapters= argv[2];
   std::string output  = argv[3];
 
-  if (!chapterforge::mux_file_to_m4a(input, chapters, output)) {
-    std::cerr << "chapterforge: failed to write output\n";
+  auto status = chapterforge::mux_file_to_m4a(input, chapters, output);
+  if (!status.ok) {
+    std::cerr << "chapterforge: failed to write output: " << status.message << "\n";
     return 1;
   }
   std::cout << "Wrote: " << output << "\n";

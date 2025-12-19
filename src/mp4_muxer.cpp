@@ -24,6 +24,7 @@
 #include "mdat_writer.hpp"
 #include "jpeg_info.hpp"
 #include "metadata_set.hpp"
+#include "chapterforge_version.hpp"
 #include "meta_builder.hpp"
 #include "moov_builder.hpp"
 #include "mp4_atoms.hpp"
@@ -639,5 +640,7 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                                          << " layout=" << ms(t_moov_end, t_layout_end)
                                          << " write=" << ms(t_layout_end, t_write_end)
                                          << " total=" << ms(t_start, t_write_end));
-    return true;
+    CH_LOG("debug", "ChapterForge version " << CHAPTERFORGE_VERSION_DISPLAY);
+
+	return true;
 }

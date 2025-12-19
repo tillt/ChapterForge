@@ -66,9 +66,9 @@ int main(int argc, char **argv) {
 
     // 1) Titles + metadata, no images.
     std::string out_noimg = (std::filesystem::path(out_dir) / "overload_noimg.m4a").string();
-    bool ok = mux_file_to_m4a(input, titles, meta, out_noimg, true);
-    if (!ok) {
-        std::cerr << "mux (no images) failed\n";
+    auto status = mux_file_to_m4a(input, titles, meta, out_noimg, true);
+    if (!status.ok) {
+        std::cerr << "mux (no images) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_noimg) || std::filesystem::file_size(out_noimg) == 0) {
@@ -78,10 +78,10 @@ int main(int argc, char **argv) {
 
     // 2) Titles + URLs (no images), metadata empty (reuse source ilst if present).
     std::string out_url = (std::filesystem::path(out_dir) / "overload_url.m4a").string();
-    ok = mux_file_to_m4a(input, titles, urls, std::vector<ChapterImageSample>{}, MetadataSet{},
-                         out_url, true);
-    if (!ok) {
-        std::cerr << "mux (urls) failed\n";
+    status = mux_file_to_m4a(input, titles, urls, std::vector<ChapterImageSample>{},
+                             MetadataSet{}, out_url, true);
+    if (!status.ok) {
+        std::cerr << "mux (urls) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_url) || std::filesystem::file_size(out_url) == 0) {
@@ -96,9 +96,9 @@ int main(int argc, char **argv) {
         {.data = img_bytes, .start_ms = 5000},
     };
     std::string out_img = (std::filesystem::path(out_dir) / "overload_img.m4a").string();
-    ok = mux_file_to_m4a(input, titles, images, meta, out_img, true);
-    if (!ok) {
-        std::cerr << "mux (titles+images) failed\n";
+    status = mux_file_to_m4a(input, titles, images, meta, out_img, true);
+    if (!status.ok) {
+        std::cerr << "mux (titles+images) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_img) || std::filesystem::file_size(out_img) == 0) {
@@ -109,9 +109,9 @@ int main(int argc, char **argv) {
     // 4) Titles + URLs + images, metadata empty (ilst reuse).
     std::string out_url_img =
         (std::filesystem::path(out_dir) / "overload_url_img.m4a").string();
-    ok = mux_file_to_m4a(input, titles, urls, images, MetadataSet{}, out_url_img, true);
-    if (!ok) {
-        std::cerr << "mux (titles+urls+images) failed\n";
+    status = mux_file_to_m4a(input, titles, urls, images, MetadataSet{}, out_url_img, true);
+    if (!status.ok) {
+        std::cerr << "mux (titles+urls+images) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_url_img) ||
@@ -123,9 +123,9 @@ int main(int argc, char **argv) {
     // 5) Titles + URLs + images via the 5-arg overload (metadata reuse).
     std::string out_url_img_nometa =
         (std::filesystem::path(out_dir) / "overload_url_img_nometa.m4a").string();
-    ok = mux_file_to_m4a(input, titles, urls, images, out_url_img_nometa, true);
-    if (!ok) {
-        std::cerr << "mux (titles+urls+images 5-arg) failed\n";
+    status = mux_file_to_m4a(input, titles, urls, images, out_url_img_nometa, true);
+    if (!status.ok) {
+        std::cerr << "mux (titles+urls+images 5-arg) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_url_img_nometa) ||
@@ -137,9 +137,9 @@ int main(int argc, char **argv) {
     // 6) Titles + images (no URL track), metadata reused (4-arg overload).
     std::string out_img_nometa =
         (std::filesystem::path(out_dir) / "overload_img_nometa.m4a").string();
-    ok = mux_file_to_m4a(input, titles, images, out_img_nometa, true);
-    if (!ok) {
-        std::cerr << "mux (titles+images, 4-arg) failed\n";
+    status = mux_file_to_m4a(input, titles, images, out_img_nometa, true);
+    if (!status.ok) {
+        std::cerr << "mux (titles+images, 4-arg) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_img_nometa) ||
@@ -163,9 +163,9 @@ int main(int argc, char **argv) {
     }
     std::string out_json =
         (std::filesystem::path(out_dir) / "overload_json.m4a").string();
-    ok = mux_file_to_m4a(input, json_path, out_json, true);
-    if (!ok) {
-        std::cerr << "mux (json overload) failed\n";
+    status = mux_file_to_m4a(input, json_path, out_json, true);
+    if (!status.ok) {
+        std::cerr << "mux (json overload) failed: " << status.message << "\n";
         return 1;
     }
     if (!std::filesystem::exists(out_json) || std::filesystem::file_size(out_json) == 0) {
