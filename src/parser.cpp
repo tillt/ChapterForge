@@ -613,7 +613,6 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
                     break;
                 }
                 auto &track = *track_opt;
-                out.tracks.push_back(track);
                 if (track.handler_type == fourcc("soun")) {
                     if (!track.stsz.empty() &&
                         (best_audio_samples == 0 || track.sample_count >= best_audio_samples)) {
@@ -627,6 +626,7 @@ static void parse_moov(std::istream &in, const Mp4AtomInfo &atom, uint64_t file_
                         out.stco = track.stco;
                     }
                 }
+                out.tracks.push_back(track);
                 break;
             }
             default:

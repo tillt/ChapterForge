@@ -8,8 +8,8 @@
 #include "chapterforge.hpp"
 #include "chapterforge_version.hpp"
 
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -17,6 +17,8 @@
 #include <cctype>
 #include <utility>
 #include <chrono>
+#include <map>
+#include <unordered_map>
 
 #include "aac_extractor.hpp"
 #include "logging.hpp"
@@ -676,6 +678,113 @@ ExtractedTracks extract_tracks(const ParsedMp4 &parsed, std::istream &in) {
     return ext;
 }
 
+// Require exact start alignment between tracks; no drift tolerance.
+constexpr uint32_t kStartMatchToleranceMs = 0;
+
+// Align URL track entries to the title track by start time. URLs that share
+// (or are within tolerance of) a title start time are paired; if none is found
+// the slot is left empty but preserved to avoid shifting chapter order. Extras
+// are reported and discarded.
+std::vector<ChapterTextSample> align_urls_to_titles(const std::vector<ChapterTextSample> &titles,
+                                                    const std::vector<ChapterTextSample> &urls) {
+    if (titles.empty()) {
+        return {};
+    }
+
+    std::multimap<uint32_t, ChapterTextSample> by_start;
+    for (const auto &u : urls) {
+        by_start.emplace(u.start_ms, u);
+    }
+
+    std::vector<ChapterTextSample> out;
+    out.reserve(titles.size());
+
+    size_t missing = 0;
+    for (const auto &t : titles) {
+        const uint32_t lo =
+            (t.start_ms > kStartMatchToleranceMs) ? t.start_ms - kStartMatchToleranceMs : 0;
+        const uint32_t hi = t.start_ms + kStartMatchToleranceMs;
+        auto it = by_start.lower_bound(lo);
+
+        auto best = by_start.end();
+        uint32_t best_diff = std::numeric_limits<uint32_t>::max();
+        while (it != by_start.end() && it->first <= hi) {
+            uint32_t diff =
+                (t.start_ms > it->first) ? (t.start_ms - it->first) : (it->first - t.start_ms);
+            if (diff < best_diff) {
+                best = it;
+                best_diff = diff;
+            }
+            ++it;
+        }
+
+        if (best != by_start.end()) {
+            out.push_back(best->second);
+            by_start.erase(best);
+        } else {
+            ChapterTextSample empty{};
+            empty.start_ms = t.start_ms;
+            out.push_back(std::move(empty));
+            ++missing;
+        }
+    }
+
+    (void)missing;  // Missing entries are normal; placeholders were inserted to align.
+    (void)by_start; // Extra entries are tolerated silently.
+
+    return out;
+}
+
+std::vector<ChapterImageSample> align_images_to_titles(const std::vector<ChapterTextSample> &titles,
+                                                       const std::vector<ChapterImageSample> &images) {
+    if (titles.empty()) {
+        return {};
+    }
+
+    std::multimap<uint32_t, ChapterImageSample> by_start;
+    for (const auto &img : images) {
+        by_start.emplace(img.start_ms, img);
+    }
+
+    std::vector<ChapterImageSample> out;
+    out.reserve(titles.size());
+
+    size_t missing = 0;
+    for (const auto &t : titles) {
+        const uint32_t lo =
+            (t.start_ms > kStartMatchToleranceMs) ? t.start_ms - kStartMatchToleranceMs : 0;
+        const uint32_t hi = t.start_ms + kStartMatchToleranceMs;
+        auto it = by_start.lower_bound(lo);
+
+        auto best = by_start.end();
+        uint32_t best_diff = std::numeric_limits<uint32_t>::max();
+        while (it != by_start.end() && it->first <= hi) {
+            uint32_t diff =
+                (t.start_ms > it->first) ? (t.start_ms - it->first) : (it->first - t.start_ms);
+            if (diff < best_diff) {
+                best = it;
+                best_diff = diff;
+            }
+            ++it;
+        }
+
+        if (best != by_start.end()) {
+            out.push_back(best->second);
+            by_start.erase(best);
+        } else {
+            ChapterImageSample empty{};
+            empty.start_ms = t.start_ms;
+            out.push_back(std::move(empty));
+            ++missing;
+        }
+    }
+
+    (void)missing;  // Missing entries are normal; placeholders were inserted to align.
+    (void)by_start; // Extra entries are tolerated silently.
+
+    return out;
+}
+
 }  // namespace
 
 namespace chapterforge {
@@ -694,8 +803,8 @@ ReadResult read_m4a(const std::string &path) {
     }
     auto ext = extract_tracks(*parsed, in);
     result.titles = std::move(ext.titles);
-    result.urls = std::move(ext.urls);
-    result.images = std::move(ext.images);
+    result.urls = align_urls_to_titles(result.titles, ext.urls);
+    result.images = align_images_to_titles(result.titles, ext.images);
     if (!parsed->ilst_payload.empty()) {
         parse_ilst_metadata(parsed->ilst_payload, result.metadata);
         CH_LOG("debug", "parsed metadata title='" << result.metadata.title << "' artist='"

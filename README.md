@@ -155,14 +155,22 @@ The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterfo
 
 ```bash
 ./chapterforge_cli <input.m4a|.mp4|.aac> <chapters.json> <output.m4a>
+./chapterforge_cli <input.m4a> [--export-jpegs DIR]                     # read/extract
 ./chapterforge_cli --version
 ```
 
-- If the input already has metadata (`ilst`), it is reused by default.
-- Fast-start is on by default.
+- Write mode: mux chapters/images/URLs into an output M4A. If the input already has metadata (`ilst`),
+  it is reused by default. Fast-start is off by default; enable with `--faststart`.
+- Read mode: extract metadata, chapter titles/URLs/URL-texts, and images from an M4A. The JSON emitted
+  matches the writer input format and is always printed to stdout. Use `--export-jpegs DIR` to dump cover
+  + chapter images alongside the JSON and reference them in the output.
 - Logging: defaults to version + warnings/errors. Set verbosity when embedding via
   `chapterforge::set_log_verbosity(LogVerbosity::Warn|Info|Debug)` or pass `--log-level warn|info|debug`
   to the CLI. Debug-only logs stay hidden unless you raise the level.
+- Options:
+  - `--faststart` (write) Place `moov` before `mdat` for faster playback start.
+  - `--log-level LEVEL`   One of `warn|info|debug`.
+  - `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
 
 
 ## Chapters JSON format
@@ -434,6 +442,20 @@ int main(int argc, char** argv) {
 ```
 
 Use the higher-level overload if you already have chapters/material in memory and don’t want to read JSON on disk.
+
+Reading (extract chapters/metadata/images) mirrors the CLI read mode:
+
+```c++
+auto res = chapterforge::read_m4a("input.m4a");
+if (!res.status.ok) {
+  std::cerr << "read failed: " << res.status.message << "\n";
+} else {
+  std::cout << "title: " << res.metadata.title << "\n";
+  for (const auto& c : res.titles) {
+    std::cout << c.start_ms << " ms -> " << c.text << " href=" << c.href << "\n";
+  }
+}
+```
 
 
 ## Tests & Dependencies
