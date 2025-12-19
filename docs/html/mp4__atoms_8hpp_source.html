@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/mp4_atoms.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('mp4__atoms_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -144,24 +158,24 @@ $(function(){initNavTree('mp4__atoms_8hpp_source.html','',''); });
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="class_atom.html#a91543714fa9fe8cc6be7c6726ebe47c9">   46</a></span>    <span class="keyword">explicit</span> <a class="code hl_function" href="class_atom.html#a91543714fa9fe8cc6be7c6726ebe47c9">Atom</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> t[4]) : <a class="code hl_variable" href="class_atom.html#ae1a986148327ad36ada291490893db27">type</a>(<a class="code hl_function" href="mp4__atoms_8hpp.html#a17e34ddc50bd28ddfc4ec9292dcd5aec">fourcc</a>(t)) {}</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="comment">// Factory.</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#a217353390d4802214aec03f88bcb0093">create</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> t[4]);</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#a217353390d4802214aec03f88bcb0093">create</a>(uint32_t t);</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#a217353390d4802214aec03f88bcb0093">create</a>(<span class="keyword">const</span> std::string &amp;t);</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="class_atom.html#aaf913d6f918f84d7f55db889b2ffafbe">   49</a></span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#aaf913d6f918f84d7f55db889b2ffafbe">create</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> t[4]);</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="class_atom.html#a85a24faa0416341a556df06fe9d7db13">   50</a></span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#a85a24faa0416341a556df06fe9d7db13">create</a>(uint32_t t);</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="class_atom.html#a69361e25d01b03ca6de6762ad944f57a">   51</a></span>    <span class="keyword">static</span> <a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> <a class="code hl_function" href="class_atom.html#a69361e25d01b03ca6de6762ad944f57a">create</a>(<span class="keyword">const</span> std::string &amp;t);</div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="comment">// Add child atom.</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#a547ae9de97e81e4c6c2fc8fc47903af2">add</a>(<a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> child);</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="class_atom.html#a547ae9de97e81e4c6c2fc8fc47903af2">   54</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#a547ae9de97e81e4c6c2fc8fc47903af2">add</a>(<a class="code hl_typedef" href="mp4__atoms_8hpp.html#afa9b56d5cb8cc4fa9f49557bd429bb99">AtomPtr</a> child);</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span> </div>
 <div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="comment">// Recursive search for atoms of given type.</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    std::vector&lt;Atom *&gt; <a class="code hl_function" href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">find</a>(<span class="keyword">const</span> std::string &amp;t);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">   57</a></span>    std::vector&lt;Atom *&gt; <a class="code hl_function" href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">find</a>(<span class="keyword">const</span> std::string &amp;t);</div>
 <div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
 <div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="comment">// Recursive size computation.</span></div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#af2273b315a901bbaa9b66329180b2770">fix_size_recursive</a>();</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="class_atom.html#af2273b315a901bbaa9b66329180b2770">   60</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#af2273b315a901bbaa9b66329180b2770">fix_size_recursive</a>();</div>
 <div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="comment">// Return size (must call fix_size_recursive first)</span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    uint32_t <a class="code hl_function" href="class_atom.html#a5c6954d75cab1764852f36d5d1fa215d">size</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="class_atom.html#a5c6954d75cab1764852f36d5d1fa215d">   63</a></span>    uint32_t <a class="code hl_function" href="class_atom.html#a5c6954d75cab1764852f36d5d1fa215d">size</a>() <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="comment">// Write atom to file.</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#a104576b24ad3c20640601efe9751ed10">write</a>(std::ofstream &amp;out) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="class_atom.html#a104576b24ad3c20640601efe9751ed10">   66</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_atom.html#a104576b24ad3c20640601efe9751ed10">write</a>(std::ofstream &amp;out) <span class="keyword">const</span>;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>};</div>
 </div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
@@ -213,19 +227,21 @@ $(function(){initNavTree('mp4__atoms_8hpp_source.html','',''); });
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>}</div>
 </div>
 <div class="ttc" id="aclass_atom_html"><div class="ttname"><a href="class_atom.html">Atom</a></div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:36</div></div>
-<div class="ttc" id="aclass_atom_html_a104576b24ad3c20640601efe9751ed10"><div class="ttname"><a href="class_atom.html#a104576b24ad3c20640601efe9751ed10">Atom::write</a></div><div class="ttdeci">void write(std::ofstream &amp;out) const</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:72</div></div>
-<div class="ttc" id="aclass_atom_html_a217353390d4802214aec03f88bcb0093"><div class="ttname"><a href="class_atom.html#a217353390d4802214aec03f88bcb0093">Atom::create</a></div><div class="ttdeci">static AtomPtr create(const char t[4])</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:14</div></div>
+<div class="ttc" id="aclass_atom_html_a104576b24ad3c20640601efe9751ed10"><div class="ttname"><a href="class_atom.html#a104576b24ad3c20640601efe9751ed10">Atom::write</a></div><div class="ttdeci">void write(std::ofstream &amp;out) const</div></div>
 <div class="ttc" id="aclass_atom_html_a3c983b7ca667868f975d330cf2bcde31"><div class="ttname"><a href="class_atom.html#a3c983b7ca667868f975d330cf2bcde31">Atom::Atom</a></div><div class="ttdeci">Atom()=default</div></div>
 <div class="ttc" id="aclass_atom_html_a498a9cb614b99c11b371a4255bb9642e"><div class="ttname"><a href="class_atom.html#a498a9cb614b99c11b371a4255bb9642e">Atom::Atom</a></div><div class="ttdeci">Atom(uint32_t t)</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:45</div></div>
-<div class="ttc" id="aclass_atom_html_a547ae9de97e81e4c6c2fc8fc47903af2"><div class="ttname"><a href="class_atom.html#a547ae9de97e81e4c6c2fc8fc47903af2">Atom::add</a></div><div class="ttdeci">void add(AtomPtr child)</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:23</div></div>
+<div class="ttc" id="aclass_atom_html_a547ae9de97e81e4c6c2fc8fc47903af2"><div class="ttname"><a href="class_atom.html#a547ae9de97e81e4c6c2fc8fc47903af2">Atom::add</a></div><div class="ttdeci">void add(AtomPtr child)</div></div>
 <div class="ttc" id="aclass_atom_html_a5b3910dc517de51045861417065b56fd"><div class="ttname"><a href="class_atom.html#a5b3910dc517de51045861417065b56fd">Atom::box_size</a></div><div class="ttdeci">uint32_t box_size</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:42</div></div>
-<div class="ttc" id="aclass_atom_html_a5c6954d75cab1764852f36d5d1fa215d"><div class="ttname"><a href="class_atom.html#a5c6954d75cab1764852f36d5d1fa215d">Atom::size</a></div><div class="ttdeci">uint32_t size() const</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:67</div></div>
-<div class="ttc" id="aclass_atom_html_a63bcee66f5d1b459d696505e3a96592e"><div class="ttname"><a href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">Atom::find</a></div><div class="ttdeci">std::vector&lt; Atom * &gt; find(const std::string &amp;t)</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:28</div></div>
+<div class="ttc" id="aclass_atom_html_a5c6954d75cab1764852f36d5d1fa215d"><div class="ttname"><a href="class_atom.html#a5c6954d75cab1764852f36d5d1fa215d">Atom::size</a></div><div class="ttdeci">uint32_t size() const</div></div>
+<div class="ttc" id="aclass_atom_html_a63bcee66f5d1b459d696505e3a96592e"><div class="ttname"><a href="class_atom.html#a63bcee66f5d1b459d696505e3a96592e">Atom::find</a></div><div class="ttdeci">std::vector&lt; Atom * &gt; find(const std::string &amp;t)</div></div>
+<div class="ttc" id="aclass_atom_html_a69361e25d01b03ca6de6762ad944f57a"><div class="ttname"><a href="class_atom.html#a69361e25d01b03ca6de6762ad944f57a">Atom::create</a></div><div class="ttdeci">static AtomPtr create(const std::string &amp;t)</div></div>
+<div class="ttc" id="aclass_atom_html_a85a24faa0416341a556df06fe9d7db13"><div class="ttname"><a href="class_atom.html#a85a24faa0416341a556df06fe9d7db13">Atom::create</a></div><div class="ttdeci">static AtomPtr create(uint32_t t)</div></div>
 <div class="ttc" id="aclass_atom_html_a91543714fa9fe8cc6be7c6726ebe47c9"><div class="ttname"><a href="class_atom.html#a91543714fa9fe8cc6be7c6726ebe47c9">Atom::Atom</a></div><div class="ttdeci">Atom(const char t[4])</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:46</div></div>
+<div class="ttc" id="aclass_atom_html_aaf913d6f918f84d7f55db889b2ffafbe"><div class="ttname"><a href="class_atom.html#aaf913d6f918f84d7f55db889b2ffafbe">Atom::create</a></div><div class="ttdeci">static AtomPtr create(const char t[4])</div></div>
 <div class="ttc" id="aclass_atom_html_ad9e40aab112a93df39e3d7bb21de98a5"><div class="ttname"><a href="class_atom.html#ad9e40aab112a93df39e3d7bb21de98a5">Atom::payload</a></div><div class="ttdeci">std::vector&lt; uint8_t &gt; payload</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:39</div></div>
 <div class="ttc" id="aclass_atom_html_add4f4ec61701a7671ba45aeacc0802d4"><div class="ttname"><a href="class_atom.html#add4f4ec61701a7671ba45aeacc0802d4">Atom::children</a></div><div class="ttdeci">std::vector&lt; AtomPtr &gt; children</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:40</div></div>
 <div class="ttc" id="aclass_atom_html_ae1a986148327ad36ada291490893db27"><div class="ttname"><a href="class_atom.html#ae1a986148327ad36ada291490893db27">Atom::type</a></div><div class="ttdeci">uint32_t type</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:38</div></div>
-<div class="ttc" id="aclass_atom_html_af2273b315a901bbaa9b66329180b2770"><div class="ttname"><a href="class_atom.html#af2273b315a901bbaa9b66329180b2770">Atom::fix_size_recursive</a></div><div class="ttdeci">void fix_size_recursive()</div><div class="ttdef"><b>Definition</b> mp4_atoms.cpp:48</div></div>
+<div class="ttc" id="aclass_atom_html_af2273b315a901bbaa9b66329180b2770"><div class="ttname"><a href="class_atom.html#af2273b315a901bbaa9b66329180b2770">Atom::fix_size_recursive</a></div><div class="ttdeci">void fix_size_recursive()</div></div>
 <div class="ttc" id="amp4__atoms_8hpp_html_a17e34ddc50bd28ddfc4ec9292dcd5aec"><div class="ttname"><a href="mp4__atoms_8hpp.html#a17e34ddc50bd28ddfc4ec9292dcd5aec">fourcc</a></div><div class="ttdeci">uint32_t fourcc(const char a, const char b, const char c, const char d)</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:23</div></div>
 <div class="ttc" id="amp4__atoms_8hpp_html_a39ee9d380dba3f179fcefce3ba2f7975"><div class="ttname"><a href="mp4__atoms_8hpp.html#a39ee9d380dba3f179fcefce3ba2f7975">write_u8</a></div><div class="ttdeci">void write_u8(std::vector&lt; uint8_t &gt; &amp;p, uint8_t v)</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:71</div></div>
 <div class="ttc" id="amp4__atoms_8hpp_html_a3b62bfcab6f6084117aea94e1463f920"><div class="ttname"><a href="mp4__atoms_8hpp.html#a3b62bfcab6f6084117aea94e1463f920">write_u24</a></div><div class="ttdeci">void write_u24(std::vector&lt; uint8_t &gt; &amp;p, uint32_t v)</div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:78</div></div>

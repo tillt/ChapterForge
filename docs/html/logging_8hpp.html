@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/logging.hpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('logging_8hpp.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -115,18 +129,20 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a78ba096769e30d7a539086e8cfae0099" id="r_a78ba096769e30d7a539086e8cfae0099"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> { <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a902b0d55fddef6f8d651fe1035b7d4bd">chapterforge::Error</a> = 0
-, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a56525ae64d370c0b448ac0d60710ef17">chapterforge::Warn</a> = 1
-, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099a4059b0251f66a18cb56f544728796875">chapterforge::Info</a> = 2
-, <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099aa603905470e2a5b8c13e96b579ef0dba">chapterforge::Debug</a> = 3
+<tr class="memitem:ga78ba096769e30d7a539086e8cfae0099" id="r_ga78ba096769e30d7a539086e8cfae0099"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__api.html#ga78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> { <a class="el" href="group__api.html#gga78ba096769e30d7a539086e8cfae0099a902b0d55fddef6f8d651fe1035b7d4bd">chapterforge::LogVerbosity::Error</a> = 0
+, <a class="el" href="group__api.html#gga78ba096769e30d7a539086e8cfae0099a56525ae64d370c0b448ac0d60710ef17">chapterforge::LogVerbosity::Warn</a> = 1
+, <a class="el" href="group__api.html#gga78ba096769e30d7a539086e8cfae0099a4059b0251f66a18cb56f544728796875">chapterforge::LogVerbosity::Info</a> = 2
+, <a class="el" href="group__api.html#gga78ba096769e30d7a539086e8cfae0099aa603905470e2a5b8c13e96b579ef0dba">chapterforge::LogVerbosity::Debug</a> = 3
  }</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:acfab47cf7dcb8f5395c5e12650bad394" id="r_acfab47cf7dcb8f5395c5e12650bad394"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394">chapterforge::set_log_verbosity</a> (<a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a> level)</td></tr>
-<tr class="memitem:a1a73d9a090e505500642b5ff5cdedcbf" id="r_a1a73d9a090e505500642b5ff5cdedcbf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a1a73d9a090e505500642b5ff5cdedcbf">chapterforge::get_log_verbosity</a> ()</td></tr>
+<tr class="memitem:acfab47cf7dcb8f5395c5e12650bad394" id="r_acfab47cf7dcb8f5395c5e12650bad394"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#acfab47cf7dcb8f5395c5e12650bad394">chapterforge::set_log_verbosity</a> (<a class="el" href="group__api.html#ga78ba096769e30d7a539086e8cfae0099">LogVerbosity</a> level)</td></tr>
+<tr class="memdesc:acfab47cf7dcb8f5395c5e12650bad394"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set global logging verbosity.  <br /></td></tr>
+<tr class="memitem:a1a73d9a090e505500642b5ff5cdedcbf" id="r_a1a73d9a090e505500642b5ff5cdedcbf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="group__api.html#ga78ba096769e30d7a539086e8cfae0099">LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#a1a73d9a090e505500642b5ff5cdedcbf">chapterforge::get_log_verbosity</a> ()</td></tr>
+<tr class="memdesc:a1a73d9a090e505500642b5ff5cdedcbf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current logging verbosity.  <br /></td></tr>
 <tr class="memitem:ac2d77650a478aa95f0827d4f4e73da2a" id="r_ac2d77650a478aa95f0827d4f4e73da2a"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacechapterforge.html#ac2d77650a478aa95f0827d4f4e73da2a">chapterforge::hex_prefix</a> (const std::vector&lt; uint8_t &gt; &amp;data, size_t max_len=<a class="el" href="namespacechapterforge.html#a421f14d458b91dcb4c817daadf3db061">kHexPreviewBytes</a>)</td></tr>
-<tr class="memitem:ae356656da8cfa553a94ca0796321b804" id="r_ae356656da8cfa553a94ca0796321b804"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae356656da8cfa553a94ca0796321b804">ch_severity_for_tag</a> (std::string_view tag)</td></tr>
+<tr class="memitem:ae356656da8cfa553a94ca0796321b804" id="r_ae356656da8cfa553a94ca0796321b804"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="group__api.html#ga78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae356656da8cfa553a94ca0796321b804">ch_severity_for_tag</a> (std::string_view tag)</td></tr>
 <tr class="memitem:aa69285655d78d4739b7587c3891dce4f" id="r_aa69285655d78d4739b7587c3891dce4f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a> (const char *level)</td></tr>
 <tr class="memitem:a4d79605a02ae1c6dfd3454016983dd1d" id="r_a4d79605a02ae1c6dfd3454016983dd1d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4d79605a02ae1c6dfd3454016983dd1d">ch_log_impl</a> (const char *level, const std::string &amp;msg, const char *file, int line, const char *func)</td></tr>
 </table><table class="memberdecls">
@@ -161,7 +177,7 @@ Variables</h2></td></tr>
 <div class="line">                        __func__);                                          \</div>
 <div class="line">        }                                                                   \</div>
 <div class="line">    } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="alogging_8hpp_html_aa69285655d78d4739b7587c3891dce4f"><div class="ttname"><a href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a></div><div class="ttdeci">bool ch_should_log(const char *level)</div><div class="ttdef"><b>Definition</b> logging.hpp:63</div></div>
+<div class="ttc" id="alogging_8hpp_html_aa69285655d78d4739b7587c3891dce4f"><div class="ttname"><a href="#aa69285655d78d4739b7587c3891dce4f">ch_should_log</a></div><div class="ttdeci">bool ch_should_log(const char *level)</div><div class="ttdef"><b>Definition</b> logging.hpp:66</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -220,7 +236,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespacechapterforge.html#a78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> ch_severity_for_tag </td>
+          <td class="memname"><a class="el" href="group__api.html#ga78ba096769e30d7a539086e8cfae0099">chapterforge::LogVerbosity</a> ch_severity_for_tag </td>
           <td>(</td>
           <td class="paramtype">std::string_view</td>          <td class="paramname"><span class="paramname"><em>tag</em></span></td><td>)</td>
           <td></td>

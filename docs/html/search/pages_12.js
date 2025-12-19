@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['→_20output_0',['Atom flow (input → output)',['../index.html#autotoc_md11',1,'']]]
+  ['validate_20players_0',['Example output to validate players',['..//Users/till/Development/chapterforge/chapterforge/README.md#autotoc_md10',1,'']]],
+  ['vcpkg_20overlay_20port_1',['vcpkg (overlay port)',['..//Users/till/Development/chapterforge/chapterforge/README.md#autotoc_md15',1,'']]]
 ];

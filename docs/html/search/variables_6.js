@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['genre_0',['genre',['../metadata__set_8hpp.html#a9b380c1b3cd16bb9dbbd2c40ac70b27a',1,'MetadataSet']]]
+  ['handler_5ftype_0',['handler_type',['../namespaceparser__detail.html#a5e9f7ab9b84210c5ec7c038d66116dc0',1,'parser_detail::TrackParseResult']]],
+  ['href_1',['href',['../group__api.html#ae9f8aca25789e6f695ccb85e262130d3',1,'ChapterTextSample']]]
 ];

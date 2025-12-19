@@ -11,11 +11,8 @@
 #include <string>
 #include <vector>
 
-/**
- * @brief Top-level metadata container for ilst.
- *
- * Fields are UTF-8; cover holds JPEG data.
- */
+/// @ingroup api
+/// Top-level metadata container for ilst.
 struct MetadataSet {
     std::string title;          ///< Track title
     std::string artist;         ///< Artist/author

@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>ChapterForge: /Users/till/Development/chapterforge/chapterforge/include/mdat_writer.hpp Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">var page_layout=1;</script>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
 <script type="text/javascript" src="clipboard.js"></script>
@@ -17,9 +18,13 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+  $(function() { init_search(); });
+</script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
+<div id="side-nav" class="ui-resizable side-nav-resizable"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 <div id="titlearea">
 <table cellspacing="0" cellpadding="0">
@@ -30,6 +35,18 @@
    </div>
   </td>
  </tr>
+   <tr><td colspan="2">        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" class="search-icon" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"><span class="search-icon-dropdown"></span></span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><div id="MSearchCloseImg" class="close-icon"></div></a>
+          </span>
+        </div>
+</td></tr>
  </tbody>
 </table>
 </div>
@@ -41,17 +58,7 @@ var searchBox = new SearchBox("searchBox", "search/",'.html');
 <script type="text/javascript">
 $(function() { codefold.init(); });
 </script>
-<script type="text/javascript" src="menudata.js"></script>
-<script type="text/javascript" src="menu.js"></script>
-<script type="text/javascript">
-$(function() {
-  initMenu('',true,false,'search.php','Search',true);
-  $(function() { init_search(); });
-});
-</script>
-<div id="main-nav"></div>
 </div><!-- top -->
-<div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
     <div id="nav-tree-contents">
       <div id="nav-sync" class="sync"></div>
@@ -64,8 +71,15 @@ $(function() {
 <script type="text/javascript">
 $(function(){initNavTree('mdat__writer_8hpp_source.html','',''); });
 </script>
-<div id="container">
-<div id="doc-content">
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',false,false,'search.php','Search',true);
+});
+</script>
+<div id="main-nav"></div>
+<div id="container"><div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -118,7 +132,7 @@ $(function(){initNavTree('mdat__writer_8hpp_source.html','',''); });
 </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="comment">// Write mdat and return offsets (relative to payload_start)</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> <a class="code hl_function" href="mdat__writer_8hpp.html#a252af2ca4853b7d2580a7c1a226f5e5f">write_mdat</a>(std::ofstream &amp;out, <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint8_t&gt;&gt; &amp;audio_samples,</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="mdat__writer_8hpp.html#a252af2ca4853b7d2580a7c1a226f5e5f">   26</a></span><a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> <a class="code hl_function" href="mdat__writer_8hpp.html#a252af2ca4853b7d2580a7c1a226f5e5f">write_mdat</a>(std::ofstream &amp;out, <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint8_t&gt;&gt; &amp;audio_samples,</div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>                       <span class="keyword">const</span> std::vector&lt;std::vector&lt;std::vector&lt;uint8_t&gt;&gt;&gt; &amp;text_tracks_samples,</div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>                       <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint8_t&gt;&gt; &amp;image_samples,</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>                       <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;audio_chunk_sizes,</div>
@@ -126,15 +140,15 @@ $(function(){initNavTree('mdat__writer_8hpp_source.html','',''); });
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>                       <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;image_chunk_sizes);</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="comment">// Patch a single stco atom.</span></div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="keywordtype">void</span> <a class="code hl_function" href="mdat__writer_8hpp.html#ae5ececfb75e409c7d0ce5bfa5a506ede">patch_stco_table</a>(<a class="code hl_class" href="class_atom.html">Atom</a> *stco, <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;offsets,</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="mdat__writer_8hpp.html#ae5ececfb75e409c7d0ce5bfa5a506ede">   34</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="mdat__writer_8hpp.html#ae5ececfb75e409c7d0ce5bfa5a506ede">patch_stco_table</a>(<a class="code hl_class" href="class_atom.html">Atom</a> *stco, <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;offsets,</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>                      uint64_t mdat_payload_start);</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="comment">// Patch stco boxes in moov (audio, text tracks, image). If patch_audio is false,</span></div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">// audio stco (first one) is left untouched.</span></div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keywordtype">void</span> <a class="code hl_function" href="mdat__writer_8hpp.html#ae4ea0c3f2272fc8ca6be4cf1d6320be1">patch_all_stco</a>(<a class="code hl_class" href="class_atom.html">Atom</a> *moov, <span class="keyword">const</span> <a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> &amp;offs, <span class="keywordtype">bool</span> patch_audio = <span class="keyword">true</span>);</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="mdat__writer_8hpp.html#ae4ea0c3f2272fc8ca6be4cf1d6320be1">   39</a></span><span class="keywordtype">void</span> <a class="code hl_function" href="mdat__writer_8hpp.html#ae4ea0c3f2272fc8ca6be4cf1d6320be1">patch_all_stco</a>(<a class="code hl_class" href="class_atom.html">Atom</a> *moov, <span class="keyword">const</span> <a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> &amp;offs, <span class="keywordtype">bool</span> patch_audio = <span class="keyword">true</span>);</div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">// Compute chunk offsets without writing, given starting payload offset.</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> <a class="code hl_function" href="mdat__writer_8hpp.html#a9fb9970f617ac2c020fa396aed79b80e">compute_mdat_offsets</a>(uint64_t payload_start,</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="mdat__writer_8hpp.html#a9fb9970f617ac2c020fa396aed79b80e">   42</a></span><a class="code hl_struct" href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a> <a class="code hl_function" href="mdat__writer_8hpp.html#a9fb9970f617ac2c020fa396aed79b80e">compute_mdat_offsets</a>(uint64_t payload_start,</div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>                                 <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint8_t&gt;&gt; &amp;audio_samples,</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>                                 <span class="keyword">const</span> std::vector&lt;std::vector&lt;std::vector&lt;uint8_t&gt;&gt;&gt; &amp;text_tracks_samples,</div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>                                 <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint8_t&gt;&gt; &amp;image_samples,</div>
@@ -142,14 +156,14 @@ $(function(){initNavTree('mdat__writer_8hpp_source.html','',''); });
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>                                 <span class="keyword">const</span> std::vector&lt;std::vector&lt;uint32_t&gt;&gt; &amp;text_chunk_sizes,</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>                                 <span class="keyword">const</span> std::vector&lt;uint32_t&gt; &amp;image_chunk_sizes);</div>
 <div class="ttc" id="aclass_atom_html"><div class="ttname"><a href="class_atom.html">Atom</a></div><div class="ttdef"><b>Definition</b> mp4_atoms.hpp:36</div></div>
-<div class="ttc" id="amdat__writer_8hpp_html_a252af2ca4853b7d2580a7c1a226f5e5f"><div class="ttname"><a href="mdat__writer_8hpp.html#a252af2ca4853b7d2580a7c1a226f5e5f">write_mdat</a></div><div class="ttdeci">MdatOffsets write_mdat(std::ofstream &amp;out, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;audio_samples, const std::vector&lt; std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &gt; &amp;text_tracks_samples, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;image_samples, const std::vector&lt; uint32_t &gt; &amp;audio_chunk_sizes, const std::vector&lt; std::vector&lt; uint32_t &gt; &gt; &amp;text_chunk_sizes, const std::vector&lt; uint32_t &gt; &amp;image_chunk_sizes)</div><div class="ttdef"><b>Definition</b> mdat_writer.cpp:16</div></div>
+<div class="ttc" id="amdat__writer_8hpp_html_a252af2ca4853b7d2580a7c1a226f5e5f"><div class="ttname"><a href="mdat__writer_8hpp.html#a252af2ca4853b7d2580a7c1a226f5e5f">write_mdat</a></div><div class="ttdeci">MdatOffsets write_mdat(std::ofstream &amp;out, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;audio_samples, const std::vector&lt; std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &gt; &amp;text_tracks_samples, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;image_samples, const std::vector&lt; uint32_t &gt; &amp;audio_chunk_sizes, const std::vector&lt; std::vector&lt; uint32_t &gt; &gt; &amp;text_chunk_sizes, const std::vector&lt; uint32_t &gt; &amp;image_chunk_sizes)</div></div>
 <div class="ttc" id="amdat__writer_8hpp_html_a4f3a59497d88b3e60436b31e8d7671d1"><div class="ttname"><a href="mdat__writer_8hpp.html#a4f3a59497d88b3e60436b31e8d7671d1">MdatOffsets::payload_start</a></div><div class="ttdeci">uint64_t payload_start</div><div class="ttdef"><b>Definition</b> mdat_writer.hpp:22</div></div>
 <div class="ttc" id="amdat__writer_8hpp_html_a7f0ea2a98c71af830cf1c3c35e0538df"><div class="ttname"><a href="mdat__writer_8hpp.html#a7f0ea2a98c71af830cf1c3c35e0538df">MdatOffsets::text_offsets</a></div><div class="ttdeci">std::vector&lt; std::vector&lt; uint32_t &gt; &gt; text_offsets</div><div class="ttdef"><b>Definition</b> mdat_writer.hpp:19</div></div>
 <div class="ttc" id="amdat__writer_8hpp_html_a8bb2fcb1012b7ba80bfa78b7ebf156b1"><div class="ttname"><a href="mdat__writer_8hpp.html#a8bb2fcb1012b7ba80bfa78b7ebf156b1">MdatOffsets::image_offsets</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; image_offsets</div><div class="ttdef"><b>Definition</b> mdat_writer.hpp:20</div></div>
-<div class="ttc" id="amdat__writer_8hpp_html_a9fb9970f617ac2c020fa396aed79b80e"><div class="ttname"><a href="mdat__writer_8hpp.html#a9fb9970f617ac2c020fa396aed79b80e">compute_mdat_offsets</a></div><div class="ttdeci">MdatOffsets compute_mdat_offsets(uint64_t payload_start, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;audio_samples, const std::vector&lt; std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &gt; &amp;text_tracks_samples, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;image_samples, const std::vector&lt; uint32_t &gt; &amp;audio_chunk_sizes, const std::vector&lt; std::vector&lt; uint32_t &gt; &gt; &amp;text_chunk_sizes, const std::vector&lt; uint32_t &gt; &amp;image_chunk_sizes)</div><div class="ttdef"><b>Definition</b> mdat_writer.cpp:158</div></div>
+<div class="ttc" id="amdat__writer_8hpp_html_a9fb9970f617ac2c020fa396aed79b80e"><div class="ttname"><a href="mdat__writer_8hpp.html#a9fb9970f617ac2c020fa396aed79b80e">compute_mdat_offsets</a></div><div class="ttdeci">MdatOffsets compute_mdat_offsets(uint64_t payload_start, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;audio_samples, const std::vector&lt; std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &gt; &amp;text_tracks_samples, const std::vector&lt; std::vector&lt; uint8_t &gt; &gt; &amp;image_samples, const std::vector&lt; uint32_t &gt; &amp;audio_chunk_sizes, const std::vector&lt; std::vector&lt; uint32_t &gt; &gt; &amp;text_chunk_sizes, const std::vector&lt; uint32_t &gt; &amp;image_chunk_sizes)</div></div>
 <div class="ttc" id="amdat__writer_8hpp_html_abad3975b352464d379d9800531101508"><div class="ttname"><a href="mdat__writer_8hpp.html#abad3975b352464d379d9800531101508">MdatOffsets::audio_offsets</a></div><div class="ttdeci">std::vector&lt; uint32_t &gt; audio_offsets</div><div class="ttdef"><b>Definition</b> mdat_writer.hpp:18</div></div>
-<div class="ttc" id="amdat__writer_8hpp_html_ae4ea0c3f2272fc8ca6be4cf1d6320be1"><div class="ttname"><a href="mdat__writer_8hpp.html#ae4ea0c3f2272fc8ca6be4cf1d6320be1">patch_all_stco</a></div><div class="ttdeci">void patch_all_stco(Atom *moov, const MdatOffsets &amp;offs, bool patch_audio=true)</div><div class="ttdef"><b>Definition</b> mdat_writer.cpp:139</div></div>
-<div class="ttc" id="amdat__writer_8hpp_html_ae5ececfb75e409c7d0ce5bfa5a506ede"><div class="ttname"><a href="mdat__writer_8hpp.html#ae5ececfb75e409c7d0ce5bfa5a506ede">patch_stco_table</a></div><div class="ttdeci">void patch_stco_table(Atom *stco, const std::vector&lt; uint32_t &gt; &amp;offsets, uint64_t mdat_payload_start)</div><div class="ttdef"><b>Definition</b> mdat_writer.cpp:109</div></div>
+<div class="ttc" id="amdat__writer_8hpp_html_ae4ea0c3f2272fc8ca6be4cf1d6320be1"><div class="ttname"><a href="mdat__writer_8hpp.html#ae4ea0c3f2272fc8ca6be4cf1d6320be1">patch_all_stco</a></div><div class="ttdeci">void patch_all_stco(Atom *moov, const MdatOffsets &amp;offs, bool patch_audio=true)</div></div>
+<div class="ttc" id="amdat__writer_8hpp_html_ae5ececfb75e409c7d0ce5bfa5a506ede"><div class="ttname"><a href="mdat__writer_8hpp.html#ae5ececfb75e409c7d0ce5bfa5a506ede">patch_stco_table</a></div><div class="ttdeci">void patch_stco_table(Atom *stco, const std::vector&lt; uint32_t &gt; &amp;offsets, uint64_t mdat_payload_start)</div></div>
 <div class="ttc" id="amdat__writer_8hpp_html_struct_mdat_offsets"><div class="ttname"><a href="mdat__writer_8hpp.html#struct_mdat_offsets">MdatOffsets</a></div><div class="ttdef"><b>Definition</b> mdat_writer.hpp:17</div></div>
 <div class="ttc" id="amp4__atoms_8hpp_html"><div class="ttname"><a href="mp4__atoms_8hpp.html">mp4_atoms.hpp</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

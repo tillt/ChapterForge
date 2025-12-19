@@ -11,12 +11,8 @@
 #include <cstdint>
 #include <vector>
 
-/**
- * @brief Represents a chapter image sample (JPEG payload and start time).
- *
- * @param data Raw JPEG bytes (must be YUVJ420).
- * @param start_ms Absolute start time in milliseconds.
- */
+/// @ingroup api
+/// Represents a chapter image sample (JPEG payload and start time).
 struct ChapterImageSample {
     std::vector<uint8_t> data;  ///< Raw JPEG bytes (must be YUVJ420)
     uint32_t start_ms = 0;      ///< Absolute start time in ms
