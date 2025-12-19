@@ -1,3 +1,10 @@
+//
+//  chapterforge.cpp
+//  ChapterForge
+//
+//  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
+//
 #include "chapterforge.hpp"
 #include "chapterforge_version.hpp"
 

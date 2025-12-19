@@ -1,3 +1,11 @@
+//
+//  jpeg_info.cpp
+//  ChapterForge
+//
+//  Created by Till Toenshoff on 12/9/25.
+//  Copyright © 2025 Till Toenshoff. All rights reserved.
+//
+
 #include "jpeg_info.hpp"
 
 // Minimal JPEG dimension parser (SOF0/1/2/3/5/6/7/9/10/11/12/13/14/15)
