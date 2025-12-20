@@ -14,24 +14,12 @@
 #include <string>
 #include <vector>
 
+#include "fourcc_utils.hpp"
+
 // Forward declaration.
 class Atom;
 
 using AtomPtr = std::unique_ptr<Atom>;
-
-// FourCC helpers.
-inline uint32_t fourcc(const char a, const char b, const char c, const char d) {
-    return (uint32_t(uint8_t(a)) << 24) | (uint32_t(uint8_t(b)) << 16) |
-           (uint32_t(uint8_t(c)) << 8) | (uint32_t(uint8_t(d)));
-}
-
-inline uint32_t fourcc(const char t[4]) { return fourcc(t[0], t[1], t[2], t[3]); }
-
-inline uint32_t fourcc(const std::string &s) {
-    if (s.size() < 4)
-        throw std::runtime_error("fourcc string too short");
-    return fourcc(s[0], s[1], s[2], s[3]);
-}
 
 class Atom {
    public:

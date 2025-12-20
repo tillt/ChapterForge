@@ -28,25 +28,6 @@ constexpr uint64_t kMetaReservedBytes = 4;
 constexpr uint64_t kHdlrMinPayload = 20;
 constexpr uint64_t kMaxAtomPayload = 512 * 1024 * 1024;  // 512 MB safety bound
 
-static bool is_printable_fourcc(uint32_t type) {
-    for (int i = 0; i < 4; ++i) {
-        uint8_t c = (type >> (24 - 8 * i)) & 0xFF;
-        if (c < 0x20 || c > 0x7E) {
-            return false;
-        }
-    }
-    return true;
-}
-
-static std::string fourcc_to_string(uint32_t type) {
-    std::string s(4, ' ');
-    s[0] = static_cast<char>((type >> 24) & 0xFF);
-    s[1] = static_cast<char>((type >> 16) & 0xFF);
-    s[2] = static_cast<char>((type >> 8) & 0xFF);
-    s[3] = static_cast<char>(type & 0xFF);
-    return s;
-}
-
 }  // namespace
 
 static void skip(std::istream &in, uint64_t n) { in.seekg(n, std::ios::cur); }

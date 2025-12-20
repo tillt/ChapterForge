@@ -26,6 +26,7 @@
 #include "chapter_text_sample.hpp"
 #include "chapter_image_sample.hpp"
 #include "mp4a_builder.hpp"
+#include "mp4_atoms.hpp"
 #include "mp4_muxer.hpp"
 #include "parser.hpp"
 
@@ -83,11 +84,6 @@ static std::optional<AacExtractResult> load_audio(const std::string &path) {
 inline uint32_t be32(const uint8_t *p) {
     return (static_cast<uint32_t>(p[0]) << 24) | (static_cast<uint32_t>(p[1]) << 16) |
            (static_cast<uint32_t>(p[2]) << 8) | static_cast<uint32_t>(p[3]);
-}
-
-constexpr uint32_t fourcc(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-    return (static_cast<uint32_t>(a) << 24) | (static_cast<uint32_t>(b) << 16) |
-           (static_cast<uint32_t>(c) << 8) | static_cast<uint32_t>(d);
 }
 
 // Minimal ilst parser to surface top-level metadata into MetadataSet.
