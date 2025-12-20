@@ -95,7 +95,7 @@ static std::unique_ptr<Atom> build_stco(uint32_t chunk_count) {
     return stco;
 }
 
-// Main audio stbl builder.
+// Build audio stbl from parsed AAC config and sample layout.
 std::unique_ptr<Atom> build_audio_stbl(const Mp4aConfig &cfg,
                                        const std::vector<uint32_t> &sample_sizes,
                                        const std::vector<uint32_t> &chunk_sizes,
@@ -118,6 +118,7 @@ std::unique_ptr<Atom> build_audio_stbl(const Mp4aConfig &cfg,
     return stbl;
 }
 
+// Rehydrate an audio stbl from raw atom payloads (used when reusing source stbl).
 std::unique_ptr<Atom> build_audio_stbl_raw(const std::vector<uint8_t> &stsd_payload,
                                            const std::vector<uint8_t> &stts_payload,
                                            const std::vector<uint8_t> &stsc_payload,

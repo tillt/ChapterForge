@@ -22,6 +22,7 @@
 //      lang   (uint32=0)
 //      <raw data>
 
+// Create a single ilst entry with a data atom of the given type.
 std::unique_ptr<Atom> build_ilst_item(const std::string &fourcc, const std::vector<uint8_t> &data,
                                       uint32_t data_type) {
     auto item = Atom::create(fourcc.c_str());
@@ -41,6 +42,7 @@ std::unique_ptr<Atom> build_ilst_item(const std::string &fourcc, const std::vect
 }
 
 
+// Assemble an ilst atom from the supplied items.
 std::unique_ptr<Atom> build_ilst(std::vector<std::unique_ptr<Atom>> items) {
     auto ilst = Atom::create("ilst");
 
@@ -52,6 +54,7 @@ std::unique_ptr<Atom> build_ilst(std::vector<std::unique_ptr<Atom>> items) {
 }
 
 
+// Wrap ilst in a meta atom containing the required handler.
 std::unique_ptr<Atom> build_meta(std::unique_ptr<Atom> ilst) {
     auto meta = Atom::create("meta");
 
@@ -114,6 +117,7 @@ static std::unique_ptr<Atom> build_cover_item(const std::vector<uint8_t> &cover)
 }
 
 // Build udta/meta/ilst container (Apple-style)
+// Build the full udta/meta/ilst structure for top-level metadata.
 std::unique_ptr<Atom> build_meta_atom(const MetadataSet &meta) {
     //
     // ilst.

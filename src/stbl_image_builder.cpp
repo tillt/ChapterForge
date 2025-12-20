@@ -120,7 +120,7 @@ static std::unique_ptr<Atom> build_stco_img(uint32_t count) {
     return stco;
 }
 
-// MAIN BUILDER.
+// Build image stbl (jpeg sample entry + timing + chunk tables).
 std::unique_ptr<Atom> build_image_stbl(const std::vector<ChapterImageSample> &samples,
                                        uint32_t track_timescale, uint16_t width, uint16_t height,
                                        const std::vector<uint32_t> &chunk_plan,
