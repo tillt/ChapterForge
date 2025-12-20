@@ -169,8 +169,8 @@ The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterfo
   to the CLI. Debug-only logs stay hidden unless you raise the level.
 - Options:
   - `--faststart` (write) Place `moov` before `mdat` for faster playback start.
-  - `--log-level LEVEL`   One of `warn|info|debug`.
-  - `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
+- `--log-level LEVEL`   One of `warn|info|debug`.
+- `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
 
 
 ## Chapters JSON format
@@ -358,58 +358,33 @@ struct ChapterImageSample {
   uint32_t start_ms = 0;     // absolute start time in milliseconds
 };
 
-struct Status { bool ok; std::string message; }; // status + message on failure
+// Status + message on failure.
+struct Status { bool ok; std::string message; };
 
-// JSON-driven (reuses ilst unless JSON metadata overrides it)
+// Writes top level metadata (optional), chapters with titles, optional URLs and chapter images.
 Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::string& chapter_json_path,
-                          const std::string& output_path,
-                          bool fast_start = true);
+                       const std::vector<ChapterTextSample>& text_chapters,
+                       const std::vector<ChapterTextSample>& url_chapters,
+                       const std::vector<ChapterImageSample>& image_chapters,
+                       const MetadataSet& metadata,
+                       const std::string& output_path,
+                       bool fast_start = true);
+```
+Note that there are several overloads for `mux_file_to_m4a`, for your convenience and clear intent.
 
-// Titles + images (metadata provided)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const std::vector<ChapterImageSample>& image_chapters,
-                          const MetadataSet& metadata,
-                          const std::string& output_path,
-                          bool fast_start = true);
+```c++
+// Result from reading and parsing an MP4/M4A file.
+struct ReadResult {
+    Status status;
+    std::vector<ChapterTextSample> text_chapters;
+    std::vector<ChapterTextSample> url_chapters;
+    std::vector<ChapterImageSample> image_chapters;
+    MetadataSet metadata;
+};
 
-// Titles + images (metadata reused from source)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const std::vector<ChapterImageSample>& image_chapters,
-                          const std::string& output_path,
-                          bool fast_start = true);
-
-// Titles only (metadata provided)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const MetadataSet& metadata,
-                          const std::string& output_path,
-                          bool fast_start = true);
-
-// Titles only (metadata reused from source)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const std::string& output_path,
-                          bool fast_start = true);
-
-// Titles + URLs + images (metadata provided)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const std::vector<ChapterTextSample>& url_chapters,
-                          const std::vector<ChapterImageSample>& image_chapters,
-                          const MetadataSet& metadata,
-                          const std::string& output_path,
-                          bool fast_start = true);
-
-// Titles + URLs + images (metadata reused from source)
-Status mux_file_to_m4a(const std::string& input_audio_path,
-                          const std::vector<ChapterTextSample>& text_chapters,
-                          const std::vector<ChapterTextSample>& url_chapters,
-                          const std::vector<ChapterImageSample>& image_chapters,
-                          const std::string& output_path,
-                          bool fast_start = true);
+// Extracts chapter titles, optional URL samples (tx3g + href), chapter images (MJPEG samples),
+// and top-level metadata (ilst if present). Does not decode audio.
+ReadResult read_m4a(const std::string &path);
 ```
 
 If `metadata` is empty and the source has an `ilst`, it is reused automatically.
@@ -457,6 +432,15 @@ if (!res.status.ok) {
 }
 ```
 
+`read_m4a` returns:
+- `status` — `ok/message` pair.
+- `titles` — chapter title samples (tx3g), including `href` mirrored from the URL track when present.
+- `urls` — optional URL track samples (tx3g + href). Empty if no URL track exists.
+- `images` — optional JPEG chapter images.
+- `metadata` — top-level ilst metadata (reused from source; empty if absent).
+
+Note: When reading, missing fields are left empty rather than synthesized (e.g., a chapter without a URL
+will have an empty URL sample and no `url`/`url_text` keys in the exported JSON).
 
 ## Tests & Dependencies
 
@@ -492,58 +476,6 @@ Issues and PRs are welcome. Please:
 - Run tests before submitting: `cmake -S . -B build -DENABLE_OUTPUT_TOOL_TESTS=ON && cmake --build build && (cd build && ctest --output-on-failure)`.
 - Add or update tests when you change muxing behavior, metadata handling, or JSON parsing.
 - Keep comments concise and only where the code isn’t self-explanatory.
-
-
-## Advanced Usage
-
-### Objective-C++ Example
-
-Invoking `write_mp4` from Objective-C++ using an `NSArray<NSDictionary*>` of chapters (`@"title"`: `NSString*`, `@"time"`: `NSNumber` in milliseconds):
-
-```objective-c++
-#import "chapterforge.hpp" // public header
-#import <Foundation/Foundation.h>
-
-static void BuildChaptersFromDict(NSArray<NSDictionary *> *chapterArray,
-                                  std::vector<ChapterTextSample> &textChapters) {
-    textChapters.clear();
-    textChapters.reserve([chapterArray count]);
-    for (NSDictionary *entry in chapterArray) {
-        NSString *title = entry[@"title"];
-        NSNumber *startMs = entry[@"time"];
-        if (!title || !startMs) continue;
-        ChapterTextSample s{};
-        s.text = [title UTF8String];
-        s.start_ms = [startMs unsignedIntValue];
-        textChapters.push_back(std::move(s));
-    }
-}
-
-void ExampleMuxFromObjectiveC(NSArray<NSDictionary *> *chaptersDict,
-                              const AacExtractResult &aac,
-                              const std::string &outputPath) {
-    std::vector<ChapterTextSample> textChapters;
-    std::vector<ChapterImageSample> imageChapters; // empty if no images
-    BuildChaptersFromDict(chaptersDict, textChapters);
-
-    MetadataSet meta{}; // leave empty to reuse source ilst
-    Mp4aConfig cfg{};
-    cfg.sample_rate = aac.sample_rate;
-    cfg.channel_count = aac.channel_config;
-    cfg.sampling_index = aac.sampling_index;
-    cfg.audio_object_type = aac.audio_object_type;
-
-    bool ok = write_mp4(outputPath, aac, textChapters, imageChapters, cfg, meta,
-                        /*fast_start=*/true, nullptr);
-    if (!ok) {
-        NSLog(@"Failed to write output");
-    } else {
-        NSLog(@"Wrote %@", [NSString stringWithUTF8String:outputPath.c_str()]);
-    }
-}
-```
-
-If you have parsed `ilst` metadata, pass it via the optional `ilst_payload` parameter on `write_mp4` to force reuse. Leaving `meta` empty will reuse the source `ilst` when available.
 
 ## Disclaimer
 
