@@ -12,9 +12,7 @@
 
 #include "stsd_builder.hpp"
 
-// -----------------------------------------------------------------------------
 // Build stts: each AAC frame = 1024 PCM samples in AAC-LC.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stts(uint32_t sample_count) {
     auto stts = Atom::create("stts");
     auto &p = stts->payload;
@@ -32,9 +30,7 @@ static std::unique_ptr<Atom> build_stts(uint32_t sample_count) {
     return stts;
 }
 
-// -----------------------------------------------------------------------------
 // Build stsc from a chunk plan.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stsc(const std::vector<uint32_t> &chunk_sizes) {
     auto stsc = Atom::create("stsc");
     auto &p = stsc->payload;
@@ -66,9 +62,7 @@ static std::unique_ptr<Atom> build_stsc(const std::vector<uint32_t> &chunk_sizes
     return stsc;
 }
 
-// -----------------------------------------------------------------------------
 // Build stsz (sizes of all AAC frames)
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stsz(const std::vector<uint32_t> &sizes) {
     auto stsz = Atom::create("stsz");
     auto &p = stsz->payload;
@@ -85,9 +79,7 @@ static std::unique_ptr<Atom> build_stsz(const std::vector<uint32_t> &sizes) {
     return stsz;
 }
 
-// -----------------------------------------------------------------------------
 // Build stco (initially empty — patched later)
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stco(uint32_t chunk_count) {
     auto stco = Atom::create("stco");
     auto &p = stco->payload;
@@ -103,9 +95,7 @@ static std::unique_ptr<Atom> build_stco(uint32_t chunk_count) {
     return stco;
 }
 
-// -----------------------------------------------------------------------------
 // Main audio stbl builder.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_audio_stbl(const Mp4aConfig &cfg,
                                        const std::vector<uint32_t> &sample_sizes,
                                        const std::vector<uint32_t> &chunk_sizes,

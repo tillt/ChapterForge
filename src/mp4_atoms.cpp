@@ -8,23 +8,15 @@
 
 #include "mp4_atoms.hpp"
 
-// -----------------------------------------------------------------------------
-// Factory.
-// -----------------------------------------------------------------------------
+// Factory helpers.
 AtomPtr Atom::create(const char t[4]) { return std::make_unique<Atom>(t); }
-
 AtomPtr Atom::create(uint32_t t) { return std::make_unique<Atom>(t); }
-
 AtomPtr Atom::create(const std::string &t) { return std::make_unique<Atom>(fourcc(t)); }
 
-// -----------------------------------------------------------------------------
-// Add child.
-// -----------------------------------------------------------------------------
+// Child management.
 void Atom::add(AtomPtr child) { children.push_back(std::move(child)); }
 
-// -----------------------------------------------------------------------------
 // Recursive find.
-// -----------------------------------------------------------------------------
 std::vector<Atom *> Atom::find(const std::string &t) {
     std::vector<Atom *> result;
 
@@ -42,9 +34,7 @@ std::vector<Atom *> Atom::find(const std::string &t) {
     return result;
 }
 
-// -----------------------------------------------------------------------------
 // Compute recursive box size.
-// -----------------------------------------------------------------------------
 void Atom::fix_size_recursive() {
     // Start with MP4 header: 8 bytes (size + type)
     uint32_t total = 8;
@@ -61,14 +51,10 @@ void Atom::fix_size_recursive() {
     box_size = total;
 }
 
-// -----------------------------------------------------------------------------
 // Return box size.
-// -----------------------------------------------------------------------------
 uint32_t Atom::size() const { return box_size; }
 
-// -----------------------------------------------------------------------------
 // Write atom to file.
-// -----------------------------------------------------------------------------
 void Atom::write(std::ofstream &out) const {
     uint32_t s = box_size;
 

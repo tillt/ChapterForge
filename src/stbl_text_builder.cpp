@@ -41,9 +41,7 @@ static std::vector<uint8_t> encode_tx3g_sample(const ChapterTextSample &s) {
     return out;
 }
 
-// -----------------------------------------------------------------------------
 // stts: durations converted to track timescale.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stts_text(const std::vector<ChapterTextSample> &samples,
                                              uint32_t timescale, uint32_t total_ms) {
     auto stts = Atom::create("stts");
@@ -65,9 +63,7 @@ static std::unique_ptr<Atom> build_stts_text(const std::vector<ChapterTextSample
     return stts;
 }
 
-// -----------------------------------------------------------------------------
 // stsc: 1 sample per chunk (dynamic to match chunk plan).
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stsc_text(const std::vector<uint32_t> &chunk_plan) {
     auto stsc = Atom::create("stsc");
     auto &p = stsc->payload;
@@ -107,9 +103,7 @@ static std::unique_ptr<Atom> build_stsc_text(const std::vector<uint32_t> &chunk_
     return stsc;
 }
 
-// -----------------------------------------------------------------------------
 // stsz: byte size for each text sample.
-// -----------------------------------------------------------------------------
 static uint32_t encoded_tx3g_size(const ChapterTextSample &s) {
     uint32_t base = static_cast<uint32_t>(s.text.size() + 2);  // len(2) + text
     if (!s.href.empty()) {
@@ -136,9 +130,7 @@ static std::unique_ptr<Atom> build_stsz_text(const std::vector<ChapterTextSample
     return stsz;
 }
 
-// -----------------------------------------------------------------------------
 // stco: 1 entry per sample (patched later)
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stco_text(uint32_t count) {
     auto stco = Atom::create("stco");
     auto &p = stco->payload;
@@ -154,9 +146,7 @@ static std::unique_ptr<Atom> build_stco_text(uint32_t count) {
     return stco;
 }
 
-// -----------------------------------------------------------------------------
 // Build text chapter stbl.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_text_stbl(const std::vector<ChapterTextSample> &samples,
                                       uint32_t track_timescale,
                                       const std::vector<uint32_t> &chunk_plan, uint32_t total_ms) {

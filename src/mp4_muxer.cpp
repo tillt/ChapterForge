@@ -349,9 +349,7 @@ TestDurationInfo compute_durations_for_test(
 }  // namespace chapterforge::testing
 #endif
 
-// -----------------------------------------------------------------------------
 // Complete MP4 writer.
-// -----------------------------------------------------------------------------
 bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
                const std::vector<ChapterTextSample> &text_chapters,
                const std::vector<ChapterImageSample> &image_chapters, Mp4aConfig audio_cfg,

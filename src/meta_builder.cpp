@@ -40,7 +40,6 @@ std::unique_ptr<Atom> build_ilst_item(const std::string &fourcc, const std::vect
     return item;
 }
 
-// -------------------------------------------------------------------------
 
 std::unique_ptr<Atom> build_ilst(std::vector<std::unique_ptr<Atom>> items) {
     auto ilst = Atom::create("ilst");
@@ -52,7 +51,6 @@ std::unique_ptr<Atom> build_ilst(std::vector<std::unique_ptr<Atom>> items) {
     return ilst;
 }
 
-// -------------------------------------------------------------------------
 
 std::unique_ptr<Atom> build_meta(std::unique_ptr<Atom> ilst) {
     auto meta = Atom::create("meta");
@@ -115,9 +113,7 @@ static std::unique_ptr<Atom> build_cover_item(const std::vector<uint8_t> &cover)
     return item;
 }
 
-// -----------------------------------------------------------------------------
 // Build udta/meta/ilst container (Apple-style)
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_meta_atom(const MetadataSet &meta) {
     //
     // ilst.
