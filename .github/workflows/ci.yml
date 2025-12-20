@@ -40,15 +40,15 @@ jobs:
       - name: Install tools (Linux)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xxd gpac vim-common nlohmann-json3-dev unzip doxygen
-          sudo apt-get install -y atomicparsley || true
+          sudo apt-get update -o Acquire::Retries=5
+          sudo apt-get install -o Acquire::Retries=5 -y xxd gpac vim-common nlohmann-json3-dev unzip doxygen
+          sudo apt-get install -o Acquire::Retries=5 -y atomicparsley || true
           # Prefer distro bento4; fall back to upstream binaries if missing.
           if ! sudo apt-get install -y bento4; then
             B4_VER="1-6-0-640"
             B4_URL="https://www.bok.net/Bento4/binaries/Bento4-SDK-${B4_VER}.x86_64-unknown-linux.zip"
             echo "Fetching Bento4 from ${B4_URL}"
-            curl -L -o /tmp/bento4.zip "${B4_URL}"
+            curl -L --retry 5 --retry-delay 5 --fail --retry-all-errors -o /tmp/bento4.zip "${B4_URL}"
             sudo unzip -q /tmp/bento4.zip -d /opt/bento4
             sudo ln -sf /opt/bento4/Bento4-SDK-${B4_VER}.x86_64-unknown-linux/bin/mp4info /usr/local/bin/mp4info
             sudo ln -sf /opt/bento4/Bento4-SDK-${B4_VER}.x86_64-unknown-linux/bin/mp4dump /usr/local/bin/mp4dump
@@ -57,6 +57,7 @@ jobs:
       - name: Install tools (macOS)
         if: runner.os == 'macOS'
         run: |
+          export HOMEBREW_CURL_RETRIES=5
           brew update
           # Prefer Bento4 mp4info/mp4dump; avoid mp4v2 to prevent binary conflicts.
           brew install gpac atomicparsley nlohmann-json bento4 doxygen || true
@@ -78,14 +79,17 @@ jobs:
         shell: bash
         run: |
           # Python is preinstalled on GitHub runners; keep a known version via setup-python instead of Chocolatey.
+          export chocolateyDownloadRetries=5
+          export chocolateyDownloadRetrySeconds=5
           choco install -y gpac
           choco install -y vim || true
           choco install -y nlohmann-json || true
           choco install -y 7zip || true
-          choco install -y doxygen || true
+          # Prefer doxygen.install (available on chocolatey); fall back to doxygen portable if needed.
+          choco install -y doxygen.install || choco install -y doxygen || true
           # Bento4: download prebuilt SDK and expose mp4info/mp4dump
           B4_VER="1-6-0-640"
-          curl -L -o /tmp/bento4.zip https://www.bok.net/Bento4/binaries/Bento4-SDK-${B4_VER}.x86_64-microsoft-win32.zip
+          curl -L --retry 5 --retry-delay 5 --fail --retry-all-errors -o /tmp/bento4.zip https://www.bok.net/Bento4/binaries/Bento4-SDK-${B4_VER}.x86_64-microsoft-win32.zip
           mkdir -p /c/bento4
           unzip -q /tmp/bento4.zip -d /c/bento4
           echo "/c/bento4/Bento4-SDK-${B4_VER}.x86_64-microsoft-win32/bin" >> $GITHUB_PATH
