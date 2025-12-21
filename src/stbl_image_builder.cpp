@@ -11,9 +11,7 @@
 #include "chapter_timing.hpp"
 #include "jpeg_entry_builder.hpp"
 
-// -----------------------------------------------------------------------------
 // stts (same logic as text track)
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stts_img(const std::vector<ChapterImageSample> &samples,
                                             uint32_t timescale, uint32_t total_ms) {
     auto stts = Atom::create("stts");
@@ -33,9 +31,7 @@ static std::unique_ptr<Atom> build_stts_img(const std::vector<ChapterImageSample
     return stts;
 }
 
-// -----------------------------------------------------------------------------
 // stss: mark every sample as sync (key) sample.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stss_img(uint32_t sample_count) {
     auto stss = Atom::create("stss");
     auto &p = stss->payload;
@@ -49,9 +45,7 @@ static std::unique_ptr<Atom> build_stss_img(uint32_t sample_count) {
     return stss;
 }
 
-// -----------------------------------------------------------------------------
 // stsc: 1 sample per chunk.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stsc_img(const std::vector<uint32_t> &chunk_plan) {
     auto stsc = Atom::create("stsc");
     auto &p = stsc->payload;
@@ -92,9 +86,7 @@ static std::unique_ptr<Atom> build_stsc_img(const std::vector<uint32_t> &chunk_p
     return stsc;
 }
 
-// -----------------------------------------------------------------------------
 // stsz: JPEG sizes.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stsz_img(const std::vector<ChapterImageSample> &samples) {
     auto stsz = Atom::create("stsz");
     auto &p = stsz->payload;
@@ -112,9 +104,7 @@ static std::unique_ptr<Atom> build_stsz_img(const std::vector<ChapterImageSample
     return stsz;
 }
 
-// -----------------------------------------------------------------------------
 // stco: patched later.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_stco_img(uint32_t count) {
     auto stco = Atom::create("stco");
     auto &p = stco->payload;
@@ -130,9 +120,7 @@ static std::unique_ptr<Atom> build_stco_img(uint32_t count) {
     return stco;
 }
 
-// -----------------------------------------------------------------------------
-// MAIN BUILDER.
-// -----------------------------------------------------------------------------
+// Build image stbl (jpeg sample entry + timing + chunk tables).
 std::unique_ptr<Atom> build_image_stbl(const std::vector<ChapterImageSample> &samples,
                                        uint32_t track_timescale, uint16_t width, uint16_t height,
                                        const std::vector<uint32_t> &chunk_plan,

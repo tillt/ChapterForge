@@ -160,7 +160,8 @@ The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterfo
 ```
 
 - Write mode: mux chapters/images/URLs into an output M4A. If the input already has metadata (`ilst`),
-  it is reused by default. Fast-start is off by default; enable with `--faststart`.
+  it is reused by default. Fast-start is ON by default (moov before mdat); use `--no-faststart` if you
+  need the legacy layout.
 - Read mode: extract metadata, chapter titles/URLs/URL-texts, and images from an M4A. The JSON emitted
   matches the writer input format and is always printed to stdout. Use `--export-jpegs DIR` to dump cover
   + chapter images alongside the JSON and reference them in the output.
@@ -168,9 +169,10 @@ The overlay tracks the current commit. Update `REF`/`SHA512` in `ports/chapterfo
   `chapterforge::set_log_verbosity(LogVerbosity::Warn|Info|Debug)` or pass `--log-level warn|info|debug`
   to the CLI. Debug-only logs stay hidden unless you raise the level.
 - Options:
-  - `--faststart` (write) Place `moov` before `mdat` for faster playback start.
-- `--log-level LEVEL`   One of `warn|info|debug`.
-- `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
+  - `--faststart` (write) Explicitly enable fast-start (default).
+  - `--no-faststart` (write) Disable fast-start; keep `mdat` before `moov`.
+  - `--log-level LEVEL`   One of `warn|info|debug`.
+  - `--export-jpegs DIR`  (read) Export cover/chapter JPEGs to `DIR` and reference them in the JSON.
 
 
 ## Chapters JSON format
@@ -190,7 +192,7 @@ ChapterForge consumes a simple JSON document:
   "chapters": [
     {
       "title": "Introduction",           // required
-      "start_ms": 0,                     // required: chapter start time in milliseconds
+      "start_ms": 0,                     // required: chapter start time in milliseconds (first snaps to 0)
       "image": "chapter1.jpg",           // optional; path relative to the JSON file
       "url": "https://example.com",      // optional; creates a URL text track with HREF
       "url_text": "Intro link label"     // optional; text payload for the URL track (defaults empty)

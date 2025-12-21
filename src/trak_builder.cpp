@@ -22,9 +22,7 @@
 #include "tkhd_builder.hpp"
 #include "vmhd_builder.hpp"
 
-// -----------------------------------------------------------------------------
 // Helper: build tref/chap for audio track.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_tref_chap(const std::vector<uint32_t> &refs) {
     auto tref = Atom::create("tref");
     auto chap = Atom::create("chap");
@@ -41,9 +39,7 @@ static std::unique_ptr<Atom> build_tref_chap(const std::vector<uint32_t> &refs) 
     return tref;
 }
 
-// -----------------------------------------------------------------------------
 // Audio track.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_trak_audio(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                        std::unique_ptr<Atom> stbl_audio,
                                        const std::vector<uint32_t> &chapter_ref_track_ids,
@@ -75,9 +71,7 @@ std::unique_ptr<Atom> build_trak_audio(uint32_t track_id, uint32_t timescale, ui
     return trak;
 }
 
-// -----------------------------------------------------------------------------
 // Text chapter track.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                       std::unique_ptr<Atom> stbl_text,
                                       uint64_t tkhd_duration_mvhd,
@@ -105,9 +99,7 @@ std::unique_ptr<Atom> build_trak_text(uint32_t track_id, uint32_t timescale, uin
     return trak;
 }
 
-// -----------------------------------------------------------------------------
 // Timed metadata track (metadata samples aligned to chapters).
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_trak_metadata(uint32_t track_id, uint32_t timescale,
                                           uint64_t duration_ts,
                                           std::unique_ptr<Atom> stbl_metadata,
@@ -133,9 +125,7 @@ std::unique_ptr<Atom> build_trak_metadata(uint32_t track_id, uint32_t timescale,
     return trak;
 }
 
-// -----------------------------------------------------------------------------
 // Image chapter track.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_trak_image(uint32_t track_id, uint32_t timescale, uint64_t duration_ts,
                                        std::unique_ptr<Atom> stbl_image, uint16_t width,
                                        uint16_t height, uint64_t tkhd_duration_mvhd) {

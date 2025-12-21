@@ -113,11 +113,13 @@ int main(int argc, char **argv) {
     // Gather positional arguments (non-option).
     std::vector<std::string> positional;
     std::filesystem::path export_dir;
-    bool fast_start = false;
+    bool fast_start = true;  // Default to fast-start layout.
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--faststart") {
             fast_start = true;
+        } else if (arg == "--no-faststart") {
+            fast_start = false;
         } else if (arg == "--log-level" && i + 1 < argc) {
             chapterforge::set_log_verbosity(parse_level(argv[i + 1]));
             ++i;
@@ -134,14 +136,15 @@ int main(int argc, char **argv) {
     if (positional.empty()) {
         std::cerr << "ChapterForge " << CHAPTERFORGE_VERSION_DISPLAY << "\n"
                   << "Copyright (c) 2025 Till Toenshoff\n\n"
-                  << "usage for reading:\n"
+                  << "Usage for reading:\n"
                   << "  chapterforge <input.m4a> [--export-jpegs DIR] "
-                  << "[--log-level warn|info|debug]\n"
-                  << "usage for writing:\n"
+                  << "[--log-level warn|info|debug]\n\n"
+                  << "Usage for writing:\n"
                   << "  chapterforge <input.aac|input.m4a> <chapters.json> <output.m4a> "
-                  << "[--faststart] [--log-level warn|info|debug]\n"
+                  << "[--no-faststart|--faststart] [--log-level warn|info|debug]\n\n"
                   << "Options:\n"
-                  << "  --faststart         Place 'moov' atom before 'mdat' for faster playback start.\n"
+                  << "  --faststart         Place 'moov' atom before 'mdat' for faster playback start (default).\n"
+                  << "  --no-faststart      Write classic layout with 'mdat' before 'moov'.\n"
                   << "  --log-level LEVEL   Set logging verbosity (default: info).\n"
                   << "  --export-jpegs DIR  When reading, write chapter images (and cover if any) to DIR.\n"
                   << "                      JSON is always written to stdout when reading.\n";

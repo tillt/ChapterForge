@@ -37,10 +37,8 @@ static void write_descr_len_padded4(std::vector<uint8_t> &out, uint8_t len) {
     out.push_back(len);
 }
 
-// -----------------------------------------------------------------------------
 // Build DecoderSpecificInfo (AudioSpecificConfig)
 // ISO/IEC 14496-3 Table 1.13.
-// -----------------------------------------------------------------------------
 static std::vector<uint8_t> build_audio_specific_config(uint8_t audio_object_type,
                                                         uint8_t sampling_freq_index,
                                                         uint8_t channel_config) {
@@ -60,9 +58,7 @@ static std::vector<uint8_t> build_audio_specific_config(uint8_t audio_object_typ
     return asc;
 }
 
-// -----------------------------------------------------------------------------
 // Build ESDS box.
-// -----------------------------------------------------------------------------
 static std::unique_ptr<Atom> build_esds(const Mp4aConfig &cfg) {
     auto esds = Atom::create("esds");
     auto &p = esds->payload;
@@ -103,9 +99,7 @@ static std::unique_ptr<Atom> build_esds(const Mp4aConfig &cfg) {
     return esds;
 }
 
-// -----------------------------------------------------------------------------
 // Build mp4a sample entry.
-// -----------------------------------------------------------------------------
 std::unique_ptr<Atom> build_mp4a(const Mp4aConfig &cfg) {
     auto mp4a = Atom::create("mp4a");
     auto &p = mp4a->payload;

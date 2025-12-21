@@ -10,9 +10,7 @@
 
 #include <stdexcept>
 
-// -----------------------------------------------------------------------------
-// Write mdat and record sample offsets.
-// -----------------------------------------------------------------------------
+// Write the mdat box and collect relative offsets for each track.
 MdatOffsets write_mdat(
     std::ofstream &out, const std::vector<std::vector<uint8_t>> &audio_samples,
     const std::vector<std::vector<std::vector<uint8_t>>> &text_tracks_samples,
@@ -103,9 +101,7 @@ MdatOffsets write_mdat(
     return result;
 }
 
-// -----------------------------------------------------------------------------
-// Patch a single stco table.
-// -----------------------------------------------------------------------------
+// Update a single stco table with absolute offsets based on the mdat payload start.
 void patch_stco_table(Atom *stco, const std::vector<uint32_t> &offsets,
                       uint64_t mdat_payload_start) {
     if (!stco) {
@@ -134,8 +130,7 @@ void patch_stco_table(Atom *stco, const std::vector<uint32_t> &offsets,
     }
 }
 
-// -----------------------------------------------------------------------------
-// Patch all stco atoms (order: audio, text tracks..., image)
+// Patch all stco tables (audio, text tracks, images) found under moov.
 void patch_all_stco(Atom *moov, const MdatOffsets &offs, bool patch_audio) {
     if (!moov) { return; }
     auto stcos = moov->find("stco");
@@ -152,9 +147,7 @@ void patch_all_stco(Atom *moov, const MdatOffsets &offs, bool patch_audio) {
     }
 }
 
-// -----------------------------------------------------------------------------
-// Compute offsets only (no writing), given a payload start.
-// -----------------------------------------------------------------------------
+// Compute offsets without writing an mdat (used for fast layout calculations).
 MdatOffsets compute_mdat_offsets( uint64_t payload_start,
                                  const std::vector<std::vector<uint8_t>> &audio_samples,
                                  const std::vector<std::vector<std::vector<uint8_t>>> &text_tracks_samples,
