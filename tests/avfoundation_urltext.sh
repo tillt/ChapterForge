@@ -133,8 +133,11 @@ for idx, c in enumerate(chapters):
 # Validate hrefs (if any) show up either in sample payload or extraAttributes dump
 hrefs = [c.get("url", "") for c in chapters if c.get("url")]
 for href in hrefs:
-    if href not in logtxt:
-        fail(f"Missing href '{href}' in Swift log")
+    # Require the href to appear in the chapterMetadataGroups extraAttributes (HREF),
+    # not just in raw text payload dumps.
+    pattern = rf"item key=.*extra=.*HREF.*{re.escape(href)}"
+    if not re.search(pattern, logtxt):
+        fail(f"Missing href '{href}' in chapterMetadataGroups (extraAttributes)")
 
 print("AVFoundation URL text OK (strings, timings, hrefs present)")
 PY
