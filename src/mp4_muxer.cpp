@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <map>
 #include <vector>
 #include <limits>
 
@@ -195,6 +196,40 @@ static PreparedTextTracks prepare_text_tracks(
         prepared.extras.push_back(encode_tx3g_track(prepared.extras_meta.back()));
     }
     return prepared;
+}
+
+// Mirror href values from any auxiliary text tracks onto the primary title track so that
+// players that only inspect the chapter title track (e.g., AVFoundation) still surface URLs.
+static std::vector<ChapterTextSample> merge_href_into_titles(
+    const std::vector<ChapterTextSample> &titles,
+    const std::vector<std::pair<std::string, std::vector<ChapterTextSample>>> &extra_text_tracks) {
+    if (titles.empty() || extra_text_tracks.empty()) {
+        return titles;
+    }
+
+    std::multimap<uint32_t, std::string> href_by_start;
+    for (const auto &track : extra_text_tracks) {
+        for (const auto &sample : track.second) {
+            if (!sample.href.empty()) {
+                href_by_start.emplace(sample.start_ms, sample.href);
+            }
+        }
+    }
+    if (href_by_start.empty()) {
+        return titles;
+    }
+
+    auto merged = titles;
+    for (auto &t : merged) {
+        if (!t.href.empty()) {
+            continue;
+        }
+        auto it = href_by_start.find(t.start_ms);
+        if (it != href_by_start.end()) {
+            t.href = it->second;
+        }
+    }
+    return merged;
 }
 
 static DurationInfo compute_durations(const AacExtractResult &aac, Mp4aConfig &audio_cfg,
@@ -402,7 +437,8 @@ bool write_mp4(const std::string &output_path, const AacExtractResult &aac,
     const auto &audio_samples = aac.frames;  // reuse extracted buffers without copying
 
     // Build padded tx3g samples for title and URL tracks.
-    PreparedTextTracks prepared_text = prepare_text_tracks(text_chapters, extra_text_tracks);
+    auto primary_with_href = merge_href_into_titles(text_chapters, extra_text_tracks);
+    PreparedTextTracks prepared_text = prepare_text_tracks(primary_with_href, extra_text_tracks);
 
     //
     // Image samples: JPEG binary data (may be empty if no images were provided)
